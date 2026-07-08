@@ -38,6 +38,7 @@
 .hrpg .sheet-tabs .item.active { color: var(--paper); background: var(--line); }
 .hrpg .sheet-body { height: calc(100% - 176px); padding: .75rem; overflow: auto; }
 .hrpg .tab { height: 100%; }
+.hrpg .sheet-body > .tab:not(.active) { display: none; }
 
 .hrpg .overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
 .hrpg .panel { padding: .8rem; border: 1px solid var(--line); background: rgba(255,255,255,.18); }

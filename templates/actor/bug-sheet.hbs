@@ -22,21 +22,21 @@
       <label>{{localize "HRPG.BugType"}}
         <select name="system.secondary.size" data-template-size>{{selectOptions config.sizes selected=system.secondary.size localize=true}}</select>
       </label>
-      <button type="button" class="hrpg-apply-size-template">{{localize "HRPG.ApplySize"}}</button>
+      <button type="button" data-action="apply-size">{{localize "HRPG.ApplySize"}}</button>
     </section>
   {{else}}
     <nav class="sheet-tabs tabs" data-group="primary">
-      <a class="item" data-tab="overview">{{localize "HRPG.Overview"}}</a>
-      <a class="item" data-tab="traits">{{localize "HRPG.Traits"}}</a>
-      <a class="item" data-tab="charms">{{localize "HRPG.Charms"}}</a>
-      <a class="item" data-tab="techniques">{{localize "HRPG.Techniques"}}</a>
-      <a class="item" data-tab="skills">{{localize "HRPG.Skills"}}</a>
-      <a class="item" data-tab="inventory">{{localize "HRPG.Inventory"}}</a>
-      <a class="item" data-tab="notes">{{localize "HRPG.Notes"}}</a>
+      <a class="item active" data-action="select-tab" data-tab="overview">{{localize "HRPG.Overview"}}</a>
+      <a class="item" data-action="select-tab" data-tab="traits">{{localize "HRPG.Traits"}}</a>
+      <a class="item" data-action="select-tab" data-tab="charms">{{localize "HRPG.Charms"}}</a>
+      <a class="item" data-action="select-tab" data-tab="techniques">{{localize "HRPG.Techniques"}}</a>
+      <a class="item" data-action="select-tab" data-tab="skills">{{localize "HRPG.Skills"}}</a>
+      <a class="item" data-action="select-tab" data-tab="inventory">{{localize "HRPG.Inventory"}}</a>
+      <a class="item" data-action="select-tab" data-tab="notes">{{localize "HRPG.Notes"}}</a>
     </nav>
 
     <section class="sheet-body">
-      <div class="tab overview" data-group="primary" data-tab="overview">
+      <div class="tab overview active" data-group="primary" data-tab="overview">
         <div class="overview-grid">
           <section class="panel attributes-panel">
             <h2>{{localize "HRPG.Attributes"}}</h2>
@@ -67,7 +67,7 @@
           <section class="panel paths-panel">
             <div class="panel-heading"><h2>{{localize "HRPG.Paths"}}</h2><button type="button" data-action="create-item" data-type="path">+</button></div>
             {{#each itemsByType.path as |path|}}
-              <div class="item-row line-item" data-item-id="{{path.id}}"><img src="{{path.img}}"><span>{{path.name}}</span><b>{{path.system.rank}}</b></div>
+              <div class="item-row line-item" data-action="open-item" data-item-id="{{path.id}}"><img src="{{path.img}}"><span>{{path.name}}</span><b>{{path.system.rank}}</b></div>
             {{else}}<p class="empty-state">{{localize "HRPG.NoPaths"}}</p>{{/each}}
           </section>
 
@@ -82,7 +82,7 @@
         <section class="panel collection-panel">
           <div class="panel-heading"><h2>{{localize "HRPG.Traits"}}</h2><button type="button" data-action="create-item" data-type="trait">+</button></div>
           {{#each itemsByType.trait as |trait|}}
-            <div class="item-row card-item" data-item-id="{{trait.id}}"><img src="{{trait.img}}"><div><strong>{{trait.name}}</strong><small>{{#if (eq trait.system.kind "subtrait")}}{{localize "HRPG.Subtrait"}}{{else}}{{localize "HRPG.Trait"}}{{/if}}</small></div></div>
+            <div class="item-row card-item" data-action="open-item" data-item-id="{{trait.id}}"><img src="{{trait.img}}"><div><strong>{{trait.name}}</strong><small>{{#if (eq trait.system.kind "subtrait")}}{{localize "HRPG.Subtrait"}}{{else}}{{localize "HRPG.Trait"}}{{/if}}</small></div></div>
           {{else}}<p class="empty-state">{{localize "HRPG.NoTraits"}}</p>{{/each}}
         </section>
       </div>
@@ -90,24 +90,24 @@
       <div class="tab charms" data-group="primary" data-tab="charms">
         <section class="panel collection-panel">
           <div class="panel-heading"><h2>{{localize "HRPG.Charms"}}</h2><button type="button" data-action="create-item" data-type="charm">+</button></div>
-          {{#each itemsByType.charm as |item|}}<div class="item-row card-item" data-item-id="{{item.id}}"><img src="{{item.img}}"><strong>{{item.name}}</strong></div>{{else}}<p class="empty-state">{{localize "HRPG.NoCharms"}}</p>{{/each}}
+          {{#each itemsByType.charm as |item|}}<div class="item-row card-item" data-action="open-item" data-item-id="{{item.id}}"><img src="{{item.img}}"><strong>{{item.name}}</strong></div>{{else}}<p class="empty-state">{{localize "HRPG.NoCharms"}}</p>{{/each}}
         </section>
       </div>
 
       <div class="tab techniques" data-group="primary" data-tab="techniques">
         <div class="split-grid">
-          <section class="panel collection-panel"><div class="panel-heading"><h2>{{localize "HRPG.ItemArt"}}</h2><button type="button" data-action="create-item" data-type="art">+</button></div>{{#each itemsByType.art as |item|}}<div class="item-row line-item" data-item-id="{{item.id}}"><img src="{{item.img}}"><span>{{item.name}}</span></div>{{/each}}</section>
-          <section class="panel collection-panel"><div class="panel-heading"><h2>{{localize "HRPG.ItemSpell"}}</h2><button type="button" data-action="create-item" data-type="spell">+</button></div>{{#each itemsByType.spell as |item|}}<div class="item-row line-item" data-item-id="{{item.id}}"><img src="{{item.img}}"><span>{{item.name}}</span></div>{{/each}}</section>
+          <section class="panel collection-panel"><div class="panel-heading"><h2>{{localize "HRPG.ItemArt"}}</h2><button type="button" data-action="create-item" data-type="art">+</button></div>{{#each itemsByType.art as |item|}}<div class="item-row line-item" data-action="open-item" data-item-id="{{item.id}}"><img src="{{item.img}}"><span>{{item.name}}</span></div>{{/each}}</section>
+          <section class="panel collection-panel"><div class="panel-heading"><h2>{{localize "HRPG.ItemSpell"}}</h2><button type="button" data-action="create-item" data-type="spell">+</button></div>{{#each itemsByType.spell as |item|}}<div class="item-row line-item" data-action="open-item" data-item-id="{{item.id}}"><img src="{{item.img}}"><span>{{item.name}}</span></div>{{/each}}</section>
         </div>
       </div>
 
       <div class="tab skills" data-group="primary" data-tab="skills">
-        <section class="panel collection-panel"><div class="panel-heading"><h2>{{localize "HRPG.Skills"}}</h2><button type="button" data-action="create-item" data-type="skill">+</button></div>{{#each itemsByType.skill as |item|}}<div class="item-row line-item" data-item-id="{{item.id}}"><img src="{{item.img}}"><span>{{item.name}}</span><b>{{item.system.rank}}</b></div>{{else}}<p class="empty-state">{{localize "HRPG.NoSkills"}}</p>{{/each}}</section>
+        <section class="panel collection-panel"><div class="panel-heading"><h2>{{localize "HRPG.Skills"}}</h2><button type="button" data-action="create-item" data-type="skill">+</button></div>{{#each itemsByType.skill as |item|}}<div class="item-row line-item" data-action="open-item" data-item-id="{{item.id}}"><img src="{{item.img}}"><span>{{item.name}}</span><b>{{item.system.rank}}</b></div>{{else}}<p class="empty-state">{{localize "HRPG.NoSkills"}}</p>{{/each}}</section>
       </div>
 
       <div class="tab inventory" data-group="primary" data-tab="inventory">
         {{#each inventoryItemTypes as |label type|}}
-          <section class="panel item-group"><div class="panel-heading"><h2>{{localize label}}</h2><button type="button" data-action="create-item" data-type="{{type}}">+</button></div>{{#each (lookup ../itemsByType type) as |item|}}<div class="item-row line-item" data-item-id="{{item.id}}"><img src="{{item.img}}"><span>{{item.name}}</span><small>{{item.system.weight}}</small></div>{{/each}}</section>
+          <section class="panel item-group"><div class="panel-heading"><h2>{{localize label}}</h2><button type="button" data-action="create-item" data-type="{{type}}">+</button></div>{{#each (lookup ../itemsByType type) as |item|}}<div class="item-row line-item" data-action="open-item" data-item-id="{{item.id}}"><img src="{{item.img}}"><span>{{item.name}}</span><small>{{item.system.weight}}</small></div>{{/each}}</section>
         {{/each}}
       </div>
 
