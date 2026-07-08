@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { availableSpeed, gridMovementCost, INITIATIVE_FORMULA } from "../module/mechanics/combat.js";
+import { availableSpeed, configureInitiative, gridMovementCost, INITIATIVE_FORMULA } from "../module/mechanics/combat.js";
 import { tokenDimensions } from "../module/mechanics/size-templates.js";
 
 test("large bugs use a two by two token footprint", () => {
@@ -21,4 +21,7 @@ test("spent movement is separate from a temporary Speed adjustment", () => {
 
 test("initiative sums Grace dice instead of counting successes", () => {
   assert.equal(INITIATIVE_FORMULA, "floor(@effective.attributes.grace.value)d6");
+  const config = { initiative: { formula: null, decimals: 2 } };
+  configureInitiative(config);
+  assert.deepEqual(config.initiative, { formula: INITIATIVE_FORMULA, decimals: 0 });
 });

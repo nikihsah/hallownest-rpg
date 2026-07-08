@@ -11,6 +11,11 @@ export function availableSpeed(permanent, adjustment = 0, spent = 0) {
 
 export const INITIATIVE_FORMULA = "floor(@effective.attributes.grace.value)d6";
 
+export function configureInitiative(combatConfig) {
+  combatConfig.initiative.formula = INITIATIVE_FORMULA;
+  combatConfig.initiative.decimals = 0;
+}
+
 function isPrimaryGM() {
   const activeGM = game.users.activeGM;
   return game.user.isGM && (!activeGM || activeGM.id === game.user.id);
@@ -53,8 +58,7 @@ async function onCombatTurnChange(combat, prior) {
 }
 
 export function registerCombatAutomation() {
-  CONFIG.Combat.initiative.formula = INITIATIVE_FORMULA;
-  CONFIG.Combat.initiative.decimals = 0;
+  Hooks.once("initializeCombatConfiguration", () => configureInitiative(CONFIG.Combat));
   Hooks.on("preUpdateToken", onPreUpdateToken);
   Hooks.on("updateToken", onUpdateToken);
   Hooks.on("combatTurnChange", onCombatTurnChange);
