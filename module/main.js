@@ -4,6 +4,7 @@ import { HallownestItem } from "./documents/item.js";
 import { HallownestActorSheet } from "./sheets/actor-sheet.js";
 import { HallownestItemSheet } from "./sheets/item-sheet.js";
 import { rollDicePool } from "./mechanics/dice-pool.js";
+import { migrateActorTraits } from "./migrations/actor-traits.js";
 
 Hooks.once("init", () => {
   console.info("Hallownest RPG | Initializing");
@@ -18,3 +19,5 @@ Hooks.once("init", () => {
 
   game.hrpg = { rollDicePool };
 });
+
+Hooks.once("ready", migrateActorTraits);

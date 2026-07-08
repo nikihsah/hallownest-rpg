@@ -27,8 +27,7 @@
           "socialBonus": 1.5,
           "marks": { "value": 3, "max": 3 }
         },
-        "advancement": { "milestone": 0, "pathRank": 0 },
-        "traits": []
+        "advancement": { "milestone": 0, "pathRank": 0 }
       }
     },
     "bug": {
@@ -36,7 +35,7 @@
     }
   },
   "Item": {
-    "types": ["weapon", "armor", "art", "spell", "charm", "gear", "consumable", "condition"],
+    "types": ["weapon", "armor", "trait", "art", "spell", "charm", "gear", "consumable", "condition"],
     "templates": {
       "base": {
         "description": "",
@@ -51,6 +50,7 @@
     },
     "weapon": { "templates": ["base", "rollable"], "damage": 1, "range": 1 },
     "armor": { "templates": ["base"], "protection": 1 },
+    "trait": { "templates": ["base"], "kind": "trait", "parentTrait": "", "sourceId": "" },
     "art": { "templates": ["base", "rollable"], "cost": 1 },
     "spell": { "templates": ["base", "rollable"], "cost": 1 },
     "charm": { "templates": ["base"], "notches": 1 },

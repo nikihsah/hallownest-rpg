@@ -49,18 +49,11 @@
     </div>
 
     <div class="tab traits" data-group="primary" data-tab="traits">
-      <header class="section-heading"><h3>{{localize "HRPG.Traits"}}</h3><button type="button" data-action="add-trait">+</button></header>
-      {{#each system.traits as |trait|}}
-        <article class="trait-card">
-          <div class="trait-heading">
-            <input data-trait-id="{{trait.id}}" data-trait-field="name" type="text" value="{{trait.name}}">
-            <select data-trait-id="{{trait.id}}" data-trait-field="kind">
-              <option value="trait" {{#if (eq trait.kind "trait")}}selected{{/if}}>{{localize "HRPG.Trait"}}</option>
-              <option value="subtrait" {{#if (eq trait.kind "subtrait")}}selected{{/if}}>{{localize "HRPG.Subtrait"}}</option>
-            </select>
-            <button type="button" data-action="delete-trait" data-trait-id="{{trait.id}}">×</button>
-          </div>
-          <textarea data-trait-id="{{trait.id}}" data-trait-field="description">{{trait.description}}</textarea>
+      <header class="section-heading"><h3>{{localize "HRPG.Traits"}}</h3><button type="button" data-action="create-item" data-type="trait">+</button></header>
+      {{#each itemsByType.trait as |trait|}}
+        <article class="trait-card item-row" data-item-id="{{trait.id}}">
+          <img src="{{trait.img}}">
+          <div><strong>{{trait.name}}</strong><small>{{#if (eq trait.system.kind "subtrait")}}{{localize "HRPG.Subtrait"}}{{else}}{{localize "HRPG.Trait"}}{{/if}}</small></div>
         </article>
       {{else}}
         <p class="empty-state">{{localize "HRPG.NoTraits"}}</p>
@@ -68,7 +61,7 @@
     </div>
 
     <div class="tab inventory" data-group="primary" data-tab="inventory">
-      {{#each config.itemTypes as |label type|}}
+      {{#each inventoryItemTypes as |label type|}}
         <section class="item-group">
           <header><h3>{{localize label}}</h3><button type="button" data-action="create-item" data-type="{{type}}">+</button></header>
           {{#each (lookup ../itemsByType type) as |item|}}

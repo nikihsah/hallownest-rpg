@@ -16,6 +16,9 @@ export class HallownestActorSheet extends ActorSheet {
     const context = await super.getData(options);
     context.config = CONFIG.HRPG;
     context.itemsByType = Object.groupBy(this.actor.items, (item) => item.type);
+    context.inventoryItemTypes = Object.fromEntries(
+      Object.entries(CONFIG.HRPG.itemTypes).filter(([type]) => type !== "trait")
+    );
     return context;
   }
 
@@ -33,23 +36,6 @@ export class HallownestActorSheet extends ActorSheet {
     });
     html.find("[data-action='apply-size']").on("click", () => {
       this.actor.applySizeTemplate(this.actor.system.secondary.size);
-    });
-    html.find("[data-action='add-trait']").on("click", () => {
-      const traits = foundry.utils.deepClone(this.actor.system.traits ?? []);
-      traits.push({ id: foundry.utils.randomID(), name: game.i18n.localize("HRPG.NewTrait"), kind: "trait", description: "" });
-      this.actor.update({ "system.traits": traits });
-    });
-    html.find("[data-action='delete-trait']").on("click", (event) => {
-      const id = event.currentTarget.dataset.traitId;
-      const traits = (this.actor.system.traits ?? []).filter((trait) => trait.id !== id);
-      this.actor.update({ "system.traits": traits });
-    });
-    html.find("[data-trait-field]").on("change", (event) => {
-      const traits = foundry.utils.deepClone(this.actor.system.traits ?? []);
-      const trait = traits.find((entry) => entry.id === event.currentTarget.dataset.traitId);
-      if (!trait) return;
-      trait[event.currentTarget.dataset.traitField] = event.currentTarget.value;
-      this.actor.update({ "system.traits": traits });
     });
   }
 }

@@ -13,6 +13,7 @@ export const HRPG = Object.freeze({
   itemTypes: {
     weapon: "HRPG.ItemWeapon",
     armor: "HRPG.ItemArmor",
+    trait: "HRPG.ItemTrait",
     art: "HRPG.ItemArt",
     spell: "HRPG.ItemSpell",
     charm: "HRPG.ItemCharm",
