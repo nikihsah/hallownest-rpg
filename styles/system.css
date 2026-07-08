@@ -21,7 +21,11 @@
 .hrpg .sheet-header { display: flex; gap: 1rem; margin: .65rem; padding: 1rem; background: rgba(255,255,255,.2); }
 .hrpg .profile-img { width: 98px; height: 98px; object-fit: cover; border: 2px solid var(--line); }
 .hrpg .header-fields { flex: 1; min-width: 0; }
-.hrpg .name { width: 100%; height: 2.4rem; font: 2rem Georgia, serif; }
+.hrpg .identity-row { display: flex; align-items: start; gap: 1rem; }
+.hrpg .name { flex: 1; min-width: 0; height: 2.4rem; font: 2rem Georgia, serif; }
+.hrpg .milestone-field { display: grid; grid-template-columns: auto minmax(8rem, 13rem); align-items: center; gap: .45rem; color: #30332f; font-weight: 700; text-transform: uppercase; }
+.hrpg .milestone-field select { width: 100%; height: 2.2rem; font-size: .82rem; }
+.hrpg .rest-button { height: 2.2rem; padding-inline: .8rem; color: #fff; background: #515654; }
 .hrpg .resource-row, .hrpg .item-properties { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: .65rem; }
 .hrpg .resource-row label { display: grid; gap: .2rem; color: var(--muted); text-transform: uppercase; font-size: .72rem; letter-spacing: .04em; }
 .hrpg .resource-row span { display: flex; align-items: center; gap: .3rem; }
@@ -57,7 +61,7 @@
 .hrpg .attribute-grid input[data-current-attribute] { font-weight: 700; color: var(--accent); }
 .hrpg .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .45rem; margin: auto 0; }
 .hrpg .stat-card { display: grid; grid-template-columns: 1fr 2.8rem; gap: .25rem; padding: .4rem; border: 1px solid #aaa596; background: rgba(255,255,255,.25); }
-.hrpg .stat-card > span, .hrpg .stat-card > button { grid-column: 1 / -1; min-height: 1.65rem; overflow: hidden; text-align: left; font-size: .72rem; }
+.hrpg .stat-card > span, .hrpg .stat-card > button { grid-column: 1 / -1; min-width: 0; min-height: 1.65rem; overflow: visible; overflow-wrap: anywhere; hyphens: auto; line-height: 1.15; text-align: left; font-size: .72rem; }
 .hrpg .stat-card > span { color: #30332f; font-weight: 700; text-transform: uppercase; }
 .hrpg .stat-card output, .hrpg .stat-card input { width: 100%; text-align: center; }
 .hrpg .stat-card output { align-self: center; border-right: 1px solid #aaa596; }

@@ -19,3 +19,15 @@ export function storedAttributeValue(displayedValue, modifier = 0) {
   if (!Number.isFinite(value)) throw new TypeError("Attribute value must be numeric");
   return value - (Number(modifier) || 0);
 }
+
+export function attributeBreakdown({ templateLabel, base, traits = [], total, totalLabel = "Итого" }) {
+  const lines = [`${templateLabel}: ${formatSigned(base)}`];
+  for (const trait of traits) lines.push(`${trait.name}: ${formatSigned(trait.value)}`);
+  lines.push(`${totalLabel}: ${total}`);
+  return lines.join("\n");
+}
+
+function formatSigned(value) {
+  const number = Number(value) || 0;
+  return number > 0 ? `+${number}` : `${number}`;
+}

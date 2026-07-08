@@ -1,6 +1,7 @@
 import { applySizeTemplate } from "../mechanics/size-templates.js";
-import { storedAttributeValue } from "../mechanics/attribute-state.js";
+import { attributeBreakdown, storedAttributeValue } from "../mechanics/attribute-state.js";
 import { currentStatValue, statAdjustment } from "../mechanics/stat-adjustments.js";
+import { restActor } from "../mechanics/rest.js";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -46,6 +47,11 @@ async function rollSecondaryAction(_event, target) {
   await this.actor.rollSecondary(target.dataset.secondary);
 }
 
+async function restAction() {
+  const result = await restActor(this.actor);
+  ui.notifications.info(game.i18n.format("HRPG.RestComplete", { satiety: result.nextSatiety }));
+}
+
 export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static DEFAULT_OPTIONS = {
     classes: ["hrpg", "sheet", "actor"],
@@ -57,7 +63,8 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
       "create-item": createItemAction,
       "open-item": openItemAction,
       "select-tab": selectTabAction,
-      "roll-secondary": rollSecondaryAction
+      "roll-secondary": rollSecondaryAction,
+      "rest": restAction
     }
   };
 
@@ -73,12 +80,34 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     context.config = CONFIG.HRPG;
     context.editable = this.isEditable;
     context.owner = this.actor.isOwner;
-    context.attributeRows = Object.entries(system.attributes).map(([key, attribute]) => ({
-      key,
-      label: CONFIG.HRPG.attributes[key],
-      current: system.effective?.attributes?.[key]?.value ?? attribute.value,
-      maximum: system.effective?.attributes?.[key]?.max ?? attribute.max ?? attribute.value
-    }));
+    context.milestoneOptions = {
+      0: game.i18n.localize("HRPG.Milestone0"),
+      1: game.i18n.localize("HRPG.Milestone1"),
+      2: game.i18n.localize("HRPG.Milestone2"),
+      3: game.i18n.localize("HRPG.Milestone3"),
+      4: game.i18n.localize("HRPG.Milestone4"),
+      5: game.i18n.localize("HRPG.Milestone5")
+    };
+    const activeTraits = this.actor.items.filter((item) => item.type === "trait" && item.system.active !== false);
+    const templateLabel = game.i18n.format("HRPG.TemplateSource", {
+      template: game.i18n.localize(CONFIG.HRPG.sizes[system.secondary.size])
+    });
+    context.attributeRows = Object.entries(system.attributes).map(([key, attribute]) => {
+      const maximum = system.effective?.attributes?.[key]?.max ?? attribute.max ?? attribute.value;
+      const traitSources = activeTraits
+        .map((trait) => ({ name: trait.name, value: Number(trait.system.modifiers?.[key]) || 0 }))
+        .filter((source) => source.value !== 0);
+      return {
+        key,
+        label: CONFIG.HRPG.attributes[key],
+        current: system.effective?.attributes?.[key]?.value ?? attribute.value,
+        maximum,
+        breakdown: attributeBreakdown({
+          templateLabel, base: attribute.max ?? attribute.value, traits: traitSources,
+          total: maximum, totalLabel: game.i18n.localize("HRPG.Total")
+        })
+      };
+    });
     context.itemsByType = Object.groupBy(this.actor.items, (item) => item.type);
     context.inventoryItemTypes = Object.fromEntries(
       Object.entries(CONFIG.HRPG.itemTypes).filter(([type]) => !["trait", "path", "skill", "charm", "art", "spell"].includes(type))

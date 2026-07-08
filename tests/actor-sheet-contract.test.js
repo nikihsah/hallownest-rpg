@@ -24,3 +24,8 @@ test("actor sheet uses the Foundry V2 application framework", async () => {
   assert.doesNotMatch(source, /extends ActorSheet\s*\{/);
   assert.match(source, /"apply-size": applySizeAction/);
 });
+
+test("actor sheet exposes the character milestone selector", async () => {
+  const template = await readFile(templateUrl, "utf8");
+  assert.match(template, /name="system\.advancement\.milestone"/);
+});
