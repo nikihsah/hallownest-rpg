@@ -14,6 +14,13 @@
               {{#if (eq trait.kind "subtrait")}}<small>{{localize "HRPG.SubtraitOf"}}: {{trait.parentName}}</small>{{/if}}
               <p>{{trait.description}}</p>
               {{#if trait.rules.length}}<details><summary>{{localize "HRPG.TraitRules"}}</summary><ul>{{#each trait.rules as |rule|}}<li>{{rule}}</li>{{/each}}</ul></details>{{/if}}
+              {{#if trait.parentChoices.length}}
+                <label>{{localize "HRPG.ParentTraitInstance"}}
+                  <select data-parent-choice>
+                    {{#each trait.parentChoices as |choice|}}<option value="{{choice.id}}">{{choice.label}}</option>{{/each}}
+                  </select>
+                </label>
+              {{/if}}
               {{#if trait.socialChoice.length}}
                 <label>{{localize "HRPG.SocialBonus"}}<select data-social-choice><option value="dread">{{localize "HRPG.Dread"}}</option><option value="appeal">{{localize "HRPG.Appeal"}}</option></select></label>
               {{/if}}

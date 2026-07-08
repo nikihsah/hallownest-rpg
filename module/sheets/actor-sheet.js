@@ -40,7 +40,7 @@ async function createItemAction(_event, target) {
     name: game.i18n.localize(CONFIG.HRPG.itemTypes[type]),
     type
   }]);
-  created?.sheet.render(true);
+  renderDocumentSheet(created);
 }
 
 async function addPathAction(_event, target) {
@@ -53,12 +53,25 @@ async function addPathAction(_event, target) {
   const path = (await loadPathCatalog()).find((entry) => entry.sourceId === sourceId);
   if (!path) return ui.notifications.error(game.i18n.localize("HRPG.PathNotFound"));
   const [created] = await this.actor.createEmbeddedDocuments("Item", [pathItemData(path)]);
-  created?.sheet.render(true);
+  renderDocumentSheet(created);
 }
 
 function openItemAction(_event, target) {
-  const itemId = target.dataset.itemId ?? target.closest("[data-item-id]")?.dataset.itemId;
-  this.actor.items.get(itemId)?.sheet.render(true);
+  const itemId = target.dataset.itemId ?? target.closest("[data-open-item-id]")?.dataset.openItemId ?? target.closest("[data-item-id]")?.dataset.itemId;
+  openEmbeddedItem(this.actor, itemId);
+}
+
+function openEmbeddedItem(actor, itemId) {
+  if (!itemId) return;
+  renderDocumentSheet(actor.items.get(itemId));
+}
+
+function renderDocumentSheet(document) {
+  const sheet = document?.sheet;
+  if (!sheet) return;
+  const ApplicationV2 = foundry.applications?.api?.ApplicationV2;
+  if (ApplicationV2 && sheet instanceof ApplicationV2) return sheet.render({ force: true });
+  return sheet.render(true);
 }
 
 async function deleteItemAction(event, target) {
@@ -74,7 +87,9 @@ async function deleteItemAction(event, target) {
   const ids = [item.id];
   if (item.type === "trait" && item.system.sourceId) {
     ids.push(...this.actor.items
-      .filter((candidate) => candidate.type === "trait" && candidate.system.parentTrait === item.system.sourceId)
+      .filter((candidate) => candidate.type === "trait"
+        && candidate.system.parentTrait === item.system.sourceId
+        && (candidate.system.parentItemId ? candidate.system.parentItemId === item.id : true))
       .map((candidate) => candidate.id));
   }
   await this.actor.deleteEmbeddedDocuments("Item", ids);
@@ -256,9 +271,22 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     for (const row of this.element.querySelectorAll("[data-action='open-item'][data-item-id]")) {
       row.addEventListener("click", (event) => {
         if (event.target.closest("[data-action='delete-item']")) return;
-        this.actor.items.get(row.dataset.itemId)?.sheet.render(true);
+        openEmbeddedItem(this.actor, row.dataset.itemId);
       });
     }
+    this.element.addEventListener("click", (event) => {
+      const row = event.target.closest("[data-open-item-id]");
+      if (!row || event.target.closest("[data-action='delete-item']")) return;
+      event.preventDefault();
+      openEmbeddedItem(this.actor, row.dataset.openItemId);
+    });
+    this.element.addEventListener("keydown", (event) => {
+      if (!["Enter", " "].includes(event.key)) return;
+      const row = event.target.closest("[data-open-item-id]");
+      if (!row) return;
+      event.preventDefault();
+      openEmbeddedItem(this.actor, row.dataset.openItemId);
+    });
   }
 }
 

@@ -53,6 +53,36 @@ test("subtraits modify their parent quick attack", async () => {
   assert.equal(attacks.length, 2);
 });
 
+test("subtraits bind to one repeated parent trait instance", async () => {
+  const traits = JSON.parse(await readFile(catalogUrl, "utf8"));
+  const projectile = traits.find((trait) => trait.sourceId === "traits.natural-projectile");
+  const heavyShot = traits.find((trait) => trait.sourceId === "traits.natural-projectile.heavy-shot");
+  const attacks = quickAttacksFromItems([
+    { id: "projectile-a", name: `${projectile.name} A`, type: "trait", system: { ...projectile, active: true } },
+    { id: "projectile-b", name: `${projectile.name} B`, type: "trait", system: { ...projectile, active: true } },
+    { id: "heavy-shot", name: heavyShot.name, type: "trait", system: { ...heavyShot, active: true, parentItemId: "projectile-a" } }
+  ]);
+
+  assert.equal(attacks.find((attack) => attack.itemId === "projectile-a").damage, "3");
+  assert.deepEqual(attacks.find((attack) => attack.itemId === "projectile-a").subtraits, [heavyShot.name]);
+  assert.equal(attacks.find((attack) => attack.itemId === "projectile-b").damage, "2");
+  assert.deepEqual(attacks.find((attack) => attack.itemId === "projectile-b").subtraits, []);
+});
+
+test("legacy unbound subtraits are not applied to every repeated parent", async () => {
+  const traits = JSON.parse(await readFile(catalogUrl, "utf8"));
+  const projectile = traits.find((trait) => trait.sourceId === "traits.natural-projectile");
+  const heavyShot = traits.find((trait) => trait.sourceId === "traits.natural-projectile.heavy-shot");
+  const attacks = quickAttacksFromItems([
+    { id: "projectile-a", name: `${projectile.name} A`, type: "trait", system: { ...projectile, active: true } },
+    { id: "projectile-b", name: `${projectile.name} B`, type: "trait", system: { ...projectile, active: true } },
+    { id: "heavy-shot", name: heavyShot.name, type: "trait", system: { ...heavyShot, active: true } }
+  ]);
+
+  assert.deepEqual(attacks.map((attack) => attack.damage), ["2", "2"]);
+  assert.deepEqual(attacks.flatMap((attack) => attack.subtraits), []);
+});
+
 test("quick attacks only include active attack-like weapon traits", () => {
   const attacks = quickAttacksFromItems([
     { id: "horn", name: "Рог", type: "trait", system: { active: true, kind: "trait", category: "weapons", description: "Это природное оружие, которое наносит 2 единицы урона." } },

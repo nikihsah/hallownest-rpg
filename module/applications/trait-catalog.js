@@ -9,14 +9,20 @@ async function addTraitAction(_event, target) {
   if (!trait) return ui.notifications.error(game.i18n.localize("HRPG.TraitNotFound"));
   const ownedTraits = this.actor.items.filter((item) => item.type === "trait");
   const ownedIds = new Set(ownedTraits.map((item) => item.system.sourceId));
-  const ownedCount = ownedTraits.filter((item) => item.system.sourceId === sourceId).length;
+  const parentItemId = card.querySelector("[data-parent-choice]")?.value ?? "";
+  const ownedCount = trait.kind === "subtrait"
+    ? ownedTraits.filter((item) => item.system.sourceId === sourceId && (item.system.parentItemId ?? "") === parentItemId).length
+    : ownedTraits.filter((item) => item.system.sourceId === sourceId).length;
   const repeatLimit = Number(card?.dataset.repeatLimit) || 1;
-  if (ownedCount >= repeatLimit) return ui.notifications.warn(game.i18n.localize("HRPG.TraitAlreadyAdded"));
   if (trait.kind === "subtrait" && !ownedIds.has(trait.parentTrait)) {
     return ui.notifications.warn(game.i18n.localize("HRPG.TraitParentRequired"));
   }
+  if (trait.kind === "subtrait" && !parentItemId) {
+    return ui.notifications.warn(game.i18n.localize("HRPG.TraitParentRequired"));
+  }
+  if (ownedCount >= 1 || (trait.kind !== "subtrait" && ownedCount >= repeatLimit)) return ui.notifications.warn(game.i18n.localize("HRPG.TraitAlreadyAdded"));
   const social = card.querySelector("[data-social-choice]")?.value ?? "";
-  await this.actor.createEmbeddedDocuments("Item", [traitItemData(trait, { social })]);
+  await this.actor.createEmbeddedDocuments("Item", [traitItemData(trait, { social, parentItemId })]);
   ui.notifications.info(game.i18n.format("HRPG.TraitAdded", { name: trait.name }));
   await this.render({ force: true });
 }
@@ -45,7 +51,17 @@ export class TraitCatalogApplication extends HandlebarsApplicationMixin(Applicat
     const ownedIds = new Set(ownedTraits.map((item) => item.system.sourceId));
     const ownedCounts = new Map();
     for (const trait of ownedTraits) ownedCounts.set(trait.system.sourceId, (ownedCounts.get(trait.system.sourceId) ?? 0) + 1);
-    context.categories = groupTraits(await loadTraitCatalog(), ownedIds, ownedCounts);
+    const parentChoices = new Map();
+    const parentIndexes = new Map();
+    for (const trait of ownedTraits.filter((item) => item.system?.kind !== "subtrait" && item.system?.sourceId)) {
+      const sourceId = trait.system.sourceId;
+      const index = (parentIndexes.get(sourceId) ?? 0) + 1;
+      parentIndexes.set(sourceId, index);
+      const list = parentChoices.get(sourceId) ?? [];
+      list.push({ id: trait.id, label: `${trait.name}${index > 1 ? ` #${index}` : ""}` });
+      parentChoices.set(sourceId, list);
+    }
+    context.categories = groupTraits(await loadTraitCatalog(), ownedIds, ownedCounts, parentChoices);
     return context;
   }
 

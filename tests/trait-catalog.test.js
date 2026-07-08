@@ -55,9 +55,36 @@ test("repeatable traits remain available until their limit", async () => {
   assert.equal(capped.owned, true);
 });
 
+test("repeatable parent subtraits stay available per parent instance", async () => {
+  const traits = JSON.parse(await readFile(catalogUrl, "utf8"));
+  const heavyShot = traits.find((trait) => trait.sourceId === "traits.natural-projectile.heavy-shot");
+  const parentChoices = new Map([[heavyShot.parentTrait, [
+    { id: "projectile-a", label: "Projectile #1" },
+    { id: "projectile-b", label: "Projectile #2" }
+  ]]]);
+  const groups = groupTraits([heavyShot], new Set([heavyShot.parentTrait, heavyShot.sourceId]), new Map([[heavyShot.sourceId, 1]]), parentChoices);
+  const entry = groups.flatMap((group) => group.traits)[0];
+
+  assert.equal(entry.parentMissing, false);
+  assert.equal(entry.owned, false);
+  assert.equal(entry.repeatable, true);
+  assert.equal(entry.repeatLimit, 2);
+  assert.deepEqual(entry.parentChoices, parentChoices.get(heavyShot.parentTrait));
+});
+
+test("trait item data can bind subtraits to one parent item", async () => {
+  const traits = JSON.parse(await readFile(catalogUrl, "utf8"));
+  const heavyShot = traits.find((trait) => trait.sourceId === "traits.natural-projectile.heavy-shot");
+  const item = traitItemData(heavyShot, { parentItemId: "projectile-a" });
+
+  assert.equal(item.system.parentTrait, heavyShot.parentTrait);
+  assert.equal(item.system.parentItemId, "projectile-a");
+});
+
 test("trait catalog template renders as one V2 application root element", async () => {
   const template = await readFile(new URL("../templates/applications/trait-catalog.hbs", import.meta.url), "utf8");
   assert.match(template.trimStart(), /^<div class="trait-catalog-root">/);
+  assert.match(template, /data-parent-choice/);
 });
 
 test("trait catalog keeps names readable and long costs inside cards", async () => {

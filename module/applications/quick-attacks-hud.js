@@ -22,7 +22,7 @@ export function refreshQuickAttacksHud() {
 
   const hud = existing ?? createHud();
   hud.querySelector("[data-hrpg-attack-list]").replaceChildren(...(
-    attacks.length ? attacks.map((attack) => attackButton(actor, attack)) : [emptyState("HRPG.NoQuickAttacks")]
+    attacks.length ? attacks.map((attack) => attackButton(actor, attack)) : [emptyState("HRPG.NoInteractionSkills")]
   ));
   hud.querySelector("[data-hrpg-stat-list]").replaceChildren(...attributeButtons(actor), ...secondaryButtons(actor));
   hud.hidden = false;
@@ -47,7 +47,7 @@ function createHud() {
       <section class="hrpg-quick-page active" data-hrpg-page="attacks"><div data-hrpg-attack-list></div></section>
       <section class="hrpg-quick-page" data-hrpg-page="stats"><div data-hrpg-stat-list></div></section>
       <nav class="hrpg-quick-hud-tabs" aria-label="${game.i18n.localize("HRPG.InteractionPages")}">
-        <button type="button" class="active" data-hrpg-tab="attacks">${game.i18n.localize("HRPG.QuickAttacks")}</button>
+        <button type="button" class="active" data-hrpg-tab="attacks">${game.i18n.localize("HRPG.InteractionSkills")}</button>
         <button type="button" data-hrpg-tab="stats">${game.i18n.localize("HRPG.Attributes")}</button>
       </nav>
     </div>`;
@@ -88,10 +88,7 @@ function attributeButtons(actor) {
     button.title = game.i18n.localize(label);
     const name = document.createElement("span");
     name.textContent = game.i18n.localize(label);
-    const details = document.createElement("small");
-    const value = actor.system.effective?.attributes?.[key]?.value ?? actor.system.attributes?.[key]?.value ?? 0;
-    details.textContent = game.i18n.format("HRPG.DicePoolValue", { value });
-    button.append(name, details);
+    button.append(name);
     button.addEventListener("click", async () => actor.rollAttribute(key));
     return button;
   });
@@ -104,9 +101,8 @@ function secondaryButtons(actor) {
     button.type = "button";
     const name = document.createElement("span");
     name.textContent = game.i18n.localize(label);
-    const details = document.createElement("small");
-    details.textContent = game.i18n.format("HRPG.DicePoolValue", { value: actor.system.effective?.secondary?.[key] ?? 0 });
-    button.append(name, details);
+    button.title = game.i18n.localize(label);
+    button.append(name);
     button.addEventListener("click", async () => actor.rollSecondary(key));
     return button;
   });

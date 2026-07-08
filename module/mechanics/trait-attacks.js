@@ -28,16 +28,31 @@ export function quickAttackFromTraitWithSubtraits(trait, subtraits = []) {
 
 export function quickAttacksFromItems(items) {
   const traits = Array.from(items ?? []).filter((item) => item?.type === "trait" && item.system?.active !== false);
-  const subtraitsByParent = new Map();
-  for (const item of traits.filter((entry) => entry.system?.kind === "subtrait" && entry.system?.parentTrait)) {
-    const list = subtraitsByParent.get(item.system.parentTrait) ?? [];
-    list.push(item);
-    subtraitsByParent.set(item.system.parentTrait, list);
+  const parentTraits = traits.filter((item) => item.system?.kind !== "subtrait");
+  const parentsBySource = new Map();
+  for (const parent of parentTraits.filter((item) => item.system?.sourceId)) {
+    const list = parentsBySource.get(parent.system.sourceId) ?? [];
+    list.push(parent);
+    parentsBySource.set(parent.system.sourceId, list);
   }
-  return traits
-    .filter((item) => item.system?.kind !== "subtrait")
-    .map((item) => quickAttackFromTraitWithSubtraits(item, subtraitsByParent.get(item.system?.sourceId) ?? []))
+
+  const subtraitsByParentItem = new Map();
+  for (const item of traits.filter((entry) => entry.system?.kind === "subtrait" && entry.system?.parentTrait)) {
+    const parentItemId = item.system.parentItemId || legacySingleParentId(parentsBySource, item.system.parentTrait);
+    if (!parentItemId) continue;
+    const list = subtraitsByParentItem.get(parentItemId) ?? [];
+    list.push(item);
+    subtraitsByParentItem.set(parentItemId, list);
+  }
+
+  return parentTraits
+    .map((item) => quickAttackFromTraitWithSubtraits(item, subtraitsByParentItem.get(item.id) ?? []))
     .filter(Boolean);
+}
+
+function legacySingleParentId(parentsBySource, parentSourceId) {
+  const parents = parentsBySource.get(parentSourceId) ?? [];
+  return parents.length === 1 ? parents[0].id : "";
 }
 
 function looksLikeAttack(text) {

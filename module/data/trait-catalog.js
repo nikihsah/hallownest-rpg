@@ -8,7 +8,7 @@ export async function loadTraitCatalog() {
   return cachedTraits;
 }
 
-export function traitItemData(trait, { social = "" } = {}) {
+export function traitItemData(trait, { social = "", parentItemId = "" } = {}) {
   const modifiers = { ...trait.modifiers };
   if (trait.socialChoice?.includes(social)) modifiers[social] = Number(trait.socialValue) || 0;
   return {
@@ -19,6 +19,7 @@ export function traitItemData(trait, { social = "" } = {}) {
       kind: trait.kind,
       category: trait.category ?? "",
       parentTrait: trait.parentTrait ?? "",
+      parentItemId,
       sourceId: trait.sourceId,
       active: true,
       modifiers,
@@ -28,10 +29,11 @@ export function traitItemData(trait, { social = "" } = {}) {
   };
 }
 
-export function groupTraits(traits, ownedSourceIds = new Set(), ownedCounts = new Map()) {
+export function groupTraits(traits, ownedSourceIds = new Set(), ownedCounts = new Map(), parentChoices = new Map()) {
   const categories = new Map();
   for (const trait of traits) {
-    const repeatLimit = repeatLimitForTrait(trait);
+    const parentChoiceList = trait.kind === "subtrait" ? parentChoices.get(trait.parentTrait) ?? [] : [];
+    const repeatLimit = trait.kind === "subtrait" && parentChoiceList.length > 1 ? parentChoiceList.length : repeatLimitForTrait(trait);
     const ownedCount = ownedCounts.get(trait.sourceId) ?? (ownedSourceIds.has(trait.sourceId) ? 1 : 0);
     const owned = ownedCount >= repeatLimit;
     if (!categories.has(trait.category)) categories.set(trait.category, []);
@@ -42,6 +44,7 @@ export function groupTraits(traits, ownedSourceIds = new Set(), ownedCounts = ne
       ownedCount,
       owned,
       repeatable: repeatLimit > 1,
+      parentChoices: parentChoiceList,
       parentMissing: trait.kind === "subtrait" && !ownedSourceIds.has(trait.parentTrait)
     });
   }

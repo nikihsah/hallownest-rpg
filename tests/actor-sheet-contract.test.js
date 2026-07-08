@@ -64,12 +64,15 @@ test("quick trait attacks are exposed through the selected-token HUD", async () 
   const sheet = await readFile(sheetUrl, "utf8");
   const main = await readFile(new URL("../module/main.js", import.meta.url), "utf8");
   const hud = await readFile(new URL("../module/applications/quick-attacks-hud.js", import.meta.url), "utf8");
+  const styles = await readFile(new URL("../styles/system.css", import.meta.url), "utf8");
   assert.doesNotMatch(template, /class="quick-attacks"/);
   assert.doesNotMatch(sheet, /roll-trait-attack/);
   assert.match(main, /registerQuickAttacksHud\(\)/);
   assert.match(hud, /Hooks\.on\("controlToken", refreshQuickAttacksHud\)/);
   assert.match(hud, /quickAttacksFromItems\(actor\.items\)/);
   assert.match(hud, /data-hrpg-tab="attacks"/);
+  assert.match(hud, /HRPG\.InteractionSkills/);
+  assert.doesNotMatch(hud, /HRPG\.DicePoolValue/);
   assert.match(hud, /data-hrpg-tab="stats"/);
   assert.match(hud, /actor\.rollAttribute\(key\)/);
   assert.match(hud, /speed: "HRPG\.Speed"/);
@@ -77,6 +80,8 @@ test("quick trait attacks are exposed through the selected-token HUD", async () 
   assert.match(hud, /dread: "HRPG\.Dread"/);
   assert.match(hud, /actor\.rollSecondary\(key\)/);
   assert.match(hud, /makeDraggable\(hud\)/);
+  assert.doesNotMatch(styles, /writing-mode/);
+  assert.match(styles, /text-overflow: ellipsis/);
 });
 
 test("path sheet hides inventory metadata and selects ranks from one to three", async () => {
@@ -111,12 +116,18 @@ test("paths and traits can be removed from the actor sheet", async () => {
   assert.equal((template.match(/data-action="delete-item"/g) ?? []).length, 2);
   assert.match(sheet, /"delete-item": deleteItemAction/);
   assert.match(sheet, /deleteEmbeddedDocuments\("Item", ids\)/);
+  assert.match(sheet, /candidate\.system\.parentItemId \? candidate\.system\.parentItemId === item\.id : true/);
 });
 
 test("embedded items open even when clicking nested row content", async () => {
+  const template = await readFile(templateUrl, "utf8");
   const sheet = await readFile(sheetUrl, "utf8");
-  assert.match(sheet, /target\.closest\("\[data-item-id\]"\)\?\.dataset\.itemId/);
-  assert.match(sheet, /querySelectorAll\("\[data-action='open-item'\]\[data-item-id\]"\)/);
+  assert.match(template, /data-open-item-id="\{\{trait\.id\}\}"/);
+  assert.match(template, /role="button" tabindex="0"/);
+  assert.match(sheet, /target\.closest\("\[data-open-item-id\]"\)\?\.dataset\.openItemId/);
+  assert.match(sheet, /addEventListener\("click"/);
+  assert.match(sheet, /addEventListener\("keydown"/);
+  assert.match(sheet, /renderDocumentSheet\(actor\.items\.get\(itemId\)\)/);
 });
 
 test("hunger tooltip includes the maximum satiety threshold", async () => {
