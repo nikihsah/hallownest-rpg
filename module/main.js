@@ -4,6 +4,7 @@ import { HallownestItem } from "./documents/item.js";
 import { HallownestActorSheet } from "./sheets/actor-sheet.js";
 import { HallownestItemSheet } from "./sheets/item-sheet.js";
 import { rollDicePool } from "./mechanics/dice-pool.js";
+import { applySizeTemplate } from "./mechanics/size-templates.js";
 import { migrateActorTraits } from "./migrations/actor-traits.js";
 
 Hooks.once("init", () => {
@@ -17,7 +18,7 @@ Hooks.once("init", () => {
   Items.unregisterSheet("core", ItemSheet);
   Items.registerSheet("hallownest-rpg", HallownestItemSheet, { makeDefault: true });
 
-  game.hrpg = { rollDicePool };
+  game.hrpg = { rollDicePool, applySizeTemplate };
 });
 
 Hooks.once("ready", migrateActorTraits);

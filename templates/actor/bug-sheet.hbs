@@ -22,7 +22,7 @@
       <label>{{localize "HRPG.BugType"}}
         <select name="system.secondary.size" data-template-size>{{selectOptions config.sizes selected=system.secondary.size localize=true}}</select>
       </label>
-      <button type="submit" name="_applySizeTemplate" value="1" data-action="apply-size">{{localize "HRPG.ApplySize"}}</button>
+      <button type="button" class="hrpg-apply-size-template">{{localize "HRPG.ApplySize"}}</button>
     </section>
   {{else}}
     <nav class="sheet-tabs tabs" data-group="primary">
