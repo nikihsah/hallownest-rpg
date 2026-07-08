@@ -71,11 +71,29 @@
 .hrpg .path-picker select { min-width: 0; }
 .hrpg .paths-panel .line-item small { color: var(--hrpg-muted, #594f43); }
 .hrpg .path-ranks { display: grid; gap: .5rem; margin: .75rem 0; }
+.hrpg .path-overview { margin-top: .75rem; }
+.hrpg .path-overview textarea { box-sizing: border-box; min-height: 7rem; width: 100%; resize: vertical; }
 .hrpg .path-rank { border: 1px solid #9b8a70; border-radius: 4px; padding: .55rem .7rem; opacity: .62; }
 .hrpg .path-rank.unlocked { border-color: #51402d; background: rgba(91, 69, 43, .08); opacity: 1; }
 .hrpg .path-rank h3 { margin: 0 0 .35rem; }
 .hrpg .path-rank p { margin-bottom: 0; white-space: pre-line; }
 .hrpg .path-abilities { display: flex; flex-wrap: wrap; gap: .3rem .7rem; }
+.trait-catalog .window-content { overflow: hidden; padding: 0; }
+.trait-catalog-controls { padding: .75rem; border-bottom: 1px solid #75644e; }
+.trait-catalog-controls input { width: 100%; }
+.trait-catalog-content { height: 100%; overflow-y: auto; padding: 0 .75rem 1rem; }
+.trait-category > h2 { position: sticky; top: 0; z-index: 2; margin: 0 -.2rem .55rem; padding: .65rem .2rem .35rem; background: var(--color-cool-5-90, #eee8dc); border-bottom: 1px solid #8d795d; }
+.trait-catalog-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+.trait-choice { display: flex; flex-direction: column; gap: .4rem; border: 1px solid #9b8a70; border-radius: 5px; padding: .65rem; background: rgba(255,255,255,.22); }
+.trait-choice header { display: flex; align-items: start; justify-content: space-between; gap: .5rem; }
+.trait-choice h3, .trait-choice p { margin: 0; }
+.trait-choice header span { flex: 0 0 auto; color: #5f3d25; font-weight: 700; }
+.trait-choice p { white-space: normal; }
+.trait-choice details ul { padding-left: 1.2rem; }
+.trait-choice button { margin-top: auto; }
+.trait-choice.owned, .trait-choice.locked { opacity: .62; }
+.trait-cost { padding: .4rem .55rem; border-left: 3px solid #735533; background: rgba(115,85,51,.08); }
+@media (max-width: 650px) { .trait-catalog-grid { grid-template-columns: 1fr; } }
 .hrpg .summary-panel textarea { width: 100%; height: 8rem; margin-top: .5rem; resize: vertical; vertical-align: top; }
 .hrpg .split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
 

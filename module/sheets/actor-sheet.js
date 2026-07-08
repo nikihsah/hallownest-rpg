@@ -3,6 +3,7 @@ import { attributeBreakdown, storedAttributeValue } from "../mechanics/attribute
 import { currentStatValue, statAdjustment } from "../mechanics/stat-adjustments.js";
 import { restActor } from "../mechanics/rest.js";
 import { loadPathCatalog, pathItemData } from "../data/path-catalog.js";
+import { TraitCatalogApplication } from "../applications/trait-catalog.js";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -26,6 +27,7 @@ async function rollAttributeAction(_event, target) {
 
 async function createItemAction(_event, target) {
   const type = target.dataset.type;
+  if (type === "trait") return new TraitCatalogApplication(this.actor).render({ force: true });
   const [created] = await this.actor.createEmbeddedDocuments("Item", [{
     name: game.i18n.localize(CONFIG.HRPG.itemTypes[type]),
     type
@@ -176,6 +178,12 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
         const [sourceLabel, sourceValue, roundingLabel] = derivedFrom[key];
         lines.push(`${game.i18n.localize(sourceLabel)}: ${sourceValue}`);
         lines.push(`${game.i18n.localize(roundingLabel)}: ${permanent}`);
+        if (key === "load") {
+          for (const trait of activeTraits) {
+            const value = Number(trait.system.modifiers?.load) || 0;
+            if (value !== 0) lines.push(`${trait.name}: ${signed(value)}`);
+          }
+        }
       }
       lines.push(`${game.i18n.localize("HRPG.PermanentValue")}: ${permanent}`);
       if (adjustment !== 0) lines.push(`${game.i18n.localize("HRPG.TemporaryAdjustment")}: ${signed(adjustment)}`);

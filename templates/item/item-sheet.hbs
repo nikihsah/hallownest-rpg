@@ -4,8 +4,8 @@
     <div class="header-fields"><input class="name" name="name" type="text" value="{{item.name}}"></div>
   </header>
   <section class="item-properties">
-    {{#unless (eq item.type "trait")}}<label>{{localize "HRPG.Quantity"}} <input name="system.quantity" type="number" value="{{system.quantity}}"></label>{{/unless}}
-    {{#unless (eq item.type "trait")}}<label>{{localize "HRPG.Weight"}} <input name="system.weight" type="number" step="0.1" value="{{system.weight}}"></label>{{/unless}}
+    {{#unless (or (eq item.type "trait") (eq item.type "path"))}}<label>{{localize "HRPG.Quantity"}} <input name="system.quantity" type="number" value="{{system.quantity}}"></label>{{/unless}}
+    {{#unless (or (eq item.type "trait") (eq item.type "path"))}}<label>{{localize "HRPG.Weight"}} <input name="system.weight" type="number" step="0.1" value="{{system.weight}}"></label>{{/unless}}
     {{#if (eq item.type "trait")}}
       <label class="checkbox"><input name="system.active" type="checkbox" {{checked system.active}}> {{localize "HRPG.TraitActive"}}</label>
       <label>{{localize "HRPG.TraitKindLabel"}}
@@ -18,11 +18,16 @@
       <label>HK-Kit ID <input name="system.sourceId" type="text" value="{{system.sourceId}}"></label>
     {{/if}}
     {{#if (eq item.type "path")}}
-      <label>{{localize "HRPG.Rank"}} <input name="system.rank" type="number" min="1" max="{{system.rankMax}}" value="{{system.rank}}"></label>
+      <label>{{localize "HRPG.Rank"}}
+        <select name="system.rank">
+          <option value="1" {{#if (eq system.rank 1)}}selected{{/if}}>1</option>
+          <option value="2" {{#if (eq system.rank 2)}}selected{{/if}}>2</option>
+          <option value="3" {{#if (eq system.rank 3)}}selected{{/if}}>3</option>
+        </select>
+      </label>
       <label>{{localize "HRPG.PathCategory"}}
         <select name="system.category"><option value="martial" {{#if (eq system.category "martial")}}selected{{/if}}>{{localize "HRPG.PathMartial"}}</option><option value="mystic" {{#if (eq system.category "mystic")}}selected{{/if}}>{{localize "HRPG.PathMystic"}}</option></select>
       </label>
-      <label>HK-Kit ID <input name="system.sourceId" type="text" value="{{system.sourceId}}"></label>
     {{/if}}
     {{#if (eq item.type "skill")}}
       <label>{{localize "HRPG.Rank"}} <input name="system.rank" type="number" min="0" value="{{system.rank}}"></label>
@@ -47,9 +52,16 @@
       <label>{{localize "HRPG.Appeal"}} <input name="system.modifiers.appeal" type="number" step="0.5" value="{{system.modifiers.appeal}}"></label>
       <label>{{localize "HRPG.Dread"}} <input name="system.modifiers.dread" type="number" step="0.5" value="{{system.modifiers.dread}}"></label>
       <label>{{localize "HRPG.Marks"}} <input name="system.modifiers.marks" type="number" step="0.5" value="{{system.modifiers.marks}}"></label>
+      <label>{{localize "HRPG.Load"}} <input name="system.modifiers.load" type="number" step="0.5" value="{{system.modifiers.load}}"></label>
     </fieldset>
+    {{#if system.costLabel}}<p class="trait-cost"><strong>{{localize "HRPG.TraitCost"}}:</strong> {{system.costLabel}}</p>{{/if}}
+    {{#if system.rules.length}}<section class="trait-rules"><h2>{{localize "HRPG.TraitRules"}}</h2><ul>{{#each system.rules as |rule|}}<li>{{rule}}</li>{{/each}}</ul></section>{{/if}}
   {{/if}}
   {{#if (eq item.type "path")}}
+    <section class="path-overview">
+      <h2>{{localize "HRPG.PathDescription"}}</h2>
+      <textarea name="system.description" placeholder="{{localize 'HRPG.PathDescriptionHint'}}">{{system.description}}</textarea>
+    </section>
     <section class="path-ranks">
       <h2>{{localize "HRPG.PathRanks"}}</h2>
       {{#each system.ranks as |rank|}}
@@ -61,5 +73,5 @@
       {{/each}}
     </section>
   {{/if}}
-  {{editor system.description target="system.description" button=true owner=owner editable=editable}}
+  {{#unless (eq item.type "path")}}{{editor system.description target="system.description" button=true owner=owner editable=editable}}{{/unless}}
 </form>

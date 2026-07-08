@@ -70,6 +70,8 @@
       "parentTrait": "",
       "sourceId": "",
       "active": true,
+      "costLabel": "",
+      "rules": [],
       "modifiers": {
         "power": 0,
         "insight": 0,
@@ -82,7 +84,8 @@
         "hunger": 0,
         "appeal": 0,
         "dread": 0,
-        "marks": 0
+        "marks": 0,
+        "load": 0
       }
     },
     "path": {

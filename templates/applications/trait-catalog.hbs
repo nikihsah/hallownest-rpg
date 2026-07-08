@@ -1,0 +1,26 @@
+<div class="trait-catalog-controls">
+  <input type="search" data-trait-search placeholder="{{localize 'HRPG.TraitSearch'}}" autocomplete="off">
+</div>
+<div class="trait-catalog-content">
+  {{#each categories as |category|}}
+    <section class="trait-category" data-trait-category="{{category.key}}">
+      <h2>{{localize category.label}}</h2>
+      <div class="trait-catalog-grid">
+        {{#each category.traits as |trait|}}
+          <article class="trait-choice {{#if trait.owned}}owned{{/if}} {{#if trait.parentMissing}}locked{{/if}}" data-trait-id="{{trait.sourceId}}">
+            <header><h3>{{trait.name}}</h3><span>{{trait.costLabel}}</span></header>
+            {{#if (eq trait.kind "subtrait")}}<small>{{localize "HRPG.SubtraitOf"}}: {{trait.parentName}}</small>{{/if}}
+            <p>{{trait.description}}</p>
+            {{#if trait.rules.length}}<details><summary>{{localize "HRPG.TraitRules"}}</summary><ul>{{#each trait.rules as |rule|}}<li>{{rule}}</li>{{/each}}</ul></details>{{/if}}
+            {{#if trait.socialChoice.length}}
+              <label>{{localize "HRPG.SocialBonus"}}<select data-social-choice><option value="dread">{{localize "HRPG.Dread"}}</option><option value="appeal">{{localize "HRPG.Appeal"}}</option></select></label>
+            {{/if}}
+            <button type="button" data-action="add-trait" {{#if trait.owned}}disabled{{/if}} {{#if trait.parentMissing}}disabled{{/if}}>
+              {{#if trait.owned}}{{localize "HRPG.TraitOwned"}}{{else}}{{#if trait.parentMissing}}{{localize "HRPG.TraitParentRequired"}}{{else}}{{localize "HRPG.AddTrait"}}{{/if}}{{/if}}
+            </button>
+          </article>
+        {{/each}}
+      </div>
+    </section>
+  {{/each}}
+</div>

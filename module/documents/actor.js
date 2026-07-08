@@ -9,7 +9,7 @@ export class HallownestActor extends Actor {
     if (this.type !== "bug") return;
 
     const system = this.system;
-    const modifierKeys = ["power", "insight", "shell", "grace", "heart", "stamina", "soul", "speed", "hunger", "appeal", "dread", "marks"];
+    const modifierKeys = ["power", "insight", "shell", "grace", "heart", "stamina", "soul", "speed", "hunger", "appeal", "dread", "marks", "load"];
     const modifiers = Object.fromEntries(modifierKeys.map((key) => [key, 0]));
     for (const trait of this.items.filter((item) => item.type === "trait" && item.system.active !== false)) {
       for (const key of modifierKeys) modifiers[key] += Number(trait.system.modifiers?.[key]) || 0;
@@ -32,7 +32,7 @@ export class HallownestActor extends Actor {
 
     system.effective = { attributes: effectiveAttributes, resources: effectiveResources, secondary: effectiveSecondary, modifiers };
     system.derived = {
-      load: Math.floor(effectiveAttributes.power.value),
+      load: Math.floor(effectiveAttributes.power.value) + modifiers.load,
       beltSize: Math.floor(effectiveAttributes.shell.value),
       techniqueSlots: Math.floor(effectiveAttributes.insight.value),
       maneuver: maneuverFromGrace(effectiveAttributes.grace.value),

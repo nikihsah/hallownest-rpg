@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { pathItemData } from "../module/data/path-catalog.js";
+import { pathItemData, pathOverview } from "../module/data/path-catalog.js";
 
 const catalogUrl = new URL("../data/paths.json", import.meta.url);
 
@@ -25,4 +25,15 @@ test("catalog entry becomes an editable Foundry path item", async () => {
   assert.equal(item.system.rank, 1);
   assert.equal(item.system.rankMax, 3);
   assert.equal(item.system.ranks.length, 3);
+  assert.match(item.system.description, /Хороший удар/);
+  assert.doesNotMatch(item.system.description, /Ранг 1|Военные Пути|^29$/m);
+});
+
+test("every catalog path has a clean standalone description", async () => {
+  const paths = JSON.parse(await readFile(catalogUrl, "utf8"));
+  for (const path of paths) {
+    const description = pathOverview(path);
+    assert.ok(description.length > 30, `${path.name} needs a description`);
+    assert.doesNotMatch(description, /Ранг\s*1|Военные пути|Мистические пути/iu);
+  }
 });
