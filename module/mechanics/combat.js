@@ -9,11 +9,28 @@ export function availableSpeed(permanent, adjustment = 0, spent = 0) {
   return Math.max(0, (Number(permanent) || 0) + (Number(adjustment) || 0) - (Number(spent) || 0));
 }
 
-export const INITIATIVE_FORMULA = "floor(@effective.attributes.grace.value)d6";
+export const INITIATIVE_FORMULA = "1d6";
 
 export function configureInitiative(combatConfig) {
   combatConfig.initiative.formula = INITIATIVE_FORMULA;
   combatConfig.initiative.decimals = 0;
+}
+
+export function initiativeFormulaForActor(actor) {
+  const grace = Math.floor(Number(actor?.system?.effective?.attributes?.grace?.value) || 0);
+  return grace > 0 ? `${grace}d6` : "0";
+}
+
+export function patchBugInitiativeRolls() {
+  if (Combatant.prototype._hrpgInitiativePatched) return;
+  const baseGetInitiativeRoll = Combatant.prototype.getInitiativeRoll;
+  Combatant.prototype.getInitiativeRoll = function getHallownestInitiativeRoll(formula) {
+    if (this.actor?.type === "bug") {
+      return Roll.create(initiativeFormulaForActor(this.actor), this.actor.getRollData?.() ?? {});
+    }
+    return baseGetInitiativeRoll.call(this, formula);
+  };
+  Combatant.prototype._hrpgInitiativePatched = true;
 }
 
 function isPrimaryGM() {
@@ -59,6 +76,7 @@ async function onCombatTurnChange(combat, prior) {
 
 export function registerCombatAutomation() {
   Hooks.once("initializeCombatConfiguration", () => configureInitiative(CONFIG.Combat));
+  Hooks.once("ready", patchBugInitiativeRolls);
   Hooks.on("preUpdateToken", onPreUpdateToken);
   Hooks.on("updateToken", onUpdateToken);
   Hooks.on("combatTurnChange", onCombatTurnChange);

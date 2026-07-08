@@ -11,6 +11,7 @@ export class HallownestItemSheet extends ItemSheet {
 
   async getData(options = {}) {
     const context = await super.getData(options);
+    context.system = context.item.system ?? {};
     context.pathRankOptions = { 1: "1", 2: "2", 3: "3" };
     if (context.item.type === "trait") {
       const modifierLabels = {

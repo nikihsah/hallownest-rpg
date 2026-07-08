@@ -23,11 +23,25 @@ test("actor sheet uses the Foundry V2 application framework", async () => {
   assert.match(source, /HandlebarsApplicationMixin\(ActorSheetV2\)/);
   assert.doesNotMatch(source, /extends ActorSheet\s*\{/);
   assert.match(source, /"apply-size": applySizeAction/);
+  assert.match(source, /window: \{ resizable: true \}/);
 });
 
 test("actor sheet exposes the character milestone selector", async () => {
   const template = await readFile(templateUrl, "utf8");
   assert.match(template, /name="system\.advancement\.milestone"/);
+});
+
+test("actor sheet portrait opens an image picker", async () => {
+  const template = await readFile(templateUrl, "utf8");
+  const sheet = await readFile(sheetUrl, "utf8");
+  const styles = await readFile(new URL("../styles/system.css", import.meta.url), "utf8");
+  assert.match(template, /class="profile-img"/);
+  assert.match(template, /data-action="choose-portrait"/);
+  assert.match(template, /data-actor-portrait role="button" tabindex="0"/);
+  assert.match(sheet, /new FilePicker\(\{/);
+  assert.match(sheet, /type: "image"/);
+  assert.match(sheet, /actor\.update\(\{ img: path \}\)/);
+  assert.match(styles, /\.hrpg \.profile-img \{[^}]*cursor: pointer/s);
 });
 
 test("header exposes heart soul and stamina with temporary hit points", async () => {
@@ -82,6 +96,8 @@ test("quick trait attacks are exposed through the selected-token HUD", async () 
   assert.match(hud, /makeDraggable\(hud\)/);
   assert.doesNotMatch(styles, /writing-mode/);
   assert.match(styles, /text-overflow: ellipsis/);
+  assert.match(styles, /\.hrpg-quick-hud-tabs button \{[^}]*display: block/s);
+  assert.match(styles, /\[data-hrpg-attack-list\] button \{[^}]*gap: \.24rem/s);
 });
 
 test("path sheet hides inventory metadata and selects ranks from one to three", async () => {
@@ -108,12 +124,15 @@ test("trait item sheet is a readable reference page instead of editable fields",
   assert.doesNotMatch(traitBranch, /<select/);
   assert.doesNotMatch(traitBranch, /name="system\./);
   assert.match(itemSheet, /traitModifierRows/);
+  assert.match(itemSheet, /context\.system = context\.item\.system \?\? \{\}/);
 });
 
 test("paths and traits can be removed from the actor sheet", async () => {
   const template = await readFile(templateUrl, "utf8");
   const sheet = await readFile(sheetUrl, "utf8");
   assert.equal((template.match(/data-action="delete-item"/g) ?? []).length, 2);
+  assert.match(template, /&times;/);
+  assert.doesNotMatch(template, /Г—/);
   assert.match(sheet, /"delete-item": deleteItemAction/);
   assert.match(sheet, /deleteEmbeddedDocuments\("Item", ids\)/);
   assert.match(sheet, /candidate\.system\.parentItemId \? candidate\.system\.parentItemId === item\.id : true/);

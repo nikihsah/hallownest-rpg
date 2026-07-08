@@ -111,10 +111,23 @@ async function restAction() {
   ui.notifications.info(game.i18n.format("HRPG.RestComplete", { satiety: result.nextSatiety }));
 }
 
+function choosePortraitAction() {
+  openActorPortraitPicker(this.actor);
+}
+
+function openActorPortraitPicker(actor) {
+  new FilePicker({
+    type: "image",
+    current: actor.img,
+    callback: (path) => actor.update({ img: path })
+  }).render(true);
+}
+
 export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static DEFAULT_OPTIONS = {
     classes: ["hrpg", "sheet", "actor"],
     position: { width: 760, height: 720 },
+    window: { resizable: true },
     form: { closeOnSubmit: false, submitOnChange: true },
     actions: {
       "apply-size": applySizeAction,
@@ -125,7 +138,8 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
       "delete-item": deleteItemAction,
       "select-tab": selectTabAction,
       "roll-secondary": rollSecondaryAction,
-      "rest": restAction
+      "rest": restAction,
+      "choose-portrait": choosePortraitAction
     }
   };
 
@@ -248,6 +262,11 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
 
   async _onRender(context, options) {
     await super._onRender(context, options);
+    this.element.querySelector("[data-actor-portrait]")?.addEventListener("keydown", (event) => {
+      if (!["Enter", " "].includes(event.key)) return;
+      event.preventDefault();
+      openActorPortraitPicker(this.actor);
+    });
     for (const input of this.element.querySelectorAll("[data-current-attribute]")) {
       input.addEventListener("change", async (event) => {
         event.stopPropagation();
