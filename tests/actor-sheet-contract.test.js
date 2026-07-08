@@ -6,8 +6,8 @@ const templateUrl = new URL("../templates/actor/bug-sheet.hbs", import.meta.url)
 
 test("creation screen exposes a stable template selector and apply action", async () => {
   const template = await readFile(templateUrl, "utf8");
-  assert.match(template, /data-template-size/);
-  assert.match(template, /data-action="apply-size"/);
+  assert.match(template, /name="system\.secondary\.size" data-template-size/);
+  assert.match(template, /button type="submit" name="_applySizeTemplate" value="1" data-action="apply-size"/);
 });
 
 test("actor sheet keeps each major area in its own tab", async () => {
