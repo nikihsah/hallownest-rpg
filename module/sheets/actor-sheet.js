@@ -2,7 +2,6 @@ import { applySizeTemplate } from "../mechanics/size-templates.js";
 import { attributeBreakdown, storedAttributeValue } from "../mechanics/attribute-state.js";
 import { currentStatValue, statAdjustment } from "../mechanics/stat-adjustments.js";
 import { restActor } from "../mechanics/rest.js";
-import { quickAttacksFromItems } from "../mechanics/trait-attacks.js";
 import { loadPathCatalog, pathItemData } from "../data/path-catalog.js";
 import { TraitCatalogApplication } from "../applications/trait-catalog.js";
 
@@ -91,10 +90,6 @@ async function rollSecondaryAction(_event, target) {
   await this.actor.rollSecondary(target.dataset.secondary);
 }
 
-async function rollTraitAttackAction(_event, target) {
-  await this.actor.rollTraitAttack(target.dataset.itemId);
-}
-
 async function restAction() {
   const result = await restActor(this.actor);
   ui.notifications.info(game.i18n.format("HRPG.RestComplete", { satiety: result.nextSatiety }));
@@ -114,7 +109,6 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
       "delete-item": deleteItemAction,
       "select-tab": selectTabAction,
       "roll-secondary": rollSecondaryAction,
-      "roll-trait-attack": rollTraitAttackAction,
       "rest": restAction
     }
   };
@@ -139,7 +133,6 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     }));
     context.milestoneTooltip = game.i18n.localize(`HRPG.Milestone${selectedMilestone}`);
     const activeTraits = this.actor.items.filter((item) => item.type === "trait" && item.system.active !== false);
-    context.quickAttacks = quickAttacksFromItems(activeTraits);
     const activePaths = this.actor.items.filter((item) => item.type === "path");
     const templateLabel = game.i18n.format("HRPG.TemplateSource", {
       template: game.i18n.localize(CONFIG.HRPG.sizes[system.secondary.size])

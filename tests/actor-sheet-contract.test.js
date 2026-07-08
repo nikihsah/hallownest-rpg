@@ -30,13 +30,16 @@ test("actor sheet exposes the character milestone selector", async () => {
   assert.match(template, /name="system\.advancement\.milestone"/);
 });
 
-test("actor sheet exposes quick trait attacks near the portrait", async () => {
+test("quick trait attacks are exposed through the selected-token HUD", async () => {
   const template = await readFile(templateUrl, "utf8");
   const sheet = await readFile(sheetUrl, "utf8");
-  assert.match(template, /class="quick-attacks"/);
-  assert.match(template, /data-action="roll-trait-attack"/);
-  assert.match(sheet, /quickAttacksFromItems\(activeTraits\)/);
-  assert.match(sheet, /"roll-trait-attack": rollTraitAttackAction/);
+  const main = await readFile(new URL("../module/main.js", import.meta.url), "utf8");
+  const hud = await readFile(new URL("../module/applications/quick-attacks-hud.js", import.meta.url), "utf8");
+  assert.doesNotMatch(template, /class="quick-attacks"/);
+  assert.doesNotMatch(sheet, /roll-trait-attack/);
+  assert.match(main, /registerQuickAttacksHud\(\)/);
+  assert.match(hud, /Hooks\.on\("controlToken", refreshQuickAttacksHud\)/);
+  assert.match(hud, /quickAttacksFromItems\(actor\.items\)/);
 });
 
 test("path sheet hides inventory metadata and selects ranks from one to three", async () => {

@@ -42,3 +42,11 @@ test("trait catalog template renders as one V2 application root element", async 
   const template = await readFile(new URL("../templates/applications/trait-catalog.hbs", import.meta.url), "utf8");
   assert.match(template.trimStart(), /^<div class="trait-catalog-root">/);
 });
+
+test("trait catalog keeps names readable and long costs inside cards", async () => {
+  const template = await readFile(new URL("../templates/applications/trait-catalog.hbs", import.meta.url), "utf8");
+  const styles = await readFile(new URL("../styles/system.css", import.meta.url), "utf8");
+  assert.match(template, /class="trait-choice-cost"/);
+  assert.match(styles, /\.trait-choice h3 \{[^}]*color: #111415/s);
+  assert.match(styles, /\.trait-choice \.trait-choice-cost \{[^}]*overflow-wrap: anywhere/s);
+});

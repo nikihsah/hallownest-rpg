@@ -8,6 +8,7 @@ import { applySizeTemplate } from "./mechanics/size-templates.js";
 import { migrateActorTraits } from "./migrations/actor-traits.js";
 import { migrateAttributeMaximums } from "./migrations/attribute-maximums.js";
 import { registerCombatAutomation } from "./mechanics/combat.js";
+import { registerQuickAttacksHud } from "./applications/quick-attacks-hud.js";
 
 Hooks.once("init", () => {
   console.info("Hallownest RPG | Initializing");
@@ -15,6 +16,7 @@ Hooks.once("init", () => {
   CONFIG.Actor.documentClass = HallownestActor;
   CONFIG.Item.documentClass = HallownestItem;
   registerCombatAutomation();
+  registerQuickAttacksHud();
 
   Actors.unregisterSheet("core", ActorSheet);
   Actors.registerSheet("hallownest-rpg", HallownestActorSheet, { types: ["bug"], makeDefault: true });
