@@ -4,6 +4,7 @@
     "templates": {
       "creature": {
         "biography": "",
+        "profile": { "summary": "", "notes": "" },
         "attributes": {
           "power": { "value": 3 },
           "insight": { "value": 3 },
@@ -36,7 +37,7 @@
     }
   },
   "Item": {
-    "types": ["weapon", "armor", "trait", "art", "spell", "charm", "gear", "consumable", "condition"],
+    "types": ["weapon", "armor", "trait", "path", "skill", "art", "spell", "charm", "gear", "consumable", "condition"],
     "templates": {
       "base": {
         "description": "",
@@ -72,6 +73,8 @@
         "marks": 0
       }
     },
+    "path": { "templates": ["base"], "rank": 1, "category": "martial" },
+    "skill": { "templates": ["base"], "rank": 1, "mastery": "" },
     "art": { "templates": ["base", "rollable"], "cost": 1 },
     "spell": { "templates": ["base", "rollable"], "cost": 1 },
     "charm": { "templates": ["base"], "notches": 1 },

@@ -1,89 +1,119 @@
 <form class="{{cssClass}}" autocomplete="off">
-  <header class="sheet-header">
+  <header class="sheet-header hk-frame">
     <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}">
     <div class="header-fields">
-      <input class="name" name="name" type="text" value="{{actor.name}}">
+      <input class="name" name="name" type="text" value="{{actor.name}}" placeholder="{{localize 'HRPG.Name'}}">
       {{#if system.creation.templateApplied}}
         <div class="resource-row">
-          <label>{{localize "HRPG.ResourceHeart"}}<span><input name="system.resources.heart.value" type="number" value="{{system.resources.heart.value}}"> / <output>{{system.effective.resources.heart.max}}</output></span></label>
-          <label>{{localize "HRPG.ResourceStamina"}}<span><input name="system.resources.stamina.value" type="number" value="{{system.resources.stamina.value}}"> / <output>{{system.effective.resources.stamina.max}}</output></span></label>
-          <label>{{localize "HRPG.ResourceSoul"}}<span><input name="system.resources.soul.value" type="number" value="{{system.resources.soul.value}}"> / <output>{{system.effective.resources.soul.max}}</output></span></label>
-          <label>{{localize "HRPG.ResourceSatiety"}}<span><input name="system.resources.satiety.value" type="number" value="{{system.resources.satiety.value}}"> / <output>{{system.resources.satiety.max}}</output></span></label>
+          <label>{{localize "HRPG.ResourceHeart"}}<span><input name="system.resources.heart.value" type="number" value="{{system.resources.heart.value}}"><b>/</b><output>{{system.effective.resources.heart.max}}</output></span></label>
+          <label>{{localize "HRPG.ResourceSoul"}}<span><input name="system.resources.soul.value" type="number" value="{{system.resources.soul.value}}"><b>/</b><output>{{system.effective.resources.soul.max}}</output></span></label>
+          <label>{{localize "HRPG.ResourceStamina"}}<span><input name="system.resources.stamina.value" type="number" value="{{system.resources.stamina.value}}"><b>/</b><output>{{system.effective.resources.stamina.max}}</output></span></label>
+          <label>{{localize "HRPG.ResourceSatiety"}}<span><input name="system.resources.satiety.value" type="number" value="{{system.resources.satiety.value}}"><b>/</b><output>{{system.resources.satiety.max}}</output></span></label>
         </div>
       {{/if}}
     </div>
   </header>
 
   {{#unless system.creation.templateApplied}}
-    <section class="creation-gate">
+    <section class="creation-gate hk-frame">
+      <span class="gate-kicker">{{localize "HRPG.CharacterCreation"}}</span>
       <h2>{{localize "HRPG.ChooseBugTemplate"}}</h2>
       <p>{{localize "HRPG.ChooseBugTemplateHint"}}</p>
-      <select name="system.secondary.size">{{selectOptions config.sizes selected=system.secondary.size localize=true}}</select>
+      <label>{{localize "HRPG.BugType"}}
+        <select data-template-size>{{selectOptions config.sizes selected=system.secondary.size localize=true}}</select>
+      </label>
       <button type="button" data-action="apply-size">{{localize "HRPG.ApplySize"}}</button>
     </section>
   {{else}}
-  <nav class="sheet-tabs tabs" data-group="primary">
-    <a class="item" data-tab="attributes">{{localize "HRPG.Attributes"}}</a>
-    <a class="item" data-tab="traits">{{localize "HRPG.Traits"}}</a>
-    <a class="item" data-tab="inventory">{{localize "HRPG.Inventory"}}</a>
-    <a class="item" data-tab="biography">{{localize "HRPG.Biography"}}</a>
-  </nav>
+    <nav class="sheet-tabs tabs" data-group="primary">
+      <a class="item" data-tab="overview">{{localize "HRPG.Overview"}}</a>
+      <a class="item" data-tab="traits">{{localize "HRPG.Traits"}}</a>
+      <a class="item" data-tab="charms">{{localize "HRPG.Charms"}}</a>
+      <a class="item" data-tab="techniques">{{localize "HRPG.Techniques"}}</a>
+      <a class="item" data-tab="skills">{{localize "HRPG.Skills"}}</a>
+      <a class="item" data-tab="inventory">{{localize "HRPG.Inventory"}}</a>
+      <a class="item" data-tab="notes">{{localize "HRPG.Notes"}}</a>
+    </nav>
 
-  <section class="sheet-body">
-    <div class="tab attributes" data-group="primary" data-tab="attributes">
-      <div class="attribute-grid">
-        {{#each attributeRows as |attribute|}}
-          <button type="button" data-action="roll-attribute" data-attribute="{{attribute.key}}">
-            <span>{{localize attribute.label}}</span>
-            <strong>{{attribute.effective}}</strong>
-          </button>
-          <input name="system.attributes.{{attribute.key}}.value" type="number" step="0.5" value="{{attribute.base}}">
+    <section class="sheet-body">
+      <div class="tab overview" data-group="primary" data-tab="overview">
+        <div class="overview-grid">
+          <section class="panel attributes-panel">
+            <h2>{{localize "HRPG.Attributes"}}</h2>
+            <div class="attribute-grid">
+              {{#each attributeRows as |attribute|}}
+                <button type="button" data-action="roll-attribute" data-attribute="{{attribute.key}}">
+                  <span>{{localize attribute.label}}</span><strong>{{attribute.effective}}</strong>
+                </button>
+                <input name="system.attributes.{{attribute.key}}.value" type="number" step="0.5" value="{{attribute.base}}">
+              {{/each}}
+            </div>
+          </section>
+
+          <section class="panel secondary-panel">
+            <div class="panel-heading"><h2>{{localize "HRPG.Secondary"}}</h2><span>{{localize (lookup config.sizes system.secondary.size)}}</span></div>
+            <div class="stat-grid">
+              <label>{{localize "HRPG.Speed"}}<input name="system.secondary.speed" type="number" value="{{system.secondary.speed}}"><output>{{system.effective.secondary.speed}}</output></label>
+              <label>{{localize "HRPG.Hunger"}}<input name="system.secondary.hunger.value" type="number" value="{{system.secondary.hunger.value}}"><output>{{system.effective.secondary.hunger}}</output></label>
+              <label>{{localize "HRPG.Appeal"}}<input name="system.secondary.appeal" type="number" step="0.5" value="{{system.secondary.appeal}}"><output>{{system.effective.secondary.appeal}}</output></label>
+              <label>{{localize "HRPG.Dread"}}<input name="system.secondary.dread" type="number" step="0.5" value="{{system.secondary.dread}}"><output>{{system.effective.secondary.dread}}</output></label>
+              <label>{{localize "HRPG.Marks"}}<input name="system.secondary.marks.value" type="number" value="{{system.secondary.marks.value}}"><output>{{system.effective.secondary.marks}}</output></label>
+              <label>{{localize "HRPG.Load"}}<output>{{system.derived.load}}</output></label>
+              <label>{{localize "HRPG.BeltSize"}}<output>{{system.derived.beltSize}}</output></label>
+              <label>{{localize "HRPG.TechniqueSlots"}}<output>{{system.derived.techniqueSlots}}</output></label>
+            </div>
+          </section>
+
+          <section class="panel paths-panel">
+            <div class="panel-heading"><h2>{{localize "HRPG.Paths"}}</h2><button type="button" data-action="create-item" data-type="path">+</button></div>
+            {{#each itemsByType.path as |path|}}
+              <div class="item-row line-item" data-item-id="{{path.id}}"><img src="{{path.img}}"><span>{{path.name}}</span><b>{{path.system.rank}}</b></div>
+            {{else}}<p class="empty-state">{{localize "HRPG.NoPaths"}}</p>{{/each}}
+          </section>
+
+          <section class="panel summary-panel">
+            <h2>{{localize "HRPG.ShortDescription"}}</h2>
+            <textarea name="system.profile.summary" placeholder="{{localize 'HRPG.ShortDescriptionHint'}}">{{system.profile.summary}}</textarea>
+          </section>
+        </div>
+      </div>
+
+      <div class="tab traits" data-group="primary" data-tab="traits">
+        <section class="panel collection-panel">
+          <div class="panel-heading"><h2>{{localize "HRPG.Traits"}}</h2><button type="button" data-action="create-item" data-type="trait">+</button></div>
+          {{#each itemsByType.trait as |trait|}}
+            <div class="item-row card-item" data-item-id="{{trait.id}}"><img src="{{trait.img}}"><div><strong>{{trait.name}}</strong><small>{{#if (eq trait.system.kind "subtrait")}}{{localize "HRPG.Subtrait"}}{{else}}{{localize "HRPG.Trait"}}{{/if}}</small></div></div>
+          {{else}}<p class="empty-state">{{localize "HRPG.NoTraits"}}</p>{{/each}}
+        </section>
+      </div>
+
+      <div class="tab charms" data-group="primary" data-tab="charms">
+        <section class="panel collection-panel">
+          <div class="panel-heading"><h2>{{localize "HRPG.Charms"}}</h2><button type="button" data-action="create-item" data-type="charm">+</button></div>
+          {{#each itemsByType.charm as |item|}}<div class="item-row card-item" data-item-id="{{item.id}}"><img src="{{item.img}}"><strong>{{item.name}}</strong></div>{{else}}<p class="empty-state">{{localize "HRPG.NoCharms"}}</p>{{/each}}
+        </section>
+      </div>
+
+      <div class="tab techniques" data-group="primary" data-tab="techniques">
+        <div class="split-grid">
+          <section class="panel collection-panel"><div class="panel-heading"><h2>{{localize "HRPG.ItemArt"}}</h2><button type="button" data-action="create-item" data-type="art">+</button></div>{{#each itemsByType.art as |item|}}<div class="item-row line-item" data-item-id="{{item.id}}"><img src="{{item.img}}"><span>{{item.name}}</span></div>{{/each}}</section>
+          <section class="panel collection-panel"><div class="panel-heading"><h2>{{localize "HRPG.ItemSpell"}}</h2><button type="button" data-action="create-item" data-type="spell">+</button></div>{{#each itemsByType.spell as |item|}}<div class="item-row line-item" data-item-id="{{item.id}}"><img src="{{item.img}}"><span>{{item.name}}</span></div>{{/each}}</section>
+        </div>
+      </div>
+
+      <div class="tab skills" data-group="primary" data-tab="skills">
+        <section class="panel collection-panel"><div class="panel-heading"><h2>{{localize "HRPG.Skills"}}</h2><button type="button" data-action="create-item" data-type="skill">+</button></div>{{#each itemsByType.skill as |item|}}<div class="item-row line-item" data-item-id="{{item.id}}"><img src="{{item.img}}"><span>{{item.name}}</span><b>{{item.system.rank}}</b></div>{{else}}<p class="empty-state">{{localize "HRPG.NoSkills"}}</p>{{/each}}</section>
+      </div>
+
+      <div class="tab inventory" data-group="primary" data-tab="inventory">
+        {{#each inventoryItemTypes as |label type|}}
+          <section class="panel item-group"><div class="panel-heading"><h2>{{localize label}}</h2><button type="button" data-action="create-item" data-type="{{type}}">+</button></div>{{#each (lookup ../itemsByType type) as |item|}}<div class="item-row line-item" data-item-id="{{item.id}}"><img src="{{item.img}}"><span>{{item.name}}</span><small>{{item.system.weight}}</small></div>{{/each}}</section>
         {{/each}}
       </div>
-      <div class="derived-grid">
-        <label>{{localize "HRPG.Size"}} <select name="system.secondary.size">{{selectOptions config.sizes selected=system.secondary.size localize=true}}</select></label>
-        <button type="button" data-action="apply-size">{{localize "HRPG.ApplySize"}}</button>
-        <label>{{localize "HRPG.Speed"}} <input name="system.secondary.speed" type="number" value="{{system.secondary.speed}}"><small>{{localize "HRPG.Total"}}: {{system.effective.secondary.speed}}</small></label>
-        <label>{{localize "HRPG.Hunger"}} <span><input name="system.secondary.hunger.value" type="number" value="{{system.secondary.hunger.value}}"> / <input name="system.secondary.hunger.max" type="number" value="{{system.secondary.hunger.max}}"></span><small>{{localize "HRPG.Total"}}: {{system.effective.secondary.hunger}}</small></label>
-        <label>{{localize "HRPG.Appeal"}} <input name="system.secondary.appeal" type="number" step="0.5" value="{{system.secondary.appeal}}"><small>{{localize "HRPG.Total"}}: {{system.effective.secondary.appeal}}</small></label>
-        <label>{{localize "HRPG.Dread"}} <input name="system.secondary.dread" type="number" step="0.5" value="{{system.secondary.dread}}"><small>{{localize "HRPG.Total"}}: {{system.effective.secondary.dread}}</small></label>
-        <label>{{localize "HRPG.SocialBonus"}} <input name="system.secondary.socialBonus" type="number" step="0.5" value="{{system.secondary.socialBonus}}"></label>
-        <label>{{localize "HRPG.Marks"}} <span><input name="system.secondary.marks.value" type="number" value="{{system.secondary.marks.value}}"> / <output>{{system.effective.secondary.marks}}</output></span></label>
-        <label>{{localize "HRPG.Load"}} <output>{{system.derived.load}}</output></label>
-        <label>{{localize "HRPG.CarriedWeight"}} <output>{{system.derived.carriedWeight}}</output></label>
-        <label>{{localize "HRPG.BeltSize"}} <output>{{system.derived.beltSize}}</output></label>
-        <label>{{localize "HRPG.TechniqueSlots"}} <output>{{system.derived.techniqueSlots}}</output></label>
-        <label>{{localize "HRPG.ResourceSupplies"}} <span><input name="system.resources.supplies.value" type="number" value="{{system.resources.supplies.value}}"> / <input name="system.resources.supplies.max" type="number" value="{{system.resources.supplies.max}}"></span></label>
-        <label>{{localize "HRPG.ResourceEssence"}} <span><input name="system.resources.essence.value" type="number" value="{{system.resources.essence.value}}"> / <input name="system.resources.essence.max" type="number" value="{{system.resources.essence.max}}"></span></label>
+
+      <div class="tab notes" data-group="primary" data-tab="notes">
+        <section class="panel notes-panel"><h2>{{localize "HRPG.Notes"}}</h2><textarea name="system.profile.notes">{{system.profile.notes}}</textarea></section>
       </div>
-    </div>
-
-    <div class="tab traits" data-group="primary" data-tab="traits">
-      <header class="section-heading"><h3>{{localize "HRPG.Traits"}}</h3><button type="button" data-action="create-item" data-type="trait">+</button></header>
-      {{#each itemsByType.trait as |trait|}}
-        <article class="trait-card item-row" data-item-id="{{trait.id}}">
-          <img src="{{trait.img}}">
-          <div><strong>{{trait.name}}</strong><small>{{#if (eq trait.system.kind "subtrait")}}{{localize "HRPG.Subtrait"}}{{else}}{{localize "HRPG.Trait"}}{{/if}}</small></div>
-        </article>
-      {{else}}
-        <p class="empty-state">{{localize "HRPG.NoTraits"}}</p>
-      {{/each}}
-    </div>
-
-    <div class="tab inventory" data-group="primary" data-tab="inventory">
-      {{#each inventoryItemTypes as |label type|}}
-        <section class="item-group">
-          <header><h3>{{localize label}}</h3><button type="button" data-action="create-item" data-type="{{type}}">+</button></header>
-          {{#each (lookup ../itemsByType type) as |item|}}
-            <div class="item-row" data-item-id="{{item.id}}"><img src="{{item.img}}"><span>{{item.name}}</span></div>
-          {{/each}}
-        </section>
-      {{/each}}
-    </div>
-
-    <div class="tab biography" data-group="primary" data-tab="biography">
-      {{editor system.biography target="system.biography" button=true owner=owner editable=editable}}
-    </div>
-  </section>
+    </section>
   {{/unless}}
 </form>

@@ -1,10 +1,12 @@
+import { applySizeTemplate } from "../mechanics/size-templates.js";
+
 export class HallownestActorSheet extends ActorSheet {
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ["hrpg", "sheet", "actor"],
       width: 760,
       height: 720,
-      tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "attributes" }]
+      tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "overview" }]
     });
   }
 
@@ -23,7 +25,7 @@ export class HallownestActorSheet extends ActorSheet {
     }));
     context.itemsByType = Object.groupBy(this.actor.items, (item) => item.type);
     context.inventoryItemTypes = Object.fromEntries(
-      Object.entries(CONFIG.HRPG.itemTypes).filter(([type]) => type !== "trait")
+      Object.entries(CONFIG.HRPG.itemTypes).filter(([type]) => !["trait", "path", "skill", "charm", "art", "spell"].includes(type))
     );
     return context;
   }
@@ -43,15 +45,19 @@ export class HallownestActorSheet extends ActorSheet {
     });
     html.find("[data-action='apply-size']").on("click", async (event) => {
       event.preventDefault();
-      const size = html.find("select[name='system.secondary.size']").val();
+      const button = event.currentTarget;
+      const size = html.find("[data-template-size]")?.val?.();
       try {
-        await this.actor.applySizeTemplate(size);
+        button.disabled = true;
+        await applySizeTemplate(this.actor, size);
         ui.notifications.info(game.i18n.format("HRPG.SizeApplied", {
           size: game.i18n.localize(CONFIG.HRPG.sizes[size])
         }));
       } catch (error) {
         console.error("Hallownest RPG | Failed to apply size template", error);
         ui.notifications.error(game.i18n.localize("HRPG.SizeApplyFailed"));
+      } finally {
+        button.disabled = false;
       }
     });
   }

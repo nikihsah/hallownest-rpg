@@ -17,6 +17,16 @@
       <label>{{localize "HRPG.ParentTrait"}} <input name="system.parentTrait" type="text" value="{{system.parentTrait}}"></label>
       <label>HK-Kit ID <input name="system.sourceId" type="text" value="{{system.sourceId}}"></label>
     {{/if}}
+    {{#if (eq item.type "path")}}
+      <label>{{localize "HRPG.Rank"}} <input name="system.rank" type="number" min="0" value="{{system.rank}}"></label>
+      <label>{{localize "HRPG.PathCategory"}}
+        <select name="system.category"><option value="martial" {{#if (eq system.category "martial")}}selected{{/if}}>{{localize "HRPG.PathMartial"}}</option><option value="mystic" {{#if (eq system.category "mystic")}}selected{{/if}}>{{localize "HRPG.PathMystic"}}</option></select>
+      </label>
+    {{/if}}
+    {{#if (eq item.type "skill")}}
+      <label>{{localize "HRPG.Rank"}} <input name="system.rank" type="number" min="0" value="{{system.rank}}"></label>
+      <label>{{localize "HRPG.Mastery"}} <input name="system.mastery" type="text" value="{{system.mastery}}"></label>
+    {{/if}}
     {{#if (eq item.type "weapon")}}<label>{{localize "HRPG.Damage"}} <input name="system.damage" type="number" value="{{system.damage}}"></label>{{/if}}
     {{#if (eq item.type "armor")}}<label>{{localize "HRPG.Protection"}} <input name="system.protection" type="number" value="{{system.protection}}"></label>{{/if}}
     {{#if system.attribute}}<label>{{localize "HRPG.BonusDice"}} <input name="system.bonusDice" type="number" value="{{system.bonusDice}}"></label>{{/if}}

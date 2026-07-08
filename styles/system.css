@@ -1,34 +1,77 @@
-.hrpg { --ink: #e8edf2; --muted: #9aa7b4; --panel: #172029; --accent: #70c8c2; color: var(--ink); background: #10171e; }
-.hrpg input { color: var(--ink); background: #0b1117; border: 1px solid #344452; }
-.hrpg .sheet-header { display: flex; gap: 1rem; padding: 1rem; background: linear-gradient(120deg, #182833, #111a22); }
-.hrpg .profile-img { width: 88px; height: 88px; object-fit: cover; border: 1px solid var(--accent); }
-.hrpg .header-fields { flex: 1; }
-.hrpg .name { width: 100%; font-size: 1.5rem; }
-.hrpg .resource-row, .hrpg .derived-grid, .hrpg .item-properties { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: .75rem; }
-.hrpg .resource-row label { display: grid; gap: .2rem; color: var(--muted); }
-.hrpg .resource-row input { width: 3rem; }
+.hrpg {
+  --paper: #f2eee2;
+  --paper-dark: #ded7c5;
+  --ink: #1d2023;
+  --muted: #6f716d;
+  --line: #34383b;
+  --accent: #315f68;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+.hrpg .window-content { padding: 0; background: var(--paper); }
+.hrpg form { height: 100%; overflow: hidden; }
+.hrpg h2, .hrpg h3 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-weight: 500; }
+.hrpg input, .hrpg select, .hrpg textarea { color: var(--ink); background: rgba(255,255,255,.38); border: 0; border-bottom: 1px solid var(--line); }
+.hrpg input:focus, .hrpg select:focus, .hrpg textarea:focus { box-shadow: 0 0 0 1px var(--accent); }
+.hrpg button { color: var(--ink); background: var(--paper-dark); border: 1px solid var(--line); }
 .hrpg output { color: var(--accent); font-weight: 700; }
-.hrpg .sheet-tabs { display: flex; padding: .4rem 1rem; gap: 1rem; border-block: 1px solid #344452; }
-.hrpg .sheet-tabs .active { color: var(--accent); }
-.hrpg .sheet-body { padding: 1rem; overflow: auto; }
-.hrpg .attribute-grid { display: grid; grid-template-columns: 1fr 4rem 1fr 4rem; gap: .6rem; }
-.hrpg .attribute-grid button { display: flex; justify-content: space-between; color: var(--ink); background: var(--panel); border: 1px solid #344452; }
-.hrpg .attribute-grid button:hover { border-color: var(--accent); }
-.hrpg .derived-grid > label { display: grid; min-width: 8rem; gap: .25rem; color: var(--muted); }
-.hrpg .derived-grid input { width: 4rem; }
-.hrpg .derived-grid small { color: var(--accent); }
-.hrpg .creation-gate { max-width: 30rem; margin: 3rem auto; padding: 1.5rem; text-align: center; background: var(--panel); border: 1px solid #344452; }
-.hrpg .creation-gate select, .hrpg .creation-gate button { width: 100%; margin-top: .75rem; }
+
+.hrpg .hk-frame { border: 2px solid var(--line); box-shadow: inset 0 0 0 3px var(--paper), inset 0 0 0 4px #777; }
+.hrpg .sheet-header { display: flex; gap: 1rem; margin: .65rem; padding: 1rem; background: rgba(255,255,255,.2); }
+.hrpg .profile-img { width: 98px; height: 98px; object-fit: cover; border: 2px solid var(--line); }
+.hrpg .header-fields { flex: 1; min-width: 0; }
+.hrpg .name { width: 100%; height: 2.4rem; font: 2rem Georgia, serif; }
+.hrpg .resource-row, .hrpg .item-properties { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: .65rem; }
+.hrpg .resource-row label { display: grid; gap: .2rem; color: var(--muted); text-transform: uppercase; font-size: .72rem; letter-spacing: .04em; }
+.hrpg .resource-row span { display: flex; align-items: center; gap: .3rem; }
+.hrpg .resource-row input { width: 3.2rem; text-align: center; }
+
+.hrpg .creation-gate { max-width: 31rem; margin: 4rem auto; padding: 2rem; text-align: center; background: rgba(255,255,255,.25); }
+.hrpg .creation-gate h2 { margin: .35rem 0 1rem; font-size: 2rem; }
+.hrpg .creation-gate label { display: grid; gap: .35rem; margin-top: 1.25rem; text-align: left; color: var(--muted); }
+.hrpg .creation-gate select, .hrpg .creation-gate button { width: 100%; height: 2.5rem; margin-top: .75rem; }
+.hrpg .gate-kicker { color: var(--accent); text-transform: uppercase; letter-spacing: .14em; font-size: .72rem; }
+
+.hrpg .sheet-tabs { display: flex; gap: .15rem; padding: 0 .65rem; border-bottom: 2px solid var(--line); overflow-x: auto; }
+.hrpg .sheet-tabs .item { flex: 1 0 auto; padding: .55rem .7rem; text-align: center; border: 1px solid transparent; border-bottom: 0; }
+.hrpg .sheet-tabs .item.active { color: var(--paper); background: var(--line); }
+.hrpg .sheet-body { height: calc(100% - 176px); padding: .75rem; overflow: auto; }
+.hrpg .tab { height: 100%; }
+
+.hrpg .overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+.hrpg .panel { padding: .8rem; border: 1px solid var(--line); background: rgba(255,255,255,.18); }
+.hrpg .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding-bottom: .4rem; border-bottom: 1px solid var(--line); }
+.hrpg .panel-heading > span { color: var(--muted); }
+.hrpg .panel-heading button { width: 2rem; }
+.hrpg .attribute-grid { display: grid; grid-template-columns: 1fr 3.6rem; gap: .5rem; margin-top: .65rem; }
+.hrpg .attribute-grid button { display: flex; justify-content: space-between; padding: .5rem .65rem; background: transparent; }
+.hrpg .attribute-grid button:hover { color: var(--accent); border-color: var(--accent); }
+.hrpg .attribute-grid input { text-align: center; }
+.hrpg .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; margin-top: .65rem; }
+.hrpg .stat-grid label { display: grid; grid-template-columns: 1fr auto; gap: .15rem .35rem; color: var(--muted); font-size: .72rem; }
+.hrpg .stat-grid input { width: 100%; grid-column: 1; text-align: center; }
+.hrpg .stat-grid output { grid-column: 2; grid-row: 2; align-self: center; }
+.hrpg .paths-panel, .hrpg .summary-panel { min-height: 11rem; }
+.hrpg .summary-panel textarea { width: 100%; height: 8rem; margin-top: .5rem; resize: vertical; }
+.hrpg .split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+
+.hrpg .collection-panel, .hrpg .item-group { margin-bottom: .75rem; }
+.hrpg .item-row { display: flex; align-items: center; gap: .55rem; padding: .45rem .2rem; border-bottom: 1px solid #aaa596; cursor: pointer; }
+.hrpg .item-row:hover { background: rgba(49,95,104,.1); }
+.hrpg .item-row img { width: 30px; height: 30px; object-fit: cover; border: 1px solid var(--line); }
+.hrpg .item-row span, .hrpg .item-row div { flex: 1; }
+.hrpg .card-item { min-height: 3rem; }
+.hrpg .card-item div { display: grid; }
+.hrpg .card-item small, .hrpg .line-item small { color: var(--muted); }
+.hrpg .empty-state { color: var(--muted); font-style: italic; }
+.hrpg .notes-panel textarea { width: 100%; height: calc(100% - 2.5rem); margin-top: .6rem; resize: none; line-height: 1.8; background-image: linear-gradient(transparent calc(1.8em - 1px), #c8c1b1 1px); background-size: 100% 1.8em; }
+
 .hrpg .modifier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin: .75rem 0; }
 .hrpg .modifier-grid label { display: grid; gap: .2rem; color: var(--muted); }
-.hrpg .section-heading, .hrpg .trait-heading { display: flex; align-items: center; gap: .5rem; }
-.hrpg .section-heading { justify-content: space-between; }
-.hrpg .trait-card { margin-bottom: .75rem; padding: .6rem; background: var(--panel); border: 1px solid #344452; }
-.hrpg .trait-card > div { display: grid; gap: .2rem; }
-.hrpg .trait-card small { color: var(--muted); }
-.hrpg .empty-state { color: var(--muted); font-style: italic; }
-.hrpg .item-group header, .hrpg .item-row { display: flex; align-items: center; gap: .5rem; }
-.hrpg .item-group header { justify-content: space-between; border-bottom: 1px solid #344452; }
-.hrpg .item-row { padding: .3rem; cursor: pointer; }
-.hrpg .item-row:hover { background: var(--panel); }
-.hrpg .item-row img { width: 28px; height: 28px; }
+.hrpg .item-properties { padding: .5rem; }
+
+@media (max-width: 720px) {
+  .hrpg .overview-grid, .hrpg .split-grid { grid-template-columns: 1fr; }
+  .hrpg .stat-grid { grid-template-columns: repeat(2, 1fr); }
+}
