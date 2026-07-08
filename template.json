@@ -6,10 +6,10 @@
         "biography": "",
         "profile": { "summary": "", "notes": "" },
         "attributes": {
-          "power": { "value": 3 },
-          "insight": { "value": 3 },
-          "shell": { "value": 3 },
-          "grace": { "value": 3 }
+          "power": { "value": 3, "max": 3 },
+          "insight": { "value": 3, "max": 3 },
+          "shell": { "value": 3, "max": 3 },
+          "grace": { "value": 3, "max": 3 }
         },
         "resources": {
           "heart": { "value": 7, "max": 7 },

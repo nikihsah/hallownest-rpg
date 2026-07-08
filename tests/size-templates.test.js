@@ -5,6 +5,7 @@ import { applySizeTemplate, buildSizeTemplateUpdate } from "../module/mechanics/
 test("medium template produces the canonical HK-Kit values", () => {
   const update = buildSizeTemplateUpdate("medium");
   assert.equal(update["system.attributes.power.value"], 3);
+  assert.equal(update["system.attributes.power.max"], 3);
   assert.equal(update["system.attributes.grace.value"], 3);
   assert.equal(update["system.resources.heart.max"], 7);
   assert.equal(update["system.secondary.hunger.value"], 4);

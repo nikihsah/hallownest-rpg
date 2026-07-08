@@ -1,4 +1,5 @@
 import { applySizeTemplate } from "../mechanics/size-templates.js";
+import { storedAttributeValue } from "../mechanics/attribute-state.js";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -68,13 +69,26 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     context.attributeRows = Object.entries(system.attributes).map(([key, attribute]) => ({
       key,
       label: CONFIG.HRPG.attributes[key],
-      base: attribute.value,
-      effective: system.effective?.attributes?.[key]?.value ?? attribute.value
+      current: system.effective?.attributes?.[key]?.value ?? attribute.value,
+      maximum: system.effective?.attributes?.[key]?.max ?? attribute.max ?? attribute.value
     }));
     context.itemsByType = Object.groupBy(this.actor.items, (item) => item.type);
     context.inventoryItemTypes = Object.fromEntries(
       Object.entries(CONFIG.HRPG.itemTypes).filter(([type]) => !["trait", "path", "skill", "charm", "art", "spell"].includes(type))
     );
     return context;
+  }
+
+  async _onRender(context, options) {
+    await super._onRender(context, options);
+    for (const input of this.element.querySelectorAll("[data-current-attribute]")) {
+      input.addEventListener("change", async (event) => {
+        event.stopPropagation();
+        const key = event.currentTarget.dataset.currentAttribute;
+        const modifier = this.actor.system.effective?.modifiers?.[key] ?? 0;
+        const stored = storedAttributeValue(event.currentTarget.value, modifier);
+        await this.actor.update({ [`system.attributes.${key}.value`]: stored });
+      });
+    }
   }
 }

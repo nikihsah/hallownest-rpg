@@ -49,6 +49,8 @@
 .hrpg .attribute-grid button { display: flex; justify-content: space-between; padding: .5rem .65rem; background: transparent; }
 .hrpg .attribute-grid button:hover { color: var(--accent); border-color: var(--accent); }
 .hrpg .attribute-grid input { text-align: center; }
+.hrpg .attribute-grid button strong { min-width: 2rem; padding-left: .5rem; border-left: 1px solid #aaa596; }
+.hrpg .attribute-grid input[data-current-attribute] { font-weight: 700; color: var(--accent); }
 .hrpg .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; margin-top: .65rem; }
 .hrpg .stat-grid label { display: grid; grid-template-columns: 1fr auto; gap: .15rem .35rem; color: var(--muted); font-size: .72rem; }
 .hrpg .stat-grid input { width: 100%; grid-column: 1; text-align: center; }

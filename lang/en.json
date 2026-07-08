@@ -16,6 +16,7 @@
   "HRPG.AttributeShell": "Shell",
   "HRPG.AttributeGrace": "Grace",
   "HRPG.Attributes": "Attributes",
+  "HRPG.CurrentAttribute": "Current attribute value",
   "HRPG.Overview": "Overview",
   "HRPG.Secondary": "Secondary Statistics",
   "HRPG.Paths": "Paths",

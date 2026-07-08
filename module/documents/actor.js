@@ -1,5 +1,6 @@
 import { rollDicePool } from "../mechanics/dice-pool.js";
 import { applySizeTemplate } from "../mechanics/size-templates.js";
+import { calculateAttributeState } from "../mechanics/attribute-state.js";
 
 export class HallownestActor extends Actor {
   prepareDerivedData() {
@@ -13,11 +14,7 @@ export class HallownestActor extends Actor {
       for (const key of modifierKeys) modifiers[key] += Number(trait.system.modifiers?.[key]) || 0;
     }
 
-    const effectiveAttributes = Object.fromEntries(
-      ["power", "insight", "shell", "grace"].map((key) => [key, {
-        value: (Number(system.attributes[key]?.value) || 0) + modifiers[key]
-      }])
-    );
+    const effectiveAttributes = calculateAttributeState(system.attributes, modifiers);
     const effectiveResources = Object.fromEntries(
       ["heart", "stamina", "soul"].map((key) => [key, {
         value: Number(system.resources[key]?.value) || 0,

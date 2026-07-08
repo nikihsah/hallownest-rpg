@@ -11,9 +11,13 @@ export function buildSizeTemplateUpdate(size) {
   const [power, insight, shell, grace] = selected.attributes;
   return {
     "system.attributes.power.value": power,
+    "system.attributes.power.max": power,
     "system.attributes.insight.value": insight,
+    "system.attributes.insight.max": insight,
     "system.attributes.shell.value": shell,
+    "system.attributes.shell.max": shell,
     "system.attributes.grace.value": grace,
+    "system.attributes.grace.max": grace,
     "system.resources.heart.value": selected.heart,
     "system.resources.heart.max": selected.heart,
     "system.resources.stamina.value": 3,

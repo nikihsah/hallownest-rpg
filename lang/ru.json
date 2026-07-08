@@ -16,6 +16,7 @@
   "HRPG.AttributeShell": "Панцирь",
   "HRPG.AttributeGrace": "Грация",
   "HRPG.Attributes": "Характеристики",
+  "HRPG.CurrentAttribute": "Текущее значение характеристики",
   "HRPG.Overview": "Обзор",
   "HRPG.Secondary": "Вторичные параметры",
   "HRPG.Paths": "Пути",

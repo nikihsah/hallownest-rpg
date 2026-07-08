@@ -6,6 +6,7 @@ import { HallownestItemSheet } from "./sheets/item-sheet.js";
 import { rollDicePool } from "./mechanics/dice-pool.js";
 import { applySizeTemplate } from "./mechanics/size-templates.js";
 import { migrateActorTraits } from "./migrations/actor-traits.js";
+import { migrateAttributeMaximums } from "./migrations/attribute-maximums.js";
 
 Hooks.once("init", () => {
   console.info("Hallownest RPG | Initializing");
@@ -22,3 +23,4 @@ Hooks.once("init", () => {
 });
 
 Hooks.once("ready", migrateActorTraits);
+Hooks.once("ready", migrateAttributeMaximums);
