@@ -31,6 +31,8 @@
 .hrpg .resource-row label { display: grid; gap: .2rem; color: var(--muted); text-transform: uppercase; font-size: .72rem; letter-spacing: .04em; }
 .hrpg .resource-row span { display: flex; align-items: center; gap: .3rem; }
 .hrpg .resource-row input { width: 3.2rem; text-align: center; }
+.hrpg .resource-row .core-resource span { gap: .25rem; }
+.hrpg .resource-row .core-resource span input:last-child { border-color: #8f6e38; color: #7a4c18; }
 .hrpg .resource-row .custom-resource { min-width: 7.4rem; }
 .hrpg .resource-row .custom-resource > input { width: 100%; text-align: left; text-transform: none; font-weight: 700; }
 
@@ -63,6 +65,13 @@
 .hrpg .attribute-grid button strong { min-width: 2rem; padding-left: .5rem; border-left: 1px solid #aaa596; }
 .hrpg .attribute-grid input[data-current-attribute] { font-weight: 700; color: var(--accent); }
 .hrpg .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .45rem; margin: auto 0; }
+.hrpg .resource-stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .45rem; margin: .65rem 0 .75rem; }
+.hrpg .resource-stat-card { display: grid; gap: .3rem; min-width: 0; padding: .45rem; border: 1px solid #8f8372; background: rgba(255,255,255,.3); }
+.hrpg .resource-stat-card > span, .hrpg .resource-stat-card > input { min-width: 0; color: #30332f; font-size: .72rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; overflow-wrap: anywhere; }
+.hrpg .resource-stat-card > input { width: 100%; text-transform: none; }
+.hrpg .resource-stat-card label { display: grid; grid-template-columns: minmax(0, 1fr) 2.8rem; align-items: center; gap: .3rem; min-width: 0; color: #30332f; font-size: .68rem; font-weight: 700; line-height: 1.1; }
+.hrpg .resource-stat-card input, .hrpg .resource-stat-card output { width: 100%; text-align: center; }
+.hrpg .resource-stat-card input { color: var(--accent); font-weight: 700; }
 .hrpg .stat-card { display: grid; grid-template-columns: 1fr 2.8rem; gap: .25rem; padding: .4rem; border: 1px solid #aaa596; background: rgba(255,255,255,.25); }
 .hrpg .stat-card > span, .hrpg .stat-card > button { grid-column: 1 / -1; min-width: 0; min-height: 1.65rem; overflow: visible; overflow-wrap: anywhere; hyphens: auto; line-height: 1.15; text-align: left; font-size: .72rem; }
 .hrpg .stat-card > span { color: #30332f; font-weight: 700; text-transform: uppercase; }
@@ -146,5 +155,5 @@
 
 @media (max-width: 720px) {
   .hrpg .overview-grid, .hrpg .split-grid { grid-template-columns: 1fr; }
-  .hrpg .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .hrpg .stat-grid, .hrpg .resource-stat-grid { grid-template-columns: repeat(2, 1fr); }
 }

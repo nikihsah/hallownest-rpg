@@ -47,6 +47,8 @@
   "HRPG.ResourceSupplies": "Припасы",
   "HRPG.ResourceEssence": "Эссенция",
   "HRPG.CustomResource": "Ресурс",
+  "HRPG.ResourceMax": "Макс",
+  "HRPG.TempHitPoints": "Временные хиты",
   "HRPG.Size": "Размер",
   "HRPG.SizeSmall": "Мелкий",
   "HRPG.SizeMedium": "Средний",

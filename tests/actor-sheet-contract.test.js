@@ -30,15 +30,32 @@ test("actor sheet exposes the character milestone selector", async () => {
   assert.match(template, /name="system\.advancement\.milestone"/);
 });
 
-test("actor sheet exposes three editable custom resources in the header", async () => {
+test("header exposes heart soul and stamina with temporary hit points", async () => {
   const template = await readFile(templateUrl, "utf8");
   const schema = await readFile(new URL("../template.json", import.meta.url), "utf8");
+  const header = template.slice(template.indexOf('<header class="sheet-header'), template.indexOf("</header>"));
+  for (const key of ["heart", "soul", "stamina"]) {
+    assert.match(header, new RegExp(`name="system\\.resources\\.${key}\\.value"`));
+    assert.match(header, new RegExp(`system\\.effective\\.resources\\.${key}\\.max`));
+    assert.match(header, new RegExp(`name="system\\.resources\\.${key}\\.temp"`));
+  }
+  assert.match(schema, /"heart": \{ "value": 7, "max": 7, "temp": 0 \}/);
+  assert.match(schema, /"soul": \{ "value": 3, "max": 3, "temp": 0 \}/);
+  assert.match(schema, /"stamina": \{ "value": 3, "max": 3, "temp": 0 \}/);
+});
+
+test("secondary panel exposes three editable custom resources", async () => {
+  const template = await readFile(templateUrl, "utf8");
+  const schema = await readFile(new URL("../template.json", import.meta.url), "utf8");
+  assert.match(template, /class="resource-stat-grid"/);
   for (const key of ["custom1", "custom2", "custom3"]) {
     assert.match(template, new RegExp(`name="system\\.resources\\.${key}\\.label"`));
     assert.match(template, new RegExp(`name="system\\.resources\\.${key}\\.value"`));
     assert.match(template, new RegExp(`name="system\\.resources\\.${key}\\.max"`));
     assert.match(schema, new RegExp(`"${key}": \\{ "label": "", "value": 0, "max": 0 \\}`));
   }
+  const header = template.slice(template.indexOf('<header class="sheet-header'), template.indexOf("</header>"));
+  assert.doesNotMatch(header, /system\.resources\.custom1/);
 });
 
 test("quick trait attacks are exposed through the selected-token HUD", async () => {

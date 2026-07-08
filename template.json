@@ -12,9 +12,9 @@
           "grace": { "value": 3, "max": 3 }
         },
         "resources": {
-          "heart": { "value": 7, "max": 7 },
-          "stamina": { "value": 3, "max": 3 },
-          "soul": { "value": 3, "max": 3 },
+          "heart": { "value": 7, "max": 7, "temp": 0 },
+          "stamina": { "value": 3, "max": 3, "temp": 0 },
+          "soul": { "value": 3, "max": 3, "temp": 0 },
           "satiety": { "value": 0, "max": 10 },
           "supplies": { "value": 0, "max": 0 },
           "essence": { "value": 0, "max": 0 },

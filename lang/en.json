@@ -47,6 +47,8 @@
   "HRPG.ResourceSupplies": "Supplies",
   "HRPG.ResourceEssence": "Essence",
   "HRPG.CustomResource": "Resource",
+  "HRPG.ResourceMax": "Max",
+  "HRPG.TempHitPoints": "Temporary HP",
   "HRPG.Size": "Size",
   "HRPG.SizeSmall": "Small",
   "HRPG.SizeMedium": "Medium",
