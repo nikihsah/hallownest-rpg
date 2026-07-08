@@ -17,6 +17,7 @@ export function traitItemData(trait, { social = "" } = {}) {
     system: {
       description: trait.description,
       kind: trait.kind,
+      category: trait.category ?? "",
       parentTrait: trait.parentTrait ?? "",
       sourceId: trait.sourceId,
       active: true,

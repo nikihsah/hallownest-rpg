@@ -2,6 +2,7 @@ import { rollDicePool } from "../mechanics/dice-pool.js";
 import { applySizeTemplate } from "../mechanics/size-templates.js";
 import { calculateAttributeState } from "../mechanics/attribute-state.js";
 import { maneuverFromGrace } from "../mechanics/stat-adjustments.js";
+import { quickAttackFromTrait } from "../mechanics/trait-attacks.js";
 
 export class HallownestActor extends Actor {
   prepareDerivedData() {
@@ -75,6 +76,23 @@ export class HallownestActor extends Actor {
       - (Number(this.system.combat?.speedSpent) || 0)
     );
     return rollDicePool({ actor: this, dice: Math.floor(value), label: game.i18n.localize("HRPG.Speed") });
+  }
+
+  rollTraitAttack(itemId) {
+    const item = this.items.get(itemId);
+    if (!item) return null;
+    const value = Number(this.system.effective?.attributes?.power?.value) || 0;
+    const damage = quickAttackFromTrait(item)?.damage ?? "";
+    const label = game.i18n.format("HRPG.TraitAttackRoll", {
+      name: item.name,
+      damage: damage ? game.i18n.format("HRPG.DamageValue", { damage }) : game.i18n.localize("HRPG.DamageUnspecified")
+    });
+    return rollDicePool({
+      actor: this,
+      dice: Math.floor(value),
+      reroll: value % 1 >= 0.5,
+      label
+    });
   }
 
   async applySizeTemplate(size) {

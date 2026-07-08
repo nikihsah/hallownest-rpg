@@ -1,6 +1,19 @@
 <form class="{{cssClass}}" autocomplete="off">
   <header class="sheet-header hk-frame">
-    <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}">
+    <div class="portrait-column">
+      <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}">
+      {{#if quickAttacks.length}}
+        <section class="quick-attacks" aria-label="{{localize 'HRPG.QuickAttacks'}}">
+          <h2>{{localize "HRPG.QuickAttacks"}}</h2>
+          {{#each quickAttacks as |attack|}}
+            <button type="button" data-action="roll-trait-attack" data-item-id="{{attack.itemId}}" data-tooltip="{{attack.tooltip}}" data-tooltip-direction="RIGHT">
+              <span>{{attack.name}}</span>
+              {{#if attack.damage}}<small>{{localize "HRPG.DamageShort"}} {{attack.damage}}</small>{{/if}}
+            </button>
+          {{/each}}
+        </section>
+      {{/if}}
+    </div>
     <div class="header-fields">
       <div class="identity-row">
         <input class="name" name="name" type="text" value="{{actor.name}}" placeholder="{{localize 'HRPG.Name'}}">

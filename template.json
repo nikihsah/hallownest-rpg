@@ -67,6 +67,7 @@
     "trait": {
       "templates": ["base"],
       "kind": "trait",
+      "category": "",
       "parentTrait": "",
       "sourceId": "",
       "active": true,
