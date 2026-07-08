@@ -1,0 +1,53 @@
+<form class="{{cssClass}}" autocomplete="off">
+  <header class="sheet-header">
+    <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}">
+    <div class="header-fields">
+      <input class="name" name="name" type="text" value="{{actor.name}}">
+      <div class="resource-row">
+        <label>{{localize "HRPG.ResourceHearts"}}<span><input name="system.resources.hearts.value" type="number" value="{{system.resources.hearts.value}}"> / <input name="system.resources.hearts.max" type="number" value="{{system.resources.hearts.max}}"></span></label>
+        <label>{{localize "HRPG.ResourceStamina"}}<span><input name="system.resources.stamina.value" type="number" value="{{system.resources.stamina.value}}"> / <input name="system.resources.stamina.max" type="number" value="{{system.resources.stamina.max}}"></span></label>
+        <label>{{localize "HRPG.ResourceSoul"}}<span><input name="system.resources.soul.value" type="number" value="{{system.resources.soul.value}}"> / <input name="system.resources.soul.max" type="number" value="{{system.resources.soul.max}}"></span></label>
+      </div>
+    </div>
+  </header>
+
+  <nav class="sheet-tabs tabs" data-group="primary">
+    <a class="item" data-tab="attributes">{{localize "HRPG.Attributes"}}</a>
+    <a class="item" data-tab="inventory">{{localize "HRPG.Inventory"}}</a>
+    <a class="item" data-tab="biography">{{localize "HRPG.Biography"}}</a>
+  </nav>
+
+  <section class="sheet-body">
+    <div class="tab attributes" data-group="primary" data-tab="attributes">
+      <div class="attribute-grid">
+        {{#each system.attributes as |attribute key|}}
+          <button type="button" data-action="roll-attribute" data-attribute="{{key}}">
+            <span>{{localize (lookup ../config.attributes key)}}</span>
+            <strong>{{attribute.value}}</strong>
+          </button>
+          <input name="system.attributes.{{key}}.value" type="number" value="{{attribute.value}}">
+        {{/each}}
+      </div>
+      <div class="derived-grid">
+        <label>{{localize "HRPG.Movement"}} <input name="system.movement.value" type="number" value="{{system.movement.value}}"></label>
+        <label>{{localize "HRPG.Defense"}} <input name="system.defense.value" type="number" value="{{system.defense.value}}"></label>
+        <label>{{localize "HRPG.Load"}} <output>{{system.load}}</output></label>
+      </div>
+    </div>
+
+    <div class="tab inventory" data-group="primary" data-tab="inventory">
+      {{#each config.itemTypes as |label type|}}
+        <section class="item-group">
+          <header><h3>{{localize label}}</h3><button type="button" data-action="create-item" data-type="{{type}}">+</button></header>
+          {{#each (lookup ../itemsByType type) as |item|}}
+            <div class="item-row" data-item-id="{{item.id}}"><img src="{{item.img}}"><span>{{item.name}}</span></div>
+          {{/each}}
+        </section>
+      {{/each}}
+    </div>
+
+    <div class="tab biography" data-group="primary" data-tab="biography">
+      {{editor system.biography target="system.biography" button=true owner=owner editable=editable}}
+    </div>
+  </section>
+</form>

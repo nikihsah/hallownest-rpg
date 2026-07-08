@@ -1,0 +1,44 @@
+{
+  "id": "hallownest-rpg",
+  "title": "Hallownest RPG — Unofficial System",
+  "description": "Независимая неофициальная система для приключений в мире жуков.",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": 13,
+    "verified": 13
+  },
+  "authors": [
+    {
+      "name": "Hallownest RPG contributors"
+    }
+  ],
+  "esmodules": [
+    "module/main.js"
+  ],
+  "styles": [
+    "styles/system.css"
+  ],
+  "languages": [
+    {
+      "lang": "ru",
+      "name": "Русский",
+      "path": "lang/ru.json"
+    }
+  ],
+  "documentTypes": {
+    "Actor": {
+      "bug": {}
+    },
+    "Item": {
+      "weapon": {},
+      "armor": {},
+      "trait": {},
+      "art": {},
+      "spell": {},
+      "charm": {},
+      "gear": {},
+      "consumable": {},
+      "condition": {}
+    }
+  }
+}

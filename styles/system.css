@@ -1,0 +1,20 @@
+.hrpg { --ink: #e8edf2; --muted: #9aa7b4; --panel: #172029; --accent: #70c8c2; color: var(--ink); background: #10171e; }
+.hrpg input { color: var(--ink); background: #0b1117; border: 1px solid #344452; }
+.hrpg .sheet-header { display: flex; gap: 1rem; padding: 1rem; background: linear-gradient(120deg, #182833, #111a22); }
+.hrpg .profile-img { width: 88px; height: 88px; object-fit: cover; border: 1px solid var(--accent); }
+.hrpg .header-fields { flex: 1; }
+.hrpg .name { width: 100%; font-size: 1.5rem; }
+.hrpg .resource-row, .hrpg .derived-grid, .hrpg .item-properties { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: .75rem; }
+.hrpg .resource-row label { display: grid; gap: .2rem; color: var(--muted); }
+.hrpg .resource-row input { width: 3rem; }
+.hrpg .sheet-tabs { display: flex; padding: .4rem 1rem; gap: 1rem; border-block: 1px solid #344452; }
+.hrpg .sheet-tabs .active { color: var(--accent); }
+.hrpg .sheet-body { padding: 1rem; overflow: auto; }
+.hrpg .attribute-grid { display: grid; grid-template-columns: 1fr 4rem 1fr 4rem; gap: .6rem; }
+.hrpg .attribute-grid button { display: flex; justify-content: space-between; color: var(--ink); background: var(--panel); border: 1px solid #344452; }
+.hrpg .attribute-grid button:hover { border-color: var(--accent); }
+.hrpg .item-group header, .hrpg .item-row { display: flex; align-items: center; gap: .5rem; }
+.hrpg .item-group header { justify-content: space-between; border-bottom: 1px solid #344452; }
+.hrpg .item-row { padding: .3rem; cursor: pointer; }
+.hrpg .item-row:hover { background: var(--panel); }
+.hrpg .item-row img { width: 28px; height: 28px; }
