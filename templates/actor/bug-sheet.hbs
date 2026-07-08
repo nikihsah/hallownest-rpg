@@ -3,15 +3,25 @@
     <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}">
     <div class="header-fields">
       <input class="name" name="name" type="text" value="{{actor.name}}">
-      <div class="resource-row">
-        <label>{{localize "HRPG.ResourceHeart"}}<span><input name="system.resources.heart.value" type="number" value="{{system.resources.heart.value}}"> / <input name="system.resources.heart.max" type="number" value="{{system.resources.heart.max}}"></span></label>
-        <label>{{localize "HRPG.ResourceStamina"}}<span><input name="system.resources.stamina.value" type="number" value="{{system.resources.stamina.value}}"> / <input name="system.resources.stamina.max" type="number" value="{{system.resources.stamina.max}}"></span></label>
-        <label>{{localize "HRPG.ResourceSoul"}}<span><input name="system.resources.soul.value" type="number" value="{{system.resources.soul.value}}"> / <input name="system.resources.soul.max" type="number" value="{{system.resources.soul.max}}"></span></label>
-        <label>{{localize "HRPG.ResourceSatiety"}}<span><input name="system.resources.satiety.value" type="number" value="{{system.resources.satiety.value}}"> / <output>{{system.resources.satiety.max}}</output></span></label>
-      </div>
+      {{#if system.creation.templateApplied}}
+        <div class="resource-row">
+          <label>{{localize "HRPG.ResourceHeart"}}<span><input name="system.resources.heart.value" type="number" value="{{system.resources.heart.value}}"> / <output>{{system.effective.resources.heart.max}}</output></span></label>
+          <label>{{localize "HRPG.ResourceStamina"}}<span><input name="system.resources.stamina.value" type="number" value="{{system.resources.stamina.value}}"> / <output>{{system.effective.resources.stamina.max}}</output></span></label>
+          <label>{{localize "HRPG.ResourceSoul"}}<span><input name="system.resources.soul.value" type="number" value="{{system.resources.soul.value}}"> / <output>{{system.effective.resources.soul.max}}</output></span></label>
+          <label>{{localize "HRPG.ResourceSatiety"}}<span><input name="system.resources.satiety.value" type="number" value="{{system.resources.satiety.value}}"> / <output>{{system.resources.satiety.max}}</output></span></label>
+        </div>
+      {{/if}}
     </div>
   </header>
 
+  {{#unless system.creation.templateApplied}}
+    <section class="creation-gate">
+      <h2>{{localize "HRPG.ChooseBugTemplate"}}</h2>
+      <p>{{localize "HRPG.ChooseBugTemplateHint"}}</p>
+      <select name="system.secondary.size">{{selectOptions config.sizes selected=system.secondary.size localize=true}}</select>
+      <button type="button" data-action="apply-size">{{localize "HRPG.ApplySize"}}</button>
+    </section>
+  {{else}}
   <nav class="sheet-tabs tabs" data-group="primary">
     <a class="item" data-tab="attributes">{{localize "HRPG.Attributes"}}</a>
     <a class="item" data-tab="traits">{{localize "HRPG.Traits"}}</a>
@@ -22,23 +32,23 @@
   <section class="sheet-body">
     <div class="tab attributes" data-group="primary" data-tab="attributes">
       <div class="attribute-grid">
-        {{#each system.attributes as |attribute key|}}
-          <button type="button" data-action="roll-attribute" data-attribute="{{key}}">
-            <span>{{localize (lookup ../config.attributes key)}}</span>
-            <strong>{{attribute.value}}</strong>
+        {{#each attributeRows as |attribute|}}
+          <button type="button" data-action="roll-attribute" data-attribute="{{attribute.key}}">
+            <span>{{localize attribute.label}}</span>
+            <strong>{{attribute.effective}}</strong>
           </button>
-          <input name="system.attributes.{{key}}.value" type="number" value="{{attribute.value}}">
+          <input name="system.attributes.{{attribute.key}}.value" type="number" step="0.5" value="{{attribute.base}}">
         {{/each}}
       </div>
       <div class="derived-grid">
         <label>{{localize "HRPG.Size"}} <select name="system.secondary.size">{{selectOptions config.sizes selected=system.secondary.size localize=true}}</select></label>
         <button type="button" data-action="apply-size">{{localize "HRPG.ApplySize"}}</button>
-        <label>{{localize "HRPG.Speed"}} <input name="system.secondary.speed" type="number" value="{{system.secondary.speed}}"></label>
-        <label>{{localize "HRPG.Hunger"}} <span><input name="system.secondary.hunger.value" type="number" value="{{system.secondary.hunger.value}}"> / <input name="system.secondary.hunger.max" type="number" value="{{system.secondary.hunger.max}}"></span></label>
-        <label>{{localize "HRPG.Appeal"}} <input name="system.secondary.appeal" type="number" step="0.5" value="{{system.secondary.appeal}}"></label>
-        <label>{{localize "HRPG.Dread"}} <input name="system.secondary.dread" type="number" step="0.5" value="{{system.secondary.dread}}"></label>
+        <label>{{localize "HRPG.Speed"}} <input name="system.secondary.speed" type="number" value="{{system.secondary.speed}}"><small>{{localize "HRPG.Total"}}: {{system.effective.secondary.speed}}</small></label>
+        <label>{{localize "HRPG.Hunger"}} <span><input name="system.secondary.hunger.value" type="number" value="{{system.secondary.hunger.value}}"> / <input name="system.secondary.hunger.max" type="number" value="{{system.secondary.hunger.max}}"></span><small>{{localize "HRPG.Total"}}: {{system.effective.secondary.hunger}}</small></label>
+        <label>{{localize "HRPG.Appeal"}} <input name="system.secondary.appeal" type="number" step="0.5" value="{{system.secondary.appeal}}"><small>{{localize "HRPG.Total"}}: {{system.effective.secondary.appeal}}</small></label>
+        <label>{{localize "HRPG.Dread"}} <input name="system.secondary.dread" type="number" step="0.5" value="{{system.secondary.dread}}"><small>{{localize "HRPG.Total"}}: {{system.effective.secondary.dread}}</small></label>
         <label>{{localize "HRPG.SocialBonus"}} <input name="system.secondary.socialBonus" type="number" step="0.5" value="{{system.secondary.socialBonus}}"></label>
-        <label>{{localize "HRPG.Marks"}} <span><input name="system.secondary.marks.value" type="number" value="{{system.secondary.marks.value}}"> / <input name="system.secondary.marks.max" type="number" value="{{system.secondary.marks.max}}"></span></label>
+        <label>{{localize "HRPG.Marks"}} <span><input name="system.secondary.marks.value" type="number" value="{{system.secondary.marks.value}}"> / <output>{{system.effective.secondary.marks}}</output></span></label>
         <label>{{localize "HRPG.Load"}} <output>{{system.derived.load}}</output></label>
         <label>{{localize "HRPG.CarriedWeight"}} <output>{{system.derived.carriedWeight}}</output></label>
         <label>{{localize "HRPG.BeltSize"}} <output>{{system.derived.beltSize}}</output></label>
@@ -75,4 +85,5 @@
       {{editor system.biography target="system.biography" button=true owner=owner editable=editable}}
     </div>
   </section>
+  {{/unless}}
 </form>

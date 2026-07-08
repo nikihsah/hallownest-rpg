@@ -27,7 +27,8 @@
           "socialBonus": 1.5,
           "marks": { "value": 3, "max": 3 }
         },
-        "advancement": { "milestone": 0, "pathRank": 0 }
+        "advancement": { "milestone": 0, "pathRank": 0 },
+        "creation": { "templateApplied": false }
       }
     },
     "bug": {
@@ -50,7 +51,27 @@
     },
     "weapon": { "templates": ["base", "rollable"], "damage": 1, "range": 1 },
     "armor": { "templates": ["base"], "protection": 1 },
-    "trait": { "templates": ["base"], "kind": "trait", "parentTrait": "", "sourceId": "" },
+    "trait": {
+      "templates": ["base"],
+      "kind": "trait",
+      "parentTrait": "",
+      "sourceId": "",
+      "active": true,
+      "modifiers": {
+        "power": 0,
+        "insight": 0,
+        "shell": 0,
+        "grace": 0,
+        "heart": 0,
+        "stamina": 0,
+        "soul": 0,
+        "speed": 0,
+        "hunger": 0,
+        "appeal": 0,
+        "dread": 0,
+        "marks": 0
+      }
+    },
     "art": { "templates": ["base", "rollable"], "cost": 1 },
     "spell": { "templates": ["base", "rollable"], "cost": 1 },
     "charm": { "templates": ["base"], "notches": 1 },

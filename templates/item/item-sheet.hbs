@@ -7,6 +7,7 @@
     {{#unless (eq item.type "trait")}}<label>{{localize "HRPG.Quantity"}} <input name="system.quantity" type="number" value="{{system.quantity}}"></label>{{/unless}}
     {{#unless (eq item.type "trait")}}<label>{{localize "HRPG.Weight"}} <input name="system.weight" type="number" step="0.1" value="{{system.weight}}"></label>{{/unless}}
     {{#if (eq item.type "trait")}}
+      <label class="checkbox"><input name="system.active" type="checkbox" {{checked system.active}}> {{localize "HRPG.TraitActive"}}</label>
       <label>{{localize "HRPG.TraitKindLabel"}}
         <select name="system.kind">
           <option value="trait" {{#if (eq system.kind "trait")}}selected{{/if}}>{{localize "HRPG.Trait"}}</option>
@@ -20,5 +21,22 @@
     {{#if (eq item.type "armor")}}<label>{{localize "HRPG.Protection"}} <input name="system.protection" type="number" value="{{system.protection}}"></label>{{/if}}
     {{#if system.attribute}}<label>{{localize "HRPG.BonusDice"}} <input name="system.bonusDice" type="number" value="{{system.bonusDice}}"></label>{{/if}}
   </section>
+  {{#if (eq item.type "trait")}}
+    <fieldset class="modifier-grid">
+      <legend>{{localize "HRPG.TraitModifiers"}}</legend>
+      <label>{{localize "HRPG.AttributePower"}} <input name="system.modifiers.power" type="number" step="0.5" value="{{system.modifiers.power}}"></label>
+      <label>{{localize "HRPG.AttributeInsight"}} <input name="system.modifiers.insight" type="number" step="0.5" value="{{system.modifiers.insight}}"></label>
+      <label>{{localize "HRPG.AttributeShell"}} <input name="system.modifiers.shell" type="number" step="0.5" value="{{system.modifiers.shell}}"></label>
+      <label>{{localize "HRPG.AttributeGrace"}} <input name="system.modifiers.grace" type="number" step="0.5" value="{{system.modifiers.grace}}"></label>
+      <label>{{localize "HRPG.ResourceHeart"}} <input name="system.modifiers.heart" type="number" step="0.5" value="{{system.modifiers.heart}}"></label>
+      <label>{{localize "HRPG.ResourceStamina"}} <input name="system.modifiers.stamina" type="number" step="0.5" value="{{system.modifiers.stamina}}"></label>
+      <label>{{localize "HRPG.ResourceSoul"}} <input name="system.modifiers.soul" type="number" step="0.5" value="{{system.modifiers.soul}}"></label>
+      <label>{{localize "HRPG.Speed"}} <input name="system.modifiers.speed" type="number" step="0.5" value="{{system.modifiers.speed}}"></label>
+      <label>{{localize "HRPG.Hunger"}} <input name="system.modifiers.hunger" type="number" step="0.5" value="{{system.modifiers.hunger}}"></label>
+      <label>{{localize "HRPG.Appeal"}} <input name="system.modifiers.appeal" type="number" step="0.5" value="{{system.modifiers.appeal}}"></label>
+      <label>{{localize "HRPG.Dread"}} <input name="system.modifiers.dread" type="number" step="0.5" value="{{system.modifiers.dread}}"></label>
+      <label>{{localize "HRPG.Marks"}} <input name="system.modifiers.marks" type="number" step="0.5" value="{{system.modifiers.marks}}"></label>
+    </fieldset>
+  {{/if}}
   {{editor system.description target="system.description" button=true owner=owner editable=editable}}
 </form>

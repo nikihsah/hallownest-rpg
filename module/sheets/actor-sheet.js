@@ -15,6 +15,12 @@ export class HallownestActorSheet extends ActorSheet {
   async getData(options = {}) {
     const context = await super.getData(options);
     context.config = CONFIG.HRPG;
+    context.attributeRows = Object.entries(this.actor.system.attributes).map(([key, attribute]) => ({
+      key,
+      label: CONFIG.HRPG.attributes[key],
+      base: attribute.value,
+      effective: this.actor.system.effective?.attributes?.[key]?.value ?? attribute.value
+    }));
     context.itemsByType = Object.groupBy(this.actor.items, (item) => item.type);
     context.inventoryItemTypes = Object.fromEntries(
       Object.entries(CONFIG.HRPG.itemTypes).filter(([type]) => type !== "trait")
