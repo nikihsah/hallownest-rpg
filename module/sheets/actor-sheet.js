@@ -224,6 +224,7 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
       lines.push(`${game.i18n.localize("HRPG.PermanentValue")}: ${permanent}`);
       if (adjustment !== 0) lines.push(`${game.i18n.localize("HRPG.TemporaryAdjustment")}: ${signed(adjustment)}`);
       if (key === "speed" && speedSpent !== 0) lines.push(`${game.i18n.localize("HRPG.SpeedSpent")}: -${speedSpent}`);
+      if (key === "hunger") lines.push(`${game.i18n.localize("HRPG.SatietyThreshold")}: ${system.resources.satiety.max}`);
       lines.push(`${game.i18n.localize("HRPG.CurrentValue")}: ${current}`);
       return { key, label: labels[key], permanent, current, tooltip: lines.join("\n"), rollable: key === "speed" };
     });
@@ -250,6 +251,12 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
         if (!Number.isFinite(current)) return;
         const spent = key === "speed" ? Number(this.actor.system.combat?.speedSpent) || 0 : 0;
         await this.actor.update({ [`system.adjustments.${key}`]: statAdjustment(current + spent, permanent) });
+      });
+    }
+    for (const row of this.element.querySelectorAll("[data-action='open-item'][data-item-id]")) {
+      row.addEventListener("click", (event) => {
+        if (event.target.closest("[data-action='delete-item']")) return;
+        this.actor.items.get(row.dataset.itemId)?.sheet.render(true);
       });
     }
   }

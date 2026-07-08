@@ -8,8 +8,9 @@
         <h2>{{localize category.label}}</h2>
         <div class="trait-catalog-grid">
           {{#each category.traits as |trait|}}
-            <article class="trait-choice {{#if trait.owned}}owned{{/if}} {{#if trait.parentMissing}}locked{{/if}}" data-trait-id="{{trait.sourceId}}">
+            <article class="trait-choice {{#if trait.owned}}owned{{/if}} {{#if trait.parentMissing}}locked{{/if}}" data-trait-id="{{trait.sourceId}}" data-repeat-limit="{{trait.repeatLimit}}">
               <header><h3>{{trait.name}}</h3>{{#if trait.costLabel}}<span class="trait-choice-cost">{{trait.costLabel}}</span>{{/if}}</header>
+              {{#if trait.repeatable}}<small>{{localize "HRPG.TraitRepeat"}}: {{trait.ownedCount}}/{{trait.repeatLimitLabel}}</small>{{/if}}
               {{#if (eq trait.kind "subtrait")}}<small>{{localize "HRPG.SubtraitOf"}}: {{trait.parentName}}</small>{{/if}}
               <p>{{trait.description}}</p>
               {{#if trait.rules.length}}<details><summary>{{localize "HRPG.TraitRules"}}</summary><ul>{{#each trait.rules as |rule|}}<li>{{rule}}</li>{{/each}}</ul></details>{{/if}}

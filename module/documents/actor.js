@@ -69,13 +69,15 @@ export class HallownestActor extends Actor {
   }
 
   rollSecondary(secondaryKey) {
-    if (secondaryKey !== "speed") return null;
+    const labels = { speed: "HRPG.Speed", appeal: "HRPG.Appeal", dread: "HRPG.Dread" };
+    if (!(secondaryKey in labels)) return null;
+    const speedPenalty = secondaryKey === "speed" ? Number(this.system.combat?.speedSpent) || 0 : 0;
     const value = Math.max(0,
-      (Number(this.system.effective.secondary.speed) || 0)
-      + (Number(this.system.adjustments?.speed) || 0)
-      - (Number(this.system.combat?.speedSpent) || 0)
+      (Number(this.system.effective.secondary[secondaryKey]) || 0)
+      + (Number(this.system.adjustments?.[secondaryKey]) || 0)
+      - speedPenalty
     );
-    return rollDicePool({ actor: this, dice: Math.floor(value), label: game.i18n.localize("HRPG.Speed") });
+    return rollDicePool({ actor: this, dice: Math.floor(value), label: game.i18n.localize(labels[secondaryKey]) });
   }
 
   rollTraitAttack(itemId) {

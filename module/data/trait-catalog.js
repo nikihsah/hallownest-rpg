@@ -28,15 +28,30 @@ export function traitItemData(trait, { social = "" } = {}) {
   };
 }
 
-export function groupTraits(traits, ownedSourceIds = new Set()) {
+export function groupTraits(traits, ownedSourceIds = new Set(), ownedCounts = new Map()) {
   const categories = new Map();
   for (const trait of traits) {
+    const repeatLimit = repeatLimitForTrait(trait);
+    const ownedCount = ownedCounts.get(trait.sourceId) ?? (ownedSourceIds.has(trait.sourceId) ? 1 : 0);
+    const owned = ownedCount >= repeatLimit;
     if (!categories.has(trait.category)) categories.set(trait.category, []);
     categories.get(trait.category).push({
       ...trait,
-      owned: ownedSourceIds.has(trait.sourceId),
+      repeatLimit,
+      repeatLimitLabel: repeatLimit >= 99 ? "∞" : `${repeatLimit}`,
+      ownedCount,
+      owned,
+      repeatable: repeatLimit > 1,
       parentMissing: trait.kind === "subtrait" && !ownedSourceIds.has(trait.parentTrait)
     });
   }
   return Array.from(categories, ([key, entries]) => ({ key, label: `HRPG.TraitCategory.${key}`, traits: entries }));
+}
+
+export function repeatLimitForTrait(trait) {
+  const text = `${trait?.description ?? ""} ${(trait?.rules ?? []).join(" ")}`;
+  if (/до\s+тр[её]х\s+раз|до\s+3\s+раз/iu.test(text)) return 3;
+  if (/дважды|два\s+раза|до\s+2\s+раз/iu.test(text)) return 2;
+  if (/несколько\s+раз|может\s+быть\s+взята\s+несколько\s+раз|можно\s+взять\s+несколько\s+раз/iu.test(text)) return 99;
+  return 1;
 }

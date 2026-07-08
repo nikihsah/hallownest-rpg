@@ -69,6 +69,14 @@ test("quick trait attacks are exposed through the selected-token HUD", async () 
   assert.match(main, /registerQuickAttacksHud\(\)/);
   assert.match(hud, /Hooks\.on\("controlToken", refreshQuickAttacksHud\)/);
   assert.match(hud, /quickAttacksFromItems\(actor\.items\)/);
+  assert.match(hud, /data-hrpg-tab="attacks"/);
+  assert.match(hud, /data-hrpg-tab="stats"/);
+  assert.match(hud, /actor\.rollAttribute\(key\)/);
+  assert.match(hud, /speed: "HRPG\.Speed"/);
+  assert.match(hud, /appeal: "HRPG\.Appeal"/);
+  assert.match(hud, /dread: "HRPG\.Dread"/);
+  assert.match(hud, /actor\.rollSecondary\(key\)/);
+  assert.match(hud, /makeDraggable\(hud\)/);
 });
 
 test("path sheet hides inventory metadata and selects ranks from one to three", async () => {
@@ -108,4 +116,12 @@ test("paths and traits can be removed from the actor sheet", async () => {
 test("embedded items open even when clicking nested row content", async () => {
   const sheet = await readFile(sheetUrl, "utf8");
   assert.match(sheet, /target\.closest\("\[data-item-id\]"\)\?\.dataset\.itemId/);
+  assert.match(sheet, /querySelectorAll\("\[data-action='open-item'\]\[data-item-id\]"\)/);
+});
+
+test("hunger tooltip includes the maximum satiety threshold", async () => {
+  const sheet = await readFile(sheetUrl, "utf8");
+  assert.match(sheet, /key === "hunger"/);
+  assert.match(sheet, /HRPG\.SatietyThreshold/);
+  assert.match(sheet, /system\.resources\.satiety\.max/);
 });

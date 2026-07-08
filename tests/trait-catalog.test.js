@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { groupTraits, traitItemData } from "../module/data/trait-catalog.js";
+import { groupTraits, repeatLimitForTrait, traitItemData } from "../module/data/trait-catalog.js";
 
 const catalogUrl = new URL("../data/traits.json", import.meta.url);
 
@@ -38,6 +38,23 @@ test("subtraits are locked until their parent is owned", async () => {
   assert.equal(ownedGroups.flatMap((group) => group.traits).find((trait) => trait.sourceId === hugeJaws.sourceId).parentMissing, false);
 });
 
+test("repeatable traits remain available until their limit", async () => {
+  const traits = JSON.parse(await readFile(catalogUrl, "utf8"));
+  const hauler = traits.find((trait) => trait.sourceId === "traits.zhuk-tyagach");
+  const awkward = traits.find((trait) => trait.sourceId === "traits.neuklyuzhiy");
+  const projectile = traits.find((trait) => trait.sourceId === "traits.natural-projectile");
+  assert.equal(repeatLimitForTrait(hauler), 3);
+  assert.equal(repeatLimitForTrait(awkward), 2);
+  assert.equal(repeatLimitForTrait(projectile), 99);
+
+  const once = groupTraits([hauler], new Set([hauler.sourceId]), new Map([[hauler.sourceId, 1]])).flatMap((group) => group.traits)[0];
+  const capped = groupTraits([hauler], new Set([hauler.sourceId]), new Map([[hauler.sourceId, 3]])).flatMap((group) => group.traits)[0];
+  assert.equal(once.owned, false);
+  assert.equal(once.repeatable, true);
+  assert.equal(once.repeatLimitLabel, "3");
+  assert.equal(capped.owned, true);
+});
+
 test("trait catalog template renders as one V2 application root element", async () => {
   const template = await readFile(new URL("../templates/applications/trait-catalog.hbs", import.meta.url), "utf8");
   assert.match(template.trimStart(), /^<div class="trait-catalog-root">/);
@@ -47,6 +64,7 @@ test("trait catalog keeps names readable and long costs inside cards", async () 
   const template = await readFile(new URL("../templates/applications/trait-catalog.hbs", import.meta.url), "utf8");
   const styles = await readFile(new URL("../styles/system.css", import.meta.url), "utf8");
   assert.match(template, /class="trait-choice-cost"/);
+  assert.match(template, /trait\.repeatLimitLabel/);
   assert.match(styles, /\.trait-choice h3 \{[^}]*color: #111415/s);
   assert.match(styles, /\.trait-choice \.trait-choice-cost \{[^}]*overflow-wrap: anywhere/s);
 });

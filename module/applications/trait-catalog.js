@@ -7,8 +7,11 @@ async function addTraitAction(_event, target) {
   const sourceId = card?.dataset.traitId;
   const trait = (await loadTraitCatalog()).find((entry) => entry.sourceId === sourceId);
   if (!trait) return ui.notifications.error(game.i18n.localize("HRPG.TraitNotFound"));
-  const ownedIds = new Set(this.actor.items.filter((item) => item.type === "trait").map((item) => item.system.sourceId));
-  if (ownedIds.has(sourceId)) return ui.notifications.warn(game.i18n.localize("HRPG.TraitAlreadyAdded"));
+  const ownedTraits = this.actor.items.filter((item) => item.type === "trait");
+  const ownedIds = new Set(ownedTraits.map((item) => item.system.sourceId));
+  const ownedCount = ownedTraits.filter((item) => item.system.sourceId === sourceId).length;
+  const repeatLimit = Number(card?.dataset.repeatLimit) || 1;
+  if (ownedCount >= repeatLimit) return ui.notifications.warn(game.i18n.localize("HRPG.TraitAlreadyAdded"));
   if (trait.kind === "subtrait" && !ownedIds.has(trait.parentTrait)) {
     return ui.notifications.warn(game.i18n.localize("HRPG.TraitParentRequired"));
   }
@@ -38,8 +41,11 @@ export class TraitCatalogApplication extends HandlebarsApplicationMixin(Applicat
 
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
-    const ownedIds = new Set(this.actor.items.filter((item) => item.type === "trait").map((item) => item.system.sourceId));
-    context.categories = groupTraits(await loadTraitCatalog(), ownedIds);
+    const ownedTraits = this.actor.items.filter((item) => item.type === "trait");
+    const ownedIds = new Set(ownedTraits.map((item) => item.system.sourceId));
+    const ownedCounts = new Map();
+    for (const trait of ownedTraits) ownedCounts.set(trait.system.sourceId, (ownedCounts.get(trait.system.sourceId) ?? 0) + 1);
+    context.categories = groupTraits(await loadTraitCatalog(), ownedIds, ownedCounts);
     return context;
   }
 
