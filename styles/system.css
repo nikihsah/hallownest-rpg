@@ -7,12 +7,21 @@
 .hrpg .resource-row, .hrpg .derived-grid, .hrpg .item-properties { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: .75rem; }
 .hrpg .resource-row label { display: grid; gap: .2rem; color: var(--muted); }
 .hrpg .resource-row input { width: 3rem; }
+.hrpg output { color: var(--accent); font-weight: 700; }
 .hrpg .sheet-tabs { display: flex; padding: .4rem 1rem; gap: 1rem; border-block: 1px solid #344452; }
 .hrpg .sheet-tabs .active { color: var(--accent); }
 .hrpg .sheet-body { padding: 1rem; overflow: auto; }
 .hrpg .attribute-grid { display: grid; grid-template-columns: 1fr 4rem 1fr 4rem; gap: .6rem; }
 .hrpg .attribute-grid button { display: flex; justify-content: space-between; color: var(--ink); background: var(--panel); border: 1px solid #344452; }
 .hrpg .attribute-grid button:hover { border-color: var(--accent); }
+.hrpg .derived-grid > label { display: grid; min-width: 8rem; gap: .25rem; color: var(--muted); }
+.hrpg .derived-grid input { width: 4rem; }
+.hrpg .section-heading, .hrpg .trait-heading { display: flex; align-items: center; gap: .5rem; }
+.hrpg .section-heading { justify-content: space-between; }
+.hrpg .trait-card { margin-bottom: .75rem; padding: .6rem; background: var(--panel); border: 1px solid #344452; }
+.hrpg .trait-heading input { flex: 1; }
+.hrpg .trait-card textarea { width: 100%; min-height: 5rem; margin-top: .5rem; color: var(--ink); background: #0b1117; }
+.hrpg .empty-state { color: var(--muted); font-style: italic; }
 .hrpg .item-group header, .hrpg .item-row { display: flex; align-items: center; gap: .5rem; }
 .hrpg .item-group header { justify-content: space-between; border-bottom: 1px solid #344452; }
 .hrpg .item-row { padding: .3rem; cursor: pointer; }
