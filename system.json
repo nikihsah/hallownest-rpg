@@ -12,6 +12,8 @@
       "name": "Hallownest RPG contributors"
     }
   ],
+  "manifest": "https://raw.githubusercontent.com/nikihsah/hallownest-rpg/main/system.json",
+  "download": "https://github.com/nikihsah/hallownest-rpg/archive/refs/heads/main.zip",
   "esmodules": [
     "module/main.js"
   ],

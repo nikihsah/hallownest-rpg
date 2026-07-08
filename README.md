@@ -12,7 +12,17 @@
 - предметы нескольких категорий;
 - русскую локализацию и первоначальное оформление.
 
-## Установка для разработки
+## Установка
+
+В Foundry VTT откройте **Setup → Game Systems → Install System**, вставьте ссылку в поле **Manifest URL** и нажмите **Install**:
+
+```text
+https://raw.githubusercontent.com/nikihsah/hallownest-rpg/main/system.json
+```
+
+После установки создайте новый мир и выберите систему **Hallownest RPG — Unofficial System**.
+
+### Ручная установка для разработки
 
 Разместите репозиторий в `FoundryVTT/Data/systems/hallownest-rpg`, перезапустите Foundry и создайте мир на системе **Hallownest RPG — Unofficial System**.
 
