@@ -31,8 +31,12 @@
 .hrpg .resource-row label { display: grid; gap: .2rem; color: var(--muted); text-transform: uppercase; font-size: .72rem; letter-spacing: .04em; }
 .hrpg .resource-row span { display: flex; align-items: center; gap: .3rem; }
 .hrpg .resource-row input { width: 3.2rem; text-align: center; }
-.hrpg .resource-row .core-resource span { gap: .25rem; }
-.hrpg .resource-row .core-resource span input:last-child { border-color: #8f6e38; color: #7a4c18; }
+.hrpg .core-resource-table { display: grid; grid-template-columns: repeat(3, 3.15rem); gap: .25rem; padding: .45rem; border: 1px solid #8f8372; background: linear-gradient(180deg, rgba(255,255,255,.36), rgba(222,215,197,.28)); }
+.hrpg .core-resource-table h2 { grid-column: 1 / -1; color: #17191a; font-size: .8rem; font-weight: 800; text-align: center; text-transform: uppercase; letter-spacing: .05em; }
+.hrpg .core-resource-table label { display: grid; gap: .12rem; min-width: 0; color: #30332f; font-size: .62rem; font-weight: 800; text-align: center; }
+.hrpg .core-resource-table input, .hrpg .core-resource-table output { width: 100%; min-height: 1.65rem; box-sizing: border-box; text-align: center; }
+.hrpg .core-resource-table input { color: var(--accent); font-weight: 800; }
+.hrpg .core-resource-table label:last-child input { border-color: #8f6e38; color: #7a4c18; }
 .hrpg .resource-row .custom-resource { min-width: 7.4rem; }
 .hrpg .resource-row .custom-resource > input { width: 100%; text-align: left; text-transform: none; font-weight: 700; }
 

@@ -34,6 +34,7 @@ test("header exposes heart soul and stamina with temporary hit points", async ()
   const template = await readFile(templateUrl, "utf8");
   const schema = await readFile(new URL("../template.json", import.meta.url), "utf8");
   const header = template.slice(template.indexOf('<header class="sheet-header'), template.indexOf("</header>"));
+  assert.match(header, /class="core-resource-table"/);
   for (const key of ["heart", "soul", "stamina"]) {
     assert.match(header, new RegExp(`name="system\\.resources\\.${key}\\.value"`));
     assert.match(header, new RegExp(`system\\.effective\\.resources\\.${key}\\.max`));

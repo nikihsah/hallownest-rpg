@@ -15,9 +15,24 @@
       </div>
       {{#if system.creation.templateApplied}}
         <div class="resource-row">
-          <label class="core-resource">{{localize "HRPG.ResourceHeart"}}<span><input name="system.resources.heart.value" type="number" value="{{system.resources.heart.value}}" title="{{localize 'HRPG.CurrentValue'}}"><b>/</b><output title="{{localize 'HRPG.ResourceMax'}}">{{system.effective.resources.heart.max}}</output><input name="system.resources.heart.temp" type="number" value="{{system.resources.heart.temp}}" title="{{localize 'HRPG.TempHitPoints'}}"></span></label>
-          <label class="core-resource">{{localize "HRPG.ResourceSoul"}}<span><input name="system.resources.soul.value" type="number" value="{{system.resources.soul.value}}" title="{{localize 'HRPG.CurrentValue'}}"><b>/</b><output title="{{localize 'HRPG.ResourceMax'}}">{{system.effective.resources.soul.max}}</output><input name="system.resources.soul.temp" type="number" value="{{system.resources.soul.temp}}" title="{{localize 'HRPG.TempHitPoints'}}"></span></label>
-          <label class="core-resource">{{localize "HRPG.ResourceStamina"}}<span><input name="system.resources.stamina.value" type="number" value="{{system.resources.stamina.value}}" title="{{localize 'HRPG.CurrentValue'}}"><b>/</b><output title="{{localize 'HRPG.ResourceMax'}}">{{system.effective.resources.stamina.max}}</output><input name="system.resources.stamina.temp" type="number" value="{{system.resources.stamina.temp}}" title="{{localize 'HRPG.TempHitPoints'}}"></span></label>
+          <section class="core-resource-table">
+            <h2>{{localize "HRPG.ResourceHeart"}}</h2>
+            <label>{{localize "HRPG.ResourceMaxShort"}}<output title="{{localize 'HRPG.ResourceMax'}}">{{system.effective.resources.heart.max}}</output></label>
+            <label>{{localize "HRPG.CurrentValueShort"}}<input name="system.resources.heart.value" type="number" value="{{system.resources.heart.value}}" title="{{localize 'HRPG.CurrentValue'}}"></label>
+            <label>{{localize "HRPG.TempHitPointsShort"}}<input name="system.resources.heart.temp" type="number" value="{{system.resources.heart.temp}}" title="{{localize 'HRPG.TempHitPoints'}}"></label>
+          </section>
+          <section class="core-resource-table">
+            <h2>{{localize "HRPG.ResourceSoul"}}</h2>
+            <label>{{localize "HRPG.ResourceMaxShort"}}<output title="{{localize 'HRPG.ResourceMax'}}">{{system.effective.resources.soul.max}}</output></label>
+            <label>{{localize "HRPG.CurrentValueShort"}}<input name="system.resources.soul.value" type="number" value="{{system.resources.soul.value}}" title="{{localize 'HRPG.CurrentValue'}}"></label>
+            <label>{{localize "HRPG.TempHitPointsShort"}}<input name="system.resources.soul.temp" type="number" value="{{system.resources.soul.temp}}" title="{{localize 'HRPG.TempHitPoints'}}"></label>
+          </section>
+          <section class="core-resource-table">
+            <h2>{{localize "HRPG.ResourceStamina"}}</h2>
+            <label>{{localize "HRPG.ResourceMaxShort"}}<output title="{{localize 'HRPG.ResourceMax'}}">{{system.effective.resources.stamina.max}}</output></label>
+            <label>{{localize "HRPG.CurrentValueShort"}}<input name="system.resources.stamina.value" type="number" value="{{system.resources.stamina.value}}" title="{{localize 'HRPG.CurrentValue'}}"></label>
+            <label>{{localize "HRPG.TempHitPointsShort"}}<input name="system.resources.stamina.temp" type="number" value="{{system.resources.stamina.temp}}" title="{{localize 'HRPG.TempHitPoints'}}"></label>
+          </section>
           <label>{{localize "HRPG.ResourceSatiety"}}<span><input name="system.resources.satiety.value" type="number" value="{{system.resources.satiety.value}}"><b>/</b><output>{{system.resources.satiety.max}}</output></span></label>
         </div>
       {{/if}}
