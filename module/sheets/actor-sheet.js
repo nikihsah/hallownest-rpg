@@ -133,6 +133,7 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     }));
     context.milestoneTooltip = game.i18n.localize(`HRPG.Milestone${selectedMilestone}`);
     const activeTraits = this.actor.items.filter((item) => item.type === "trait" && item.system.active !== false);
+    const activePaths = this.actor.items.filter((item) => item.type === "path");
     const templateLabel = game.i18n.format("HRPG.TemplateSource", {
       template: game.i18n.localize(CONFIG.HRPG.sizes[system.secondary.size])
     });
@@ -201,6 +202,12 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
         for (const trait of activeTraits) {
           const value = Number(trait.system.modifiers?.[key]) || 0;
           if (value !== 0) lines.push(`${trait.name}: ${signed(value)}`);
+        }
+        if (key === "marks") {
+          for (const path of activePaths) {
+            const value = Number(path.system.rank) || 0;
+            if (value !== 0) lines.push(`${path.name}: ${signed(value)}`);
+          }
         }
       } else {
         const [sourceLabel, sourceValue, roundingLabel] = derivedFrom[key];

@@ -37,3 +37,8 @@ test("subtraits are locked until their parent is owned", async () => {
   const ownedGroups = groupTraits(traits, new Set([hugeJaws.parentTrait]));
   assert.equal(ownedGroups.flatMap((group) => group.traits).find((trait) => trait.sourceId === hugeJaws.sourceId).parentMissing, false);
 });
+
+test("trait catalog template renders as one V2 application root element", async () => {
+  const template = await readFile(new URL("../templates/applications/trait-catalog.hbs", import.meta.url), "utf8");
+  assert.match(template.trimStart(), /^<div class="trait-catalog-root">/);
+});

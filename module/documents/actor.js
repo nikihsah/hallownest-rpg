@@ -14,12 +14,19 @@ export class HallownestActor extends Actor {
     for (const trait of this.items.filter((item) => item.type === "trait" && item.system.active !== false)) {
       for (const key of modifierKeys) modifiers[key] += Number(trait.system.modifiers?.[key]) || 0;
     }
+    const pathModifiers = { marks: 0, stamina: 0, soul: 0 };
+    for (const path of this.items.filter((item) => item.type === "path")) {
+      const rank = Math.max(0, Number(path.system.rank) || 0);
+      pathModifiers.marks += rank;
+      if (path.system.category === "mystic") pathModifiers.soul += rank;
+      else pathModifiers.stamina += rank;
+    }
 
     const effectiveAttributes = calculateAttributeState(system.attributes, modifiers);
     const effectiveResources = Object.fromEntries(
       ["heart", "stamina", "soul"].map((key) => [key, {
         value: Number(system.resources[key]?.value) || 0,
-        max: (Number(system.resources[key]?.max) || 0) + modifiers[key]
+        max: cappedResourceMax(key, (Number(system.resources[key]?.max) || 0) + modifiers[key] + (pathModifiers[key] || 0))
       }])
     );
     const effectiveSecondary = {
@@ -27,10 +34,10 @@ export class HallownestActor extends Actor {
       hunger: (Number(system.secondary.hunger.value) || 0) + modifiers.hunger,
       appeal: (Number(system.secondary.appeal) || 0) + modifiers.appeal,
       dread: (Number(system.secondary.dread) || 0) + modifiers.dread,
-      marks: (Number(system.secondary.marks.max) || 0) + modifiers.marks
+      marks: (Number(system.secondary.marks.max) || 0) + modifiers.marks + pathModifiers.marks
     };
 
-    system.effective = { attributes: effectiveAttributes, resources: effectiveResources, secondary: effectiveSecondary, modifiers };
+    system.effective = { attributes: effectiveAttributes, resources: effectiveResources, secondary: effectiveSecondary, modifiers, pathModifiers };
     system.derived = {
       load: Math.floor(effectiveAttributes.power.value) + modifiers.load,
       beltSize: Math.floor(effectiveAttributes.shell.value),
@@ -73,4 +80,9 @@ export class HallownestActor extends Actor {
   async applySizeTemplate(size) {
     return applySizeTemplate(this, size);
   }
+}
+
+function cappedResourceMax(key, value) {
+  const number = Number(value) || 0;
+  return ["stamina", "soul"].includes(key) ? Math.min(7, number) : number;
 }
