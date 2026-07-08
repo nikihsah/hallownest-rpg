@@ -24,8 +24,9 @@ export class HallownestActorSheet extends ActorSheet {
 
   activateListeners(html) {
     super.activateListeners(html);
-    html.find("[data-action='roll-attribute']").on("click", (event) => {
-      this.actor.rollAttribute(event.currentTarget.dataset.attribute);
+    html.find("[data-action='roll-attribute']").on("click", async (event) => {
+      event.preventDefault();
+      await this.actor.rollAttribute(event.currentTarget.dataset.attribute);
     });
     html.find("[data-action='create-item']").on("click", async (event) => {
       const type = event.currentTarget.dataset.type;
@@ -34,8 +35,18 @@ export class HallownestActorSheet extends ActorSheet {
     html.find("[data-item-id]").on("dblclick", (event) => {
       this.actor.items.get(event.currentTarget.dataset.itemId)?.sheet.render(true);
     });
-    html.find("[data-action='apply-size']").on("click", () => {
-      this.actor.applySizeTemplate(this.actor.system.secondary.size);
+    html.find("[data-action='apply-size']").on("click", async (event) => {
+      event.preventDefault();
+      const size = html.find("select[name='system.secondary.size']").val();
+      try {
+        await this.actor.applySizeTemplate(size);
+        ui.notifications.info(game.i18n.format("HRPG.SizeApplied", {
+          size: game.i18n.localize(CONFIG.HRPG.sizes[size])
+        }));
+      } catch (error) {
+        console.error("Hallownest RPG | Failed to apply size template", error);
+        ui.notifications.error(game.i18n.localize("HRPG.SizeApplyFailed"));
+      }
     });
   }
 }

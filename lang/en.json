@@ -27,6 +27,8 @@
   "HRPG.SizeMedium": "Medium",
   "HRPG.SizeLarge": "Large",
   "HRPG.ApplySize": "Apply Template",
+  "HRPG.SizeApplied": "Applied the {size} size template.",
+  "HRPG.SizeApplyFailed": "Could not apply the size template. Details were written to the console.",
   "HRPG.Speed": "Speed",
   "HRPG.Hunger": "Hunger",
   "HRPG.Appeal": "Appeal",

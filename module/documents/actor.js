@@ -41,7 +41,7 @@ export class HallownestActor extends Actor {
       large: { attributes: [4, 3, 4, 2], heart: 8, speed: 5, hunger: [9, 25], appeal: 1, dread: 1.5, socialBonus: 1 }
     };
     const selected = templates[size];
-    if (!selected) return;
+    if (!selected) throw new Error(`Unknown size template: ${size}`);
     const [power, insight, shell, grace] = selected.attributes;
     return this.update({
       "system.attributes.power.value": power,

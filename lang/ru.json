@@ -27,6 +27,8 @@
   "HRPG.SizeMedium": "Средний",
   "HRPG.SizeLarge": "Большой",
   "HRPG.ApplySize": "Применить шаблон",
+  "HRPG.SizeApplied": "Применён шаблон размера «{size}».",
+  "HRPG.SizeApplyFailed": "Не удалось применить шаблон размера. Подробности записаны в консоль.",
   "HRPG.Speed": "Скорость",
   "HRPG.Hunger": "Голод",
   "HRPG.Appeal": "Привлекательность",
