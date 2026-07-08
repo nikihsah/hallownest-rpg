@@ -57,7 +57,8 @@ async function addPathAction(_event, target) {
 }
 
 function openItemAction(_event, target) {
-  this.actor.items.get(target.dataset.itemId)?.sheet.render(true);
+  const itemId = target.dataset.itemId ?? target.closest("[data-item-id]")?.dataset.itemId;
+  this.actor.items.get(itemId)?.sheet.render(true);
 }
 
 async function deleteItemAction(event, target) {

@@ -17,7 +17,10 @@
           "soul": { "value": 3, "max": 3 },
           "satiety": { "value": 0, "max": 10 },
           "supplies": { "value": 0, "max": 0 },
-          "essence": { "value": 0, "max": 0 }
+          "essence": { "value": 0, "max": 0 },
+          "custom1": { "label": "", "value": 0, "max": 0 },
+          "custom2": { "label": "", "value": 0, "max": 0 },
+          "custom3": { "label": "", "value": 0, "max": 0 }
         },
         "secondary": {
           "size": "medium",

@@ -30,6 +30,17 @@ test("actor sheet exposes the character milestone selector", async () => {
   assert.match(template, /name="system\.advancement\.milestone"/);
 });
 
+test("actor sheet exposes three editable custom resources in the header", async () => {
+  const template = await readFile(templateUrl, "utf8");
+  const schema = await readFile(new URL("../template.json", import.meta.url), "utf8");
+  for (const key of ["custom1", "custom2", "custom3"]) {
+    assert.match(template, new RegExp(`name="system\\.resources\\.${key}\\.label"`));
+    assert.match(template, new RegExp(`name="system\\.resources\\.${key}\\.value"`));
+    assert.match(template, new RegExp(`name="system\\.resources\\.${key}\\.max"`));
+    assert.match(schema, new RegExp(`"${key}": \\{ "label": "", "value": 0, "max": 0 \\}`));
+  }
+});
+
 test("quick trait attacks are exposed through the selected-token HUD", async () => {
   const template = await readFile(templateUrl, "utf8");
   const sheet = await readFile(sheetUrl, "utf8");
@@ -74,4 +85,9 @@ test("paths and traits can be removed from the actor sheet", async () => {
   assert.equal((template.match(/data-action="delete-item"/g) ?? []).length, 2);
   assert.match(sheet, /"delete-item": deleteItemAction/);
   assert.match(sheet, /deleteEmbeddedDocuments\("Item", ids\)/);
+});
+
+test("embedded items open even when clicking nested row content", async () => {
+  const sheet = await readFile(sheetUrl, "utf8");
+  assert.match(sheet, /target\.closest\("\[data-item-id\]"\)\?\.dataset\.itemId/);
 });
