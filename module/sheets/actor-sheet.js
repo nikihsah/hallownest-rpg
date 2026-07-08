@@ -2,6 +2,7 @@ import { applySizeTemplate } from "../mechanics/size-templates.js";
 import { attributeBreakdown, storedAttributeValue } from "../mechanics/attribute-state.js";
 import { currentStatValue, statAdjustment } from "../mechanics/stat-adjustments.js";
 import { restActor } from "../mechanics/rest.js";
+import { loadPathCatalog, pathItemData } from "../data/path-catalog.js";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -29,6 +30,19 @@ async function createItemAction(_event, target) {
     name: game.i18n.localize(CONFIG.HRPG.itemTypes[type]),
     type
   }]);
+  created?.sheet.render(true);
+}
+
+async function addPathAction(_event, target) {
+  const select = target.closest(".paths-panel")?.querySelector("[data-path-select]");
+  const sourceId = select?.value;
+  if (!sourceId) return ui.notifications.warn(game.i18n.localize("HRPG.ChoosePathFirst"));
+  if (this.actor.items.some((item) => item.type === "path" && item.system.sourceId === sourceId)) {
+    return ui.notifications.warn(game.i18n.localize("HRPG.PathAlreadyAdded"));
+  }
+  const path = (await loadPathCatalog()).find((entry) => entry.sourceId === sourceId);
+  if (!path) return ui.notifications.error(game.i18n.localize("HRPG.PathNotFound"));
+  const [created] = await this.actor.createEmbeddedDocuments("Item", [pathItemData(path)]);
   created?.sheet.render(true);
 }
 
@@ -61,6 +75,7 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
       "apply-size": applySizeAction,
       "roll-attribute": rollAttributeAction,
       "create-item": createItemAction,
+      "add-path": addPathAction,
       "open-item": openItemAction,
       "select-tab": selectTabAction,
       "roll-secondary": rollSecondaryAction,
@@ -108,6 +123,11 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
       };
     });
     context.itemsByType = Object.groupBy(this.actor.items, (item) => item.type);
+    const ownedPathIds = new Set((context.itemsByType.path ?? []).map((item) => item.system.sourceId));
+    context.pathCatalog = (await loadPathCatalog()).map((path) => ({
+      ...path,
+      disabled: ownedPathIds.has(path.sourceId)
+    }));
     context.inventoryItemTypes = Object.fromEntries(
       Object.entries(CONFIG.HRPG.itemTypes).filter(([type]) => !["trait", "path", "skill", "charm", "art", "spell"].includes(type))
     );

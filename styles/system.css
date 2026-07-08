@@ -67,6 +67,15 @@
 .hrpg .stat-card output { align-self: center; border-right: 1px solid #aaa596; }
 .hrpg .stat-card input { color: var(--accent); font-weight: 700; }
 .hrpg .paths-panel, .hrpg .summary-panel { min-height: 11rem; }
+.hrpg .path-picker { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .4rem; margin-bottom: .55rem; }
+.hrpg .path-picker select { min-width: 0; }
+.hrpg .paths-panel .line-item small { color: var(--hrpg-muted, #594f43); }
+.hrpg .path-ranks { display: grid; gap: .5rem; margin: .75rem 0; }
+.hrpg .path-rank { border: 1px solid #9b8a70; border-radius: 4px; padding: .55rem .7rem; opacity: .62; }
+.hrpg .path-rank.unlocked { border-color: #51402d; background: rgba(91, 69, 43, .08); opacity: 1; }
+.hrpg .path-rank h3 { margin: 0 0 .35rem; }
+.hrpg .path-rank p { margin-bottom: 0; white-space: pre-line; }
+.hrpg .path-abilities { display: flex; flex-wrap: wrap; gap: .3rem .7rem; }
 .hrpg .summary-panel textarea { width: 100%; height: 8rem; margin-top: .5rem; resize: vertical; vertical-align: top; }
 .hrpg .split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
 

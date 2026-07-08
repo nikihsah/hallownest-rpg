@@ -85,7 +85,14 @@
         "marks": 0
       }
     },
-    "path": { "templates": ["base"], "rank": 1, "category": "martial" },
+    "path": {
+      "templates": ["base"],
+      "rank": 1,
+      "rankMax": 3,
+      "category": "martial",
+      "sourceId": "",
+      "ranks": []
+    },
     "skill": { "templates": ["base"], "rank": 1, "mastery": "" },
     "art": { "templates": ["base", "rollable"], "cost": 1 },
     "spell": { "templates": ["base", "rollable"], "cost": 1 },

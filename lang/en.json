@@ -113,5 +113,12 @@
   "HRPG.Mastery": "Mastery",
   "HRPG.PathCategory": "Path Category",
   "HRPG.PathMartial": "Martial",
-  "HRPG.PathMystic": "Mystic"
+  "HRPG.PathMystic": "Mystic",
+  "HRPG.ChoosePath": "Choose a path",
+  "HRPG.ChoosePathFirst": "Choose a path from the list first.",
+  "HRPG.AddPath": "Add",
+  "HRPG.CreateCustomPath": "Create a custom path",
+  "HRPG.PathAlreadyAdded": "This path is already on the character.",
+  "HRPG.PathNotFound": "The path was not found in the system catalog.",
+  "HRPG.PathRanks": "Path ranks"
 }

@@ -113,5 +113,12 @@
   "HRPG.Mastery": "Мастерство",
   "HRPG.PathCategory": "Категория пути",
   "HRPG.PathMartial": "Воинский",
-  "HRPG.PathMystic": "Мистический"
+  "HRPG.PathMystic": "Мистический",
+  "HRPG.ChoosePath": "Выберите путь",
+  "HRPG.ChoosePathFirst": "Сначала выберите путь из списка.",
+  "HRPG.AddPath": "Добавить",
+  "HRPG.CreateCustomPath": "Создать собственный путь",
+  "HRPG.PathAlreadyAdded": "Этот путь уже добавлен персонажу.",
+  "HRPG.PathNotFound": "Путь не найден в системном справочнике.",
+  "HRPG.PathRanks": "Ранги пути"
 }

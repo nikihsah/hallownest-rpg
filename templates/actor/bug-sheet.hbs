@@ -74,9 +74,16 @@
           </section>
 
           <section class="panel paths-panel">
-            <div class="panel-heading"><h2>{{localize "HRPG.Paths"}}</h2><button type="button" data-action="create-item" data-type="path">+</button></div>
+            <div class="panel-heading"><h2>{{localize "HRPG.Paths"}}</h2><button type="button" data-action="create-item" data-type="path" data-tooltip="{{localize 'HRPG.CreateCustomPath'}}">+</button></div>
+            <div class="path-picker">
+              <select data-path-select aria-label="{{localize 'HRPG.ChoosePath'}}">
+                <option value="">{{localize "HRPG.ChoosePath"}}</option>
+                {{#each pathCatalog as |path|}}<option value="{{path.sourceId}}" {{#if path.disabled}}disabled{{/if}}>{{path.name}} — {{localize path.categoryLabel}}</option>{{/each}}
+              </select>
+              <button type="button" data-action="add-path">{{localize "HRPG.AddPath"}}</button>
+            </div>
             {{#each itemsByType.path as |path|}}
-              <div class="item-row line-item" data-action="open-item" data-item-id="{{path.id}}"><img src="{{path.img}}"><span>{{path.name}}</span><b>{{path.system.rank}}</b></div>
+              <div class="item-row line-item" data-action="open-item" data-item-id="{{path.id}}"><img src="{{path.img}}"><span>{{path.name}}</span><small>{{#if (eq path.system.category "mystic")}}{{localize "HRPG.PathMystic"}}{{else}}{{localize "HRPG.PathMartial"}}{{/if}}</small><b>{{path.system.rank}}/{{path.system.rankMax}}</b></div>
             {{else}}<p class="empty-state">{{localize "HRPG.NoPaths"}}</p>{{/each}}
           </section>
 
