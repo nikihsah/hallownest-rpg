@@ -1,6 +1,7 @@
 import { rollDicePool } from "../mechanics/dice-pool.js";
 import { applySizeTemplate } from "../mechanics/size-templates.js";
 import { calculateAttributeState } from "../mechanics/attribute-state.js";
+import { maneuverFromGrace } from "../mechanics/stat-adjustments.js";
 
 export class HallownestActor extends Actor {
   prepareDerivedData() {
@@ -34,6 +35,7 @@ export class HallownestActor extends Actor {
       load: Math.floor(effectiveAttributes.power.value),
       beltSize: Math.floor(effectiveAttributes.shell.value),
       techniqueSlots: Math.floor(effectiveAttributes.insight.value),
+      maneuver: maneuverFromGrace(effectiveAttributes.grace.value),
       carriedWeight: this.items.reduce((total, item) => {
       const quantity = Number(item.system.quantity) || 0;
       const weight = Number(item.system.weight) || 0;
@@ -56,6 +58,12 @@ export class HallownestActor extends Actor {
       reroll: value % 1 >= 0.5,
       label: game.i18n.localize(CONFIG.HRPG.attributes[attributeKey] ?? attributeKey)
     });
+  }
+
+  rollSecondary(secondaryKey) {
+    if (secondaryKey !== "speed") return null;
+    const value = (Number(this.system.effective.secondary.speed) || 0) + (Number(this.system.adjustments?.speed) || 0);
+    return rollDicePool({ actor: this, dice: Math.floor(value), label: game.i18n.localize("HRPG.Speed") });
   }
 
   async applySizeTemplate(size) {

@@ -42,21 +42,25 @@
 
 .hrpg .overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
 .hrpg .panel { padding: .8rem; border: 1px solid var(--line); background: rgba(255,255,255,.18); }
+.hrpg .attributes-panel, .hrpg .secondary-panel { display: flex; flex-direction: column; min-height: 16rem; }
 .hrpg .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding-bottom: .4rem; border-bottom: 1px solid var(--line); }
 .hrpg .panel-heading > span { color: var(--muted); }
 .hrpg .panel-heading button { width: 2rem; }
-.hrpg .attribute-grid { display: grid; grid-template-columns: 1fr 3.6rem; gap: .5rem; margin-top: .65rem; }
+.hrpg .attribute-grid { display: grid; grid-template-columns: 1fr 3.6rem; gap: .5rem; margin: auto 0; }
 .hrpg .attribute-grid button { display: flex; justify-content: space-between; padding: .5rem .65rem; background: transparent; }
 .hrpg .attribute-grid button:hover { color: var(--accent); border-color: var(--accent); }
 .hrpg .attribute-grid input { text-align: center; }
 .hrpg .attribute-grid button strong { min-width: 2rem; padding-left: .5rem; border-left: 1px solid #aaa596; }
 .hrpg .attribute-grid input[data-current-attribute] { font-weight: 700; color: var(--accent); }
-.hrpg .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; margin-top: .65rem; }
-.hrpg .stat-grid label { display: grid; grid-template-columns: 1fr auto; gap: .15rem .35rem; color: var(--muted); font-size: .72rem; }
-.hrpg .stat-grid input { width: 100%; grid-column: 1; text-align: center; }
-.hrpg .stat-grid output { grid-column: 2; grid-row: 2; align-self: center; }
+.hrpg .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .45rem; margin: auto 0; }
+.hrpg .stat-card { display: grid; grid-template-columns: 1fr 2.8rem; gap: .25rem; padding: .4rem; border: 1px solid #aaa596; background: rgba(255,255,255,.25); }
+.hrpg .stat-card > span, .hrpg .stat-card > button { grid-column: 1 / -1; min-height: 1.65rem; overflow: hidden; text-align: left; font-size: .72rem; }
+.hrpg .stat-card > span { color: var(--muted); text-transform: uppercase; }
+.hrpg .stat-card output, .hrpg .stat-card input { width: 100%; text-align: center; }
+.hrpg .stat-card output { align-self: center; border-right: 1px solid #aaa596; }
+.hrpg .stat-card input { color: var(--accent); font-weight: 700; }
 .hrpg .paths-panel, .hrpg .summary-panel { min-height: 11rem; }
-.hrpg .summary-panel textarea { width: 100%; height: 8rem; margin-top: .5rem; resize: vertical; }
+.hrpg .summary-panel textarea { width: 100%; height: 8rem; margin-top: .5rem; resize: vertical; vertical-align: top; }
 .hrpg .split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
 
 .hrpg .collection-panel, .hrpg .item-group { margin-bottom: .75rem; }

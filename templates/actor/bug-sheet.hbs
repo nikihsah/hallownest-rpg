@@ -53,14 +53,18 @@
           <section class="panel secondary-panel">
             <div class="panel-heading"><h2>{{localize "HRPG.Secondary"}}</h2><span>{{localize (lookup config.sizes system.secondary.size)}}</span></div>
             <div class="stat-grid">
-              <label>{{localize "HRPG.Speed"}}<input name="system.secondary.speed" type="number" value="{{system.secondary.speed}}"><output>{{system.effective.secondary.speed}}</output></label>
-              <label>{{localize "HRPG.Hunger"}}<input name="system.secondary.hunger.value" type="number" value="{{system.secondary.hunger.value}}"><output>{{system.effective.secondary.hunger}}</output></label>
-              <label>{{localize "HRPG.Appeal"}}<input name="system.secondary.appeal" type="number" step="0.5" value="{{system.secondary.appeal}}"><output>{{system.effective.secondary.appeal}}</output></label>
-              <label>{{localize "HRPG.Dread"}}<input name="system.secondary.dread" type="number" step="0.5" value="{{system.secondary.dread}}"><output>{{system.effective.secondary.dread}}</output></label>
-              <label>{{localize "HRPG.Marks"}}<input name="system.secondary.marks.value" type="number" value="{{system.secondary.marks.value}}"><output>{{system.effective.secondary.marks}}</output></label>
-              <label>{{localize "HRPG.Load"}}<output>{{system.derived.load}}</output></label>
-              <label>{{localize "HRPG.BeltSize"}}<output>{{system.derived.beltSize}}</output></label>
-              <label>{{localize "HRPG.TechniqueSlots"}}<output>{{system.derived.techniqueSlots}}</output></label>
+              {{#each secondaryRows as |stat|}}
+                <div class="stat-card">
+                  {{#if stat.rollable}}<button type="button" data-action="roll-secondary" data-secondary="{{stat.key}}">{{localize stat.label}}</button>{{else}}<span>{{localize stat.label}}</span>{{/if}}
+                  <output title="{{localize 'HRPG.PermanentValue'}}">{{stat.permanent}}</output>
+                  <input data-current-secondary="{{stat.key}}" data-permanent="{{stat.permanent}}" type="number" step="0.5" value="{{stat.current}}" title="{{localize 'HRPG.CurrentValue'}}">
+                </div>
+              {{/each}}
+              <div class="stat-card">
+                <span>{{localize "HRPG.ResourceSatiety"}}</span>
+                <output title="{{localize 'HRPG.PermanentValue'}}">{{system.resources.satiety.max}}</output>
+                <input name="system.resources.satiety.value" type="number" value="{{system.resources.satiety.value}}" title="{{localize 'HRPG.CurrentValue'}}">
+              </div>
             </div>
           </section>
 

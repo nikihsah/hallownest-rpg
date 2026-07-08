@@ -29,7 +29,18 @@
           "marks": { "value": 3, "max": 3 }
         },
         "advancement": { "milestone": 0, "pathRank": 0 },
-        "creation": { "templateApplied": false }
+        "creation": { "templateApplied": false },
+        "adjustments": {
+          "speed": 0,
+          "hunger": 0,
+          "appeal": 0,
+          "dread": 0,
+          "marks": 0,
+          "maneuver": 0,
+          "load": 0,
+          "beltSize": 0,
+          "techniqueSlots": 0
+        }
       }
     },
     "bug": {

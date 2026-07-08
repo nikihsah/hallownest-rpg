@@ -1,5 +1,6 @@
 import { applySizeTemplate } from "../mechanics/size-templates.js";
 import { storedAttributeValue } from "../mechanics/attribute-state.js";
+import { currentStatValue, statAdjustment } from "../mechanics/stat-adjustments.js";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -23,10 +24,11 @@ async function rollAttributeAction(_event, target) {
 
 async function createItemAction(_event, target) {
   const type = target.dataset.type;
-  await this.actor.createEmbeddedDocuments("Item", [{
+  const [created] = await this.actor.createEmbeddedDocuments("Item", [{
     name: game.i18n.localize(CONFIG.HRPG.itemTypes[type]),
     type
   }]);
+  created?.sheet.render(true);
 }
 
 function openItemAction(_event, target) {
@@ -40,6 +42,10 @@ function selectTabAction(_event, target) {
   root?.querySelectorAll(".sheet-body > .tab").forEach((element) => element.classList.toggle("active", element.dataset.tab === tab));
 }
 
+async function rollSecondaryAction(_event, target) {
+  await this.actor.rollSecondary(target.dataset.secondary);
+}
+
 export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static DEFAULT_OPTIONS = {
     classes: ["hrpg", "sheet", "actor"],
@@ -50,7 +56,8 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
       "roll-attribute": rollAttributeAction,
       "create-item": createItemAction,
       "open-item": openItemAction,
-      "select-tab": selectTabAction
+      "select-tab": selectTabAction,
+      "roll-secondary": rollSecondaryAction
     }
   };
 
@@ -76,6 +83,26 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     context.inventoryItemTypes = Object.fromEntries(
       Object.entries(CONFIG.HRPG.itemTypes).filter(([type]) => !["trait", "path", "skill", "charm", "art", "spell"].includes(type))
     );
+    const adjustments = system.adjustments ?? {};
+    const secondaryValues = {
+      speed: system.effective.secondary.speed,
+      hunger: system.effective.secondary.hunger,
+      appeal: system.effective.secondary.appeal,
+      dread: system.effective.secondary.dread,
+      marks: system.effective.secondary.marks,
+      maneuver: system.derived.maneuver,
+      load: system.derived.load,
+      beltSize: system.derived.beltSize,
+      techniqueSlots: system.derived.techniqueSlots
+    };
+    const labels = {
+      speed: "HRPG.Speed", hunger: "HRPG.Hunger", appeal: "HRPG.Appeal",
+      dread: "HRPG.Dread", marks: "HRPG.Marks", maneuver: "HRPG.Maneuver",
+      load: "HRPG.Load", beltSize: "HRPG.BeltSize", techniqueSlots: "HRPG.TechniqueSlots"
+    };
+    context.secondaryRows = Object.entries(secondaryValues).map(([key, permanent]) => ({
+      key, label: labels[key], permanent, current: currentStatValue(permanent, adjustments[key]), rollable: key === "speed"
+    }));
     return context;
   }
 
@@ -88,6 +115,16 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
         const modifier = this.actor.system.effective?.modifiers?.[key] ?? 0;
         const stored = storedAttributeValue(event.currentTarget.value, modifier);
         await this.actor.update({ [`system.attributes.${key}.value`]: stored });
+      });
+    }
+    for (const input of this.element.querySelectorAll("[data-current-secondary]")) {
+      input.addEventListener("change", async (event) => {
+        event.stopPropagation();
+        const key = event.currentTarget.dataset.currentSecondary;
+        const permanent = Number(event.currentTarget.dataset.permanent) || 0;
+        const current = Number(event.currentTarget.value);
+        if (!Number.isFinite(current)) return;
+        await this.actor.update({ [`system.adjustments.${key}`]: statAdjustment(current, permanent) });
       });
     }
   }
