@@ -6,7 +6,9 @@
         <input class="name" name="name" type="text" value="{{actor.name}}" placeholder="{{localize 'HRPG.Name'}}">
         {{#if system.creation.templateApplied}}
           <label class="milestone-field">{{localize "HRPG.Milestone"}}
-            <select name="system.advancement.milestone">{{selectOptions milestoneOptions selected=system.advancement.milestone}}</select>
+            <select name="system.advancement.milestone" data-tooltip="{{milestoneTooltip}}" data-tooltip-direction="DOWN">
+              {{#each milestoneOptions as |milestone|}}<option value="{{milestone.value}}" title="{{milestone.hint}}" {{#if milestone.selected}}selected{{/if}}>{{milestone.value}}</option>{{/each}}
+            </select>
           </label>
           <button class="rest-button" type="button" data-action="rest">{{localize "HRPG.Rest"}}</button>
         {{/if}}
@@ -50,7 +52,7 @@
             <h2>{{localize "HRPG.Attributes"}}</h2>
             <div class="attribute-grid">
               {{#each attributeRows as |attribute|}}
-                <button type="button" data-action="roll-attribute" data-attribute="{{attribute.key}}" data-tooltip="{{attribute.breakdown}}" data-tooltip-direction="UP" title="{{attribute.breakdown}}">
+                <button type="button" data-action="roll-attribute" data-attribute="{{attribute.key}}" data-tooltip="{{attribute.breakdown}}" data-tooltip-direction="UP">
                   <span>{{localize attribute.label}}</span><strong>{{attribute.maximum}}</strong>
                 </button>
                 <input data-current-attribute="{{attribute.key}}" type="number" step="0.5" value="{{attribute.current}}" title="{{localize 'HRPG.CurrentAttribute'}}">
@@ -62,7 +64,7 @@
             <div class="panel-heading"><h2>{{localize "HRPG.Secondary"}}</h2><span>{{localize (lookup config.sizes system.secondary.size)}}</span></div>
             <div class="stat-grid">
               {{#each secondaryRows as |stat|}}
-                <div class="stat-card">
+                <div class="stat-card" data-tooltip="{{stat.tooltip}}" data-tooltip-direction="UP">
                   {{#if stat.rollable}}<button type="button" data-action="roll-secondary" data-secondary="{{stat.key}}">{{localize stat.label}}</button>{{else}}<span>{{localize stat.label}}</span>{{/if}}
                   <output title="{{localize 'HRPG.PermanentValue'}}">{{stat.permanent}}</output>
                   <input data-current-secondary="{{stat.key}}" data-permanent="{{stat.permanent}}" type="number" step="0.5" value="{{stat.current}}" title="{{localize 'HRPG.CurrentValue'}}">

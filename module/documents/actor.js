@@ -62,7 +62,11 @@ export class HallownestActor extends Actor {
 
   rollSecondary(secondaryKey) {
     if (secondaryKey !== "speed") return null;
-    const value = (Number(this.system.effective.secondary.speed) || 0) + (Number(this.system.adjustments?.speed) || 0);
+    const value = Math.max(0,
+      (Number(this.system.effective.secondary.speed) || 0)
+      + (Number(this.system.adjustments?.speed) || 0)
+      - (Number(this.system.combat?.speedSpent) || 0)
+    );
     return rollDicePool({ actor: this, dice: Math.floor(value), label: game.i18n.localize("HRPG.Speed") });
   }
 

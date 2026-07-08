@@ -80,14 +80,13 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     context.config = CONFIG.HRPG;
     context.editable = this.isEditable;
     context.owner = this.actor.isOwner;
-    context.milestoneOptions = {
-      0: game.i18n.localize("HRPG.Milestone0"),
-      1: game.i18n.localize("HRPG.Milestone1"),
-      2: game.i18n.localize("HRPG.Milestone2"),
-      3: game.i18n.localize("HRPG.Milestone3"),
-      4: game.i18n.localize("HRPG.Milestone4"),
-      5: game.i18n.localize("HRPG.Milestone5")
-    };
+    const selectedMilestone = Number(system.advancement.milestone) || 0;
+    context.milestoneOptions = Array.from({ length: 6 }, (_, value) => ({
+      value,
+      hint: game.i18n.localize(`HRPG.Milestone${value}`),
+      selected: value === selectedMilestone
+    }));
+    context.milestoneTooltip = game.i18n.localize(`HRPG.Milestone${selectedMilestone}`);
     const activeTraits = this.actor.items.filter((item) => item.type === "trait" && item.system.active !== false);
     const templateLabel = game.i18n.format("HRPG.TemplateSource", {
       template: game.i18n.localize(CONFIG.HRPG.sizes[system.secondary.size])
@@ -113,6 +112,7 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
       Object.entries(CONFIG.HRPG.itemTypes).filter(([type]) => !["trait", "path", "skill", "charm", "art", "spell"].includes(type))
     );
     const adjustments = system.adjustments ?? {};
+    const speedSpent = Number(system.combat?.speedSpent) || 0;
     const secondaryValues = {
       speed: system.effective.secondary.speed,
       hunger: system.effective.secondary.hunger,
@@ -129,9 +129,40 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
       dread: "HRPG.Dread", marks: "HRPG.Marks", maneuver: "HRPG.Maneuver",
       load: "HRPG.Load", beltSize: "HRPG.BeltSize", techniqueSlots: "HRPG.TechniqueSlots"
     };
-    context.secondaryRows = Object.entries(secondaryValues).map(([key, permanent]) => ({
-      key, label: labels[key], permanent, current: currentStatValue(permanent, adjustments[key]), rollable: key === "speed"
-    }));
+    const directBases = {
+      speed: system.secondary.speed,
+      hunger: system.secondary.hunger.value,
+      appeal: system.secondary.appeal,
+      dread: system.secondary.dread,
+      marks: system.secondary.marks.max
+    };
+    const derivedFrom = {
+      maneuver: ["HRPG.AttributeGrace", system.effective.attributes.grace.value, "HRPG.RoundedUp"],
+      load: ["HRPG.AttributePower", system.effective.attributes.power.value, "HRPG.RoundedDown"],
+      beltSize: ["HRPG.AttributeShell", system.effective.attributes.shell.value, "HRPG.RoundedDown"],
+      techniqueSlots: ["HRPG.AttributeInsight", system.effective.attributes.insight.value, "HRPG.RoundedDown"]
+    };
+    context.secondaryRows = Object.entries(secondaryValues).map(([key, permanent]) => {
+      const adjustment = Number(adjustments[key]) || 0;
+      const current = currentStatValue(permanent, adjustment) - (key === "speed" ? speedSpent : 0);
+      const lines = [];
+      if (key in directBases) {
+        lines.push(`${templateLabel}: ${signed(directBases[key])}`);
+        for (const trait of activeTraits) {
+          const value = Number(trait.system.modifiers?.[key]) || 0;
+          if (value !== 0) lines.push(`${trait.name}: ${signed(value)}`);
+        }
+      } else {
+        const [sourceLabel, sourceValue, roundingLabel] = derivedFrom[key];
+        lines.push(`${game.i18n.localize(sourceLabel)}: ${sourceValue}`);
+        lines.push(`${game.i18n.localize(roundingLabel)}: ${permanent}`);
+      }
+      lines.push(`${game.i18n.localize("HRPG.PermanentValue")}: ${permanent}`);
+      if (adjustment !== 0) lines.push(`${game.i18n.localize("HRPG.TemporaryAdjustment")}: ${signed(adjustment)}`);
+      if (key === "speed" && speedSpent !== 0) lines.push(`${game.i18n.localize("HRPG.SpeedSpent")}: -${speedSpent}`);
+      lines.push(`${game.i18n.localize("HRPG.CurrentValue")}: ${current}`);
+      return { key, label: labels[key], permanent, current, tooltip: lines.join("\n"), rollable: key === "speed" };
+    });
     return context;
   }
 
@@ -153,8 +184,14 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
         const permanent = Number(event.currentTarget.dataset.permanent) || 0;
         const current = Number(event.currentTarget.value);
         if (!Number.isFinite(current)) return;
-        await this.actor.update({ [`system.adjustments.${key}`]: statAdjustment(current, permanent) });
+        const spent = key === "speed" ? Number(this.actor.system.combat?.speedSpent) || 0 : 0;
+        await this.actor.update({ [`system.adjustments.${key}`]: statAdjustment(current + spent, permanent) });
       });
     }
   }
+}
+
+function signed(value) {
+  const number = Number(value) || 0;
+  return number > 0 ? `+${number}` : `${number}`;
 }

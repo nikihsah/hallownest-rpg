@@ -7,12 +7,14 @@ import { rollDicePool } from "./mechanics/dice-pool.js";
 import { applySizeTemplate } from "./mechanics/size-templates.js";
 import { migrateActorTraits } from "./migrations/actor-traits.js";
 import { migrateAttributeMaximums } from "./migrations/attribute-maximums.js";
+import { registerCombatAutomation } from "./mechanics/combat.js";
 
 Hooks.once("init", () => {
   console.info("Hallownest RPG | Initializing");
   CONFIG.HRPG = HRPG;
   CONFIG.Actor.documentClass = HallownestActor;
   CONFIG.Item.documentClass = HallownestItem;
+  registerCombatAutomation();
 
   Actors.unregisterSheet("core", ActorSheet);
   Actors.registerSheet("hallownest-rpg", HallownestActorSheet, { types: ["bug"], makeDefault: true });

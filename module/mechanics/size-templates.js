@@ -4,11 +4,16 @@ export const BUG_TEMPLATES = Object.freeze({
   large: Object.freeze({ attributes: [4, 3, 4, 2], heart: 8, speed: 5, hunger: [9, 25], appeal: 1, dread: 1.5, socialBonus: 1 })
 });
 
+export function tokenDimensions(size) {
+  return size === "large" ? { width: 2, height: 2 } : { width: 1, height: 1 };
+}
+
 export function buildSizeTemplateUpdate(size) {
   const selected = BUG_TEMPLATES[size];
   if (!selected) throw new Error(`Unknown size template: ${size}`);
 
   const [power, insight, shell, grace] = selected.attributes;
+  const token = tokenDimensions(size);
   return {
     "system.attributes.power.value": power,
     "system.attributes.power.max": power,
@@ -31,11 +36,17 @@ export function buildSizeTemplateUpdate(size) {
     "system.secondary.appeal": selected.appeal,
     "system.secondary.dread": selected.dread,
     "system.secondary.socialBonus": selected.socialBonus,
-    "system.creation.templateApplied": true
+    "system.creation.templateApplied": true,
+    "prototypeToken.width": token.width,
+    "prototypeToken.height": token.height
   };
 }
 
 export async function applySizeTemplate(actor, size) {
   if (!actor || typeof actor.update !== "function") throw new TypeError("A Foundry Actor is required");
-  return actor.update(buildSizeTemplateUpdate(size));
+  const result = await actor.update(buildSizeTemplateUpdate(size));
+  const dimensions = tokenDimensions(size);
+  const activeTokens = typeof actor.getActiveTokens === "function" ? actor.getActiveTokens(true) : [];
+  await Promise.all(activeTokens.map((token) => token.document.update(dimensions)));
+  return result;
 }

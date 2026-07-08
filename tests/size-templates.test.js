@@ -30,3 +30,15 @@ test("applySizeTemplate sends the complete update to an Actor", async () => {
   assert.equal(received["system.secondary.size"], "small");
   assert.equal(received["system.creation.templateApplied"], true);
 });
+
+test("applySizeTemplate synchronizes tokens already placed on a scene", async () => {
+  let tokenUpdate = null;
+  const actor = {
+    async update() {},
+    getActiveTokens() {
+      return [{ document: { async update(data) { tokenUpdate = data; } } }];
+    }
+  };
+  await applySizeTemplate(actor, "large");
+  assert.deepEqual(tokenUpdate, { width: 2, height: 2 });
+});
