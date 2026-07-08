@@ -80,6 +80,18 @@ export class HallownestActor extends Actor {
     return rollDicePool({ actor: this, dice: Math.floor(value), label: game.i18n.localize(labels[secondaryKey]) });
   }
 
+  rollAbsorption(attributeKey = "shell") {
+    const value = Number(this.system.effective?.attributes?.[attributeKey]?.value) || 0;
+    return rollDicePool({
+      actor: this,
+      dice: Math.floor(value),
+      reroll: value % 1 >= 0.5,
+      label: game.i18n.format("HRPG.AbsorptionRoll", {
+        attribute: game.i18n.localize(CONFIG.HRPG.attributes[attributeKey] ?? attributeKey)
+      })
+    });
+  }
+
   rollTraitAttack(itemId) {
     const item = this.items.get(itemId);
     if (!item) return null;

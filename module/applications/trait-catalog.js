@@ -20,7 +20,12 @@ async function addTraitAction(_event, target) {
   if (trait.kind === "subtrait" && !parentItemId) {
     return ui.notifications.warn(game.i18n.localize("HRPG.TraitParentRequired"));
   }
-  if (ownedCount >= 1 || (trait.kind !== "subtrait" && ownedCount >= repeatLimit)) return ui.notifications.warn(game.i18n.localize("HRPG.TraitAlreadyAdded"));
+  if (trait.sourceId === "traits.krokha" && this.actor.system.secondary?.size !== "small") {
+    return ui.notifications.warn(game.i18n.localize("HRPG.TraitRequiresSmallSize"));
+  }
+  if ((trait.kind === "subtrait" && ownedCount >= 1) || (trait.kind !== "subtrait" && ownedCount >= repeatLimit)) {
+    return ui.notifications.warn(game.i18n.localize("HRPG.TraitAlreadyAdded"));
+  }
   const social = card.querySelector("[data-social-choice]")?.value ?? "";
   await this.actor.createEmbeddedDocuments("Item", [traitItemData(trait, { social, parentItemId })]);
   ui.notifications.info(game.i18n.format("HRPG.TraitAdded", { name: trait.name }));

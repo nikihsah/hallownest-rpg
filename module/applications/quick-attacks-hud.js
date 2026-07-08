@@ -24,7 +24,7 @@ export function refreshQuickAttacksHud() {
   hud.querySelector("[data-hrpg-attack-list]").replaceChildren(...(
     attacks.length ? attacks.map((attack) => attackButton(actor, attack)) : [emptyState("HRPG.NoInteractionSkills")]
   ));
-  hud.querySelector("[data-hrpg-stat-list]").replaceChildren(...attributeButtons(actor), ...secondaryButtons(actor));
+  hud.querySelector("[data-hrpg-stat-list]").replaceChildren(...attributeButtons(actor), ...secondaryButtons(actor), absorptionButton(actor));
   hud.hidden = false;
 }
 
@@ -106,6 +106,17 @@ function secondaryButtons(actor) {
     button.addEventListener("click", async () => actor.rollSecondary(key));
     return button;
   });
+}
+
+function absorptionButton(actor) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.title = game.i18n.localize("HRPG.AbsorptionHint");
+  const name = document.createElement("span");
+  name.textContent = game.i18n.localize("HRPG.Absorption");
+  button.append(name);
+  button.addEventListener("click", async () => actor.rollAbsorption("shell"));
+  return button;
 }
 
 function emptyState(label) {

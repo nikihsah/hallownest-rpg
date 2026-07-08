@@ -52,6 +52,7 @@ export function groupTraits(traits, ownedSourceIds = new Set(), ownedCounts = ne
 }
 
 export function repeatLimitForTrait(trait) {
+  if (trait?.sourceId === "traits.natural-projectile") return 99;
   const text = `${trait?.description ?? ""} ${(trait?.rules ?? []).join(" ")}`;
   if (/до\s+тр[её]х\s+раз|до\s+3\s+раз/iu.test(text)) return 3;
   if (/дважды|два\s+раза|до\s+2\s+раз/iu.test(text)) return 2;

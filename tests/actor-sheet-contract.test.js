@@ -93,6 +93,9 @@ test("quick trait attacks are exposed through the selected-token HUD", async () 
   assert.match(hud, /appeal: "HRPG\.Appeal"/);
   assert.match(hud, /dread: "HRPG\.Dread"/);
   assert.match(hud, /actor\.rollSecondary\(key\)/);
+  assert.match(hud, /absorptionButton\(actor\)/);
+  assert.match(hud, /actor\.rollAbsorption\("shell"\)/);
+  assert.match(hud, /HRPG\.AbsorptionHint/);
   assert.match(hud, /makeDraggable\(hud\)/);
   assert.doesNotMatch(styles, /writing-mode/);
   assert.match(styles, /text-overflow: ellipsis/);
@@ -154,4 +157,12 @@ test("hunger tooltip includes the maximum satiety threshold", async () => {
   assert.match(sheet, /key === "hunger"/);
   assert.match(sheet, /HRPG\.SatietyThreshold/);
   assert.match(sheet, /system\.resources\.satiety\.max/);
+});
+
+test("actor document exposes absorption as a Shell roll", async () => {
+  const actor = await readFile(new URL("../module/documents/actor.js", import.meta.url), "utf8");
+  assert.match(actor, /rollAbsorption\(attributeKey = "shell"\)/);
+  assert.match(actor, /effective\?\.attributes\?\.\[attributeKey\]\?\.value/);
+  assert.match(actor, /HRPG\.AbsorptionRoll/);
+  assert.match(actor, /reroll: value % 1 >= 0\.5/);
 });

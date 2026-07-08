@@ -49,10 +49,22 @@ test("repeatable traits remain available until their limit", async () => {
 
   const once = groupTraits([hauler], new Set([hauler.sourceId]), new Map([[hauler.sourceId, 1]])).flatMap((group) => group.traits)[0];
   const capped = groupTraits([hauler], new Set([hauler.sourceId]), new Map([[hauler.sourceId, 3]])).flatMap((group) => group.traits)[0];
+  const projectileOnce = groupTraits([projectile], new Set([projectile.sourceId]), new Map([[projectile.sourceId, 1]])).flatMap((group) => group.traits)[0];
   assert.equal(once.owned, false);
   assert.equal(once.repeatable, true);
   assert.equal(once.repeatLimitLabel, "3");
   assert.equal(capped.owned, true);
+  assert.equal(projectileOnce.owned, false);
+  assert.equal(projectileOnce.repeatable, true);
+  assert.equal(projectileOnce.repeatLimitLabel, "∞");
+});
+
+test("trait catalog action respects repeat limits and small-only traits", async () => {
+  const source = await readFile(new URL("../module/applications/trait-catalog.js", import.meta.url), "utf8");
+  assert.doesNotMatch(source, /ownedCount >= 1 \|\| \(trait\.kind !== "subtrait"/);
+  assert.match(source, /trait\.sourceId === "traits\.krokha"/);
+  assert.match(source, /system\.secondary\?\.size !== "small"/);
+  assert.match(source, /HRPG\.TraitRequiresSmallSize/);
 });
 
 test("repeatable parent subtraits stay available per parent instance", async () => {
