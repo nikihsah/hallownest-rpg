@@ -27,7 +27,15 @@ async function rollAttributeAction(_event, target) {
 
 async function createItemAction(_event, target) {
   const type = target.dataset.type;
-  if (type === "trait") return new TraitCatalogApplication(this.actor).render({ force: true });
+  if (type === "trait") {
+    try {
+      this.traitCatalog ??= new TraitCatalogApplication(this.actor, { id: `hrpg-trait-catalog-${this.actor.id}` });
+      return await this.traitCatalog.render({ force: true });
+    } catch (error) {
+      console.error("Hallownest RPG | Failed to open trait catalog", error);
+      return ui.notifications.error(game.i18n.localize("HRPG.TraitCatalogFailed"));
+    }
+  }
   const [created] = await this.actor.createEmbeddedDocuments("Item", [{
     name: game.i18n.localize(CONFIG.HRPG.itemTypes[type]),
     type
@@ -50,6 +58,25 @@ async function addPathAction(_event, target) {
 
 function openItemAction(_event, target) {
   this.actor.items.get(target.dataset.itemId)?.sheet.render(true);
+}
+
+async function deleteItemAction(event, target) {
+  event.stopPropagation();
+  const item = this.actor.items.get(target.dataset.itemId);
+  if (!item) return;
+  const confirmed = await foundry.applications.api.DialogV2.confirm({
+    window: { title: game.i18n.localize("HRPG.DeleteItem") },
+    content: `<p>${game.i18n.format("HRPG.DeleteItemConfirm", { name: foundry.utils.escapeHTML(item.name) })}</p>`,
+    modal: true
+  });
+  if (!confirmed) return;
+  const ids = [item.id];
+  if (item.type === "trait" && item.system.sourceId) {
+    ids.push(...this.actor.items
+      .filter((candidate) => candidate.type === "trait" && candidate.system.parentTrait === item.system.sourceId)
+      .map((candidate) => candidate.id));
+  }
+  await this.actor.deleteEmbeddedDocuments("Item", ids);
 }
 
 function selectTabAction(_event, target) {
@@ -79,6 +106,7 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
       "create-item": createItemAction,
       "add-path": addPathAction,
       "open-item": openItemAction,
+      "delete-item": deleteItemAction,
       "select-tab": selectTabAction,
       "roll-secondary": rollSecondaryAction,
       "rest": restAction

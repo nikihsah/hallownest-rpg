@@ -141,5 +141,8 @@
   "HRPG.TraitCategory.senses": "Senses and perception",
   "HRPG.TraitCategory.anatomy": "Anatomy",
   "HRPG.TraitCategory.movement": "Movement",
-  "HRPG.TraitCategory.defense": "Defense and survival"
+  "HRPG.TraitCategory.defense": "Defense and survival",
+  "HRPG.TraitCatalogFailed": "Could not open the trait catalog. Details were written to the console.",
+  "HRPG.DeleteItem": "Delete",
+  "HRPG.DeleteItemConfirm": "Remove {name} from this character?"
 }

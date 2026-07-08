@@ -141,5 +141,8 @@
   "HRPG.TraitCategory.senses": "Чувства и восприятие",
   "HRPG.TraitCategory.anatomy": "Строение тела",
   "HRPG.TraitCategory.movement": "Передвижение",
-  "HRPG.TraitCategory.defense": "Защита и выживание"
+  "HRPG.TraitCategory.defense": "Защита и выживание",
+  "HRPG.TraitCatalogFailed": "Не удалось открыть каталог черт. Подробности записаны в консоль.",
+  "HRPG.DeleteItem": "Удалить",
+  "HRPG.DeleteItemConfirm": "Удалить «{name}» с листа персонажа?"
 }

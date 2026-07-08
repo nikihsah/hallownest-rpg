@@ -70,6 +70,7 @@
 .hrpg .path-picker { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .4rem; margin-bottom: .55rem; }
 .hrpg .path-picker select { min-width: 0; }
 .hrpg .paths-panel .line-item small { color: var(--hrpg-muted, #594f43); }
+.hrpg .item-row .item-delete { flex: 0 0 1.75rem; width: 1.75rem; min-width: 1.75rem; padding: 0; color: #6d201b; font-size: 1.2rem; line-height: 1.4; }
 .hrpg .path-ranks { display: grid; gap: .5rem; margin: .75rem 0; }
 .hrpg .path-overview { margin-top: .75rem; }
 .hrpg .path-overview textarea { box-sizing: border-box; min-height: 7rem; width: 100%; resize: vertical; }

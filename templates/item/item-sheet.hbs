@@ -19,11 +19,7 @@
     {{/if}}
     {{#if (eq item.type "path")}}
       <label>{{localize "HRPG.Rank"}}
-        <select name="system.rank">
-          <option value="1" {{#if (eq system.rank 1)}}selected{{/if}}>1</option>
-          <option value="2" {{#if (eq system.rank 2)}}selected{{/if}}>2</option>
-          <option value="3" {{#if (eq system.rank 3)}}selected{{/if}}>3</option>
-        </select>
+        <select name="system.rank">{{selectOptions pathRankOptions selected=system.rank}}</select>
       </label>
       <label>{{localize "HRPG.PathCategory"}}
         <select name="system.category"><option value="martial" {{#if (eq system.category "martial")}}selected{{/if}}>{{localize "HRPG.PathMartial"}}</option><option value="mystic" {{#if (eq system.category "mystic")}}selected{{/if}}>{{localize "HRPG.PathMystic"}}</option></select>

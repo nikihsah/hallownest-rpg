@@ -29,8 +29,7 @@ export class TraitCatalogApplication extends HandlebarsApplicationMixin(Applicat
     classes: ["hrpg", "trait-catalog"],
     tag: "form",
     position: { width: 760, height: 720 },
-    window: { title: "HRPG.TraitCatalogTitle", resizable: true },
-    actions: { "add-trait": addTraitAction }
+    window: { title: "HRPG.TraitCatalogTitle", resizable: true }
   };
 
   static PARTS = {
@@ -56,5 +55,8 @@ export class TraitCatalogApplication extends HandlebarsApplicationMixin(Applicat
         section.hidden = !section.querySelector("[data-trait-id]:not([hidden])");
       }
     });
+    for (const button of this.element.querySelectorAll("[data-action='add-trait']")) {
+      button.addEventListener("click", (event) => addTraitAction.call(this, event, event.currentTarget));
+    }
   }
 }
