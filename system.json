@@ -2,7 +2,7 @@
   "id": "hallownest-rpg",
   "title": "Hallownest RPG — Unofficial System",
   "description": "Независимая неофициальная система для приключений в мире жуков.",
-  "version": "0.4.26",
+  "version": "0.4.27",
   "compatibility": {
     "minimum": 13,
     "verified": 13
@@ -13,7 +13,7 @@
     }
   ],
   "manifest": "https://raw.githubusercontent.com/nikihsah/hallownest-rpg/main/system.json",
-  "download": "https://github.com/nikihsah/hallownest-rpg/archive/refs/heads/main.zip",
+  "download": "https://codeload.github.com/nikihsah/hallownest-rpg/zip/refs/heads/main",
   "esmodules": [
     "module/main.js"
   ],
