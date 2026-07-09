@@ -17,6 +17,7 @@ test("natural weapon traits become quick attacks", async () => {
 
   assert.equal(attack.name, "Дробящие Челюсти");
   assert.equal(attack.damage, "2");
+  assert.equal(attack.quality, 1);
   assert.match(attack.tooltip, /природное оружие/u);
 });
 
@@ -91,4 +92,5 @@ test("quick attacks only include active attack-like weapon traits", () => {
   ]);
 
   assert.deepEqual(attacks.map((attack) => attack.itemId), ["horn"]);
+  assert.deepEqual(attacks.map((attack) => attack.quality), [1]);
 });

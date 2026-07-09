@@ -4,6 +4,7 @@ import { currentStatValue, statAdjustment } from "../mechanics/stat-adjustments.
 import { restActor } from "../mechanics/rest.js";
 import { loadPathCatalog, pathItemData } from "../data/path-catalog.js";
 import { TraitCatalogApplication } from "../applications/trait-catalog.js";
+import { isNaturalWeaponTrait, naturalWeaponQualityMax, naturalWeaponQualityValue } from "../mechanics/trait-quality.js";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -184,6 +185,20 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
       };
     });
     context.itemsByType = Object.groupBy(this.actor.items, (item) => item.type);
+    const ordinaryTraits = (context.itemsByType.trait ?? []).filter((item) => item.system?.kind !== "subtrait");
+    context.traitCounter = {
+      current: ordinaryTraits.length,
+      max: Number(system.traits?.max) || 0
+    };
+    context.traitRows = (context.itemsByType.trait ?? []).map((trait) => ({
+      id: trait.id,
+      img: trait.img,
+      name: trait.name,
+      system: trait.system,
+      qualityEditable: isNaturalWeaponTrait(trait),
+      qualityValue: naturalWeaponQualityValue(trait),
+      qualityMax: naturalWeaponQualityMax(trait)
+    }));
     const ownedPathIds = new Set((context.itemsByType.path ?? []).map((item) => item.system.sourceId));
     context.pathCatalog = (await loadPathCatalog()).map((path) => ({
       ...path,
@@ -250,11 +265,9 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
           }
         }
       }
-      lines.push(`${game.i18n.localize("HRPG.PermanentValue")}: ${permanent}`);
       if (adjustment !== 0) lines.push(`${game.i18n.localize("HRPG.TemporaryAdjustment")}: ${signed(adjustment)}`);
       if (key === "speed" && speedSpent !== 0) lines.push(`${game.i18n.localize("HRPG.SpeedSpent")}: -${speedSpent}`);
-      if (key === "hunger") lines.push(`${game.i18n.localize("HRPG.SatietyThreshold")}: ${system.resources.satiety.max}`);
-      lines.push(`${game.i18n.localize("HRPG.CurrentValue")}: ${current}`);
+      if (key === "hunger") lines.push(`${game.i18n.localize("HRPG.TemplateHungerLimit")}: ${system.secondary.hunger.max}`);
       return { key, label: labels[key], permanent, current, tooltip: lines.join("\n"), rollable: key === "speed" };
     });
     return context;
@@ -287,6 +300,22 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
         await this.actor.update({ [`system.adjustments.${key}`]: statAdjustment(current + spent, permanent) });
       });
     }
+    for (const input of this.element.querySelectorAll("[data-trait-quality]")) {
+      input.addEventListener("change", async (event) => {
+        event.stopPropagation();
+        const item = this.actor.items.get(event.currentTarget.dataset.traitQuality);
+        if (!item) return;
+        await item.update({ "system.quality.value": Number(event.currentTarget.value) || 0 });
+      });
+    }
+    for (const input of this.element.querySelectorAll("[data-trait-quality-max]")) {
+      input.addEventListener("change", async (event) => {
+        event.stopPropagation();
+        const item = this.actor.items.get(event.currentTarget.dataset.traitQualityMax);
+        if (!item) return;
+        await item.update({ "system.quality.max": Math.max(0, Number(event.currentTarget.value) || 0) });
+      });
+    }
     for (const row of this.element.querySelectorAll("[data-action='open-item'][data-item-id]")) {
       row.addEventListener("click", (event) => {
         if (event.target.closest("[data-action='delete-item']")) return;
@@ -295,12 +324,13 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     }
     this.element.addEventListener("click", (event) => {
       const row = event.target.closest("[data-open-item-id]");
-      if (!row || event.target.closest("[data-action='delete-item']")) return;
+      if (!row || event.target.closest("[data-action='delete-item'], input, select, textarea, button, a")) return;
       event.preventDefault();
       openEmbeddedItem(this.actor, row.dataset.openItemId);
     });
     this.element.addEventListener("keydown", (event) => {
       if (!["Enter", " "].includes(event.key)) return;
+      if (event.target.closest("input, select, textarea, button, a")) return;
       const row = event.target.closest("[data-open-item-id]");
       if (!row) return;
       event.preventDefault();

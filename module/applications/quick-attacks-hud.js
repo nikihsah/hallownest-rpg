@@ -1,4 +1,5 @@
 import { quickAttacksFromItems } from "../mechanics/trait-attacks.js";
+import { unlockedPathAttackOptions } from "../mechanics/path-abilities.js";
 
 const HUD_ID = "hrpg-quick-attacks-hud";
 
@@ -24,7 +25,8 @@ export function refreshQuickAttacksHud() {
   hud.querySelector("[data-hrpg-attack-list]").replaceChildren(...(
     attacks.length ? attacks.map((attack) => attackButton(actor, attack)) : [emptyState("HRPG.NoInteractionSkills")]
   ));
-  hud.querySelector("[data-hrpg-stat-list]").replaceChildren(...attributeButtons(actor), ...secondaryButtons(actor), absorptionButton(actor));
+  hud.querySelector("[data-hrpg-stat-list]").replaceChildren(...attributeButtons(actor), ...secondaryButtons(actor));
+  hud.querySelector("[data-hrpg-action-list]").replaceChildren(...defenseActionButtons(actor));
   hud.hidden = false;
 }
 
@@ -46,9 +48,11 @@ function createHud() {
     <div class="hrpg-quick-hud-body">
       <section class="hrpg-quick-page active" data-hrpg-page="attacks"><div data-hrpg-attack-list></div></section>
       <section class="hrpg-quick-page" data-hrpg-page="stats"><div data-hrpg-stat-list></div></section>
+      <section class="hrpg-quick-page" data-hrpg-page="actions"><div data-hrpg-action-list></div></section>
       <nav class="hrpg-quick-hud-tabs" aria-label="${game.i18n.localize("HRPG.InteractionPages")}">
         <button type="button" class="active" data-hrpg-tab="attacks">${game.i18n.localize("HRPG.InteractionSkills")}</button>
         <button type="button" data-hrpg-tab="stats">${game.i18n.localize("HRPG.Attributes")}</button>
+        <button type="button" data-hrpg-tab="actions">${game.i18n.localize("HRPG.Actions")}</button>
       </nav>
     </div>`;
   restoreHudPosition(hud);
@@ -72,13 +76,56 @@ function attackButton(actor, attack) {
 
   const details = document.createElement("small");
   details.textContent = [
+    game.i18n.format("HRPG.QualityValue", { quality: attack.quality ?? 1 }),
     attack.damage ? game.i18n.format("HRPG.DamageValue", { damage: attack.damage }) : game.i18n.localize("HRPG.DamageUnspecified"),
     ...(attack.subtraits?.length ? [attack.subtraits.join(", ")] : [])
   ].join(" · ");
   button.append(details);
 
-  button.addEventListener("click", async () => actor.rollTraitAttack(attack.itemId));
+  button.addEventListener("click", async () => {
+    const options = await promptAttackOptions(actor, attack);
+    if (!options) return;
+    await actor.rollTraitAttack(attack.itemId, options);
+  });
   return button;
+}
+
+async function promptAttackOptions(actor, attack) {
+  const pathOptions = unlockedPathAttackOptions(actor);
+  const id = `hrpg-attack-${attack.itemId}-${foundry.utils.randomID()}`;
+  const DialogV2 = foundry.applications?.api?.DialogV2;
+  if (!DialogV2?.prompt) {
+    return { investedStamina: Number(window.prompt(game.i18n.localize("HRPG.InvestedStamina"), "0")) || 0, pathOptions: [] };
+  }
+  const buttons = pathOptions.map((option, index) => `
+    <label class="hrpg-path-option">
+      <input type="checkbox" name="pathOption" value="${index}">
+      <span>${foundry.utils.escapeHTML(option.pathName)}: ${foundry.utils.escapeHTML(option.label)}</span>
+      <small>${foundry.utils.escapeHTML(option.note)}</small>
+    </label>`).join("");
+  return DialogV2.prompt({
+    window: { title: game.i18n.format("HRPG.AttackDialogTitle", { name: attack.name }) },
+    content: `
+      <form id="${id}" class="hrpg-attack-dialog">
+        <label>${game.i18n.localize("HRPG.InvestedStamina")}
+          <input type="number" name="investedStamina" value="0" min="0" step="1">
+        </label>
+        <p>${game.i18n.format("HRPG.AttackTaxHint", { tax: Number(actor.system.combat?.attackTax) || 0 })}</p>
+        ${buttons ? `<section><h3>${game.i18n.localize("HRPG.PathAbilities")}</h3>${buttons}</section>` : `<p>${game.i18n.localize("HRPG.NoPathAbilities")}</p>`}
+      </form>`,
+    ok: {
+      label: game.i18n.localize("HRPG.Roll"),
+      callback: (_event, button) => {
+        const form = button?.form ?? document.getElementById(id);
+        const data = new FormData(form);
+        return {
+          investedStamina: Number(data.get("investedStamina")) || 0,
+          pathOptions: data.getAll("pathOption").map((value) => pathOptions[Number(value)]).filter(Boolean)
+        };
+      }
+    },
+    rejectClose: false
+  });
 }
 
 function attributeButtons(actor) {
@@ -108,15 +155,64 @@ function secondaryButtons(actor) {
   });
 }
 
-function absorptionButton(actor) {
+function defenseActionButtons(actor) {
+  return [
+    actionButton(actor, { key: "protection", label: "HRPG.DefenseAction", hint: "HRPG.DefenseActionHint", prompt: true, staminaCost: 1 }),
+    actionButton(actor, { key: "dodge", label: "HRPG.Dodge", hint: "HRPG.DodgeHint", prompt: true, staminaCost: 1 }),
+    actionButton(actor, { key: "parry", label: "HRPG.Parry", hint: "HRPG.ParryHint", prompt: true, staminaCost: 1 }),
+    actionButton(actor, { key: "absorption", label: "HRPG.DamageAbsorption", hint: "HRPG.DamageAbsorptionHint", prompt: true, staminaCost: 0 })
+  ];
+}
+
+function actionButton(actor, action) {
   const button = document.createElement("button");
   button.type = "button";
-  button.title = game.i18n.localize("HRPG.AbsorptionHint");
+  button.title = game.i18n.localize(action.hint);
   const name = document.createElement("span");
-  name.textContent = game.i18n.localize("HRPG.Absorption");
+  name.textContent = game.i18n.localize(action.label);
+  const details = document.createElement("small");
+  details.textContent = game.i18n.localize(action.hint);
   button.append(name);
-  button.addEventListener("click", async () => actor.rollAbsorption("shell"));
+  button.append(details);
+  button.addEventListener("click", async () => {
+    const options = action.prompt ? await promptDefenseActionOptions(action) : { bonusDice: 0, staminaCost: action.staminaCost ?? 0 };
+    if (!options) return;
+    await actor.rollDefenseAction(action.key, options);
+  });
   return button;
+}
+
+async function promptDefenseActionOptions(action) {
+  const id = `hrpg-defense-${action.key}-${foundry.utils.randomID()}`;
+  const DialogV2 = foundry.applications?.api?.DialogV2;
+  if (!DialogV2?.prompt) {
+    return { bonusDice: Number(window.prompt(game.i18n.localize("HRPG.BonusDice"), "0")) || 0, staminaCost: action.staminaCost ?? 0 };
+  }
+  return DialogV2.prompt({
+    window: { title: game.i18n.localize(action.label) },
+    content: `
+      <form id="${id}" class="hrpg-defense-dialog">
+        <p>${foundry.utils.escapeHTML(game.i18n.localize(action.hint))}</p>
+        <label>${game.i18n.localize("HRPG.BonusDice")}
+          <input type="number" name="bonusDice" value="0" step="1">
+        </label>
+        <label>${game.i18n.localize("HRPG.StaminaCost")}
+          <input type="number" name="staminaCost" value="${action.staminaCost ?? 0}" min="0" step="1">
+        </label>
+      </form>`,
+    ok: {
+      label: game.i18n.localize("HRPG.Roll"),
+      callback: (_event, button) => {
+        const form = button?.form ?? document.getElementById(id);
+        const data = new FormData(form);
+        return {
+          bonusDice: Number(data.get("bonusDice")) || 0,
+          staminaCost: Number(data.get("staminaCost")) || 0
+        };
+      }
+    },
+    rejectClose: false
+  });
 }
 
 function emptyState(label) {

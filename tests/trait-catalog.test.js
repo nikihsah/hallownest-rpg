@@ -23,10 +23,12 @@ test("trait costs become automatic hunger and social modifiers", async () => {
   const item = traitItemData(jaws);
   assert.equal(item.system.modifiers.hunger, 1);
   assert.equal(item.system.modifiers.dread, 0.5);
+  assert.deepEqual(item.system.quality, { value: 1, max: 1 });
 
   const secretions = traits.find((trait) => trait.sourceId === "traits.natural-secretions");
   assert.equal(traitItemData(secretions, { social: "appeal" }).system.modifiers.appeal, 0.5);
   assert.equal(traitItemData(secretions, { social: "appeal" }).system.modifiers.dread, 0);
+  assert.deepEqual(traitItemData(secretions, { social: "appeal" }).system.quality, { value: 0, max: 0 });
 });
 
 test("subtraits are locked until their parent is owned", async () => {

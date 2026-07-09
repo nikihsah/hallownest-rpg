@@ -1,3 +1,5 @@
+import { naturalWeaponQualityRecoveryUpdates } from "./trait-quality.js";
+
 export const SATIETY_BANDS = Object.freeze({
   FED: "fed",
   HUNGRY: "hungry",
@@ -81,6 +83,8 @@ export async function restActor(actor) {
   const nextSatiety = satiety - Math.max(10, hunger);
   update["system.resources.satiety.value"] = nextSatiety;
   await actor.update(update);
+  const qualityUpdates = naturalWeaponQualityRecoveryUpdates(actor.items, result.band === SATIETY_BANDS.FED);
+  if (qualityUpdates.length) await actor.updateEmbeddedDocuments("Item", qualityUpdates);
 
   const nextBand = satietyBand(nextSatiety);
   await setStarvingEffect(actor, nextBand === SATIETY_BANDS.STARVING);

@@ -31,9 +31,10 @@
           "socialBonus": 1.5,
           "marks": { "value": 3, "max": 3 }
         },
+        "traits": { "max": 10 },
         "advancement": { "milestone": 0, "pathRank": 0 },
         "creation": { "templateApplied": false },
-        "combat": { "speedSpent": 0 },
+        "combat": { "speedSpent": 0, "attackTax": 0 },
         "adjustments": {
           "speed": 0,
           "hunger": 0,
@@ -77,6 +78,7 @@
       "active": true,
       "costLabel": "",
       "rules": [],
+      "quality": { "value": 0, "max": 0 },
       "modifiers": {
         "power": 0,
         "insight": 0,

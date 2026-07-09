@@ -84,30 +84,48 @@ test("quick trait attacks are exposed through the selected-token HUD", async () 
   assert.match(main, /registerQuickAttacksHud\(\)/);
   assert.match(hud, /Hooks\.on\("controlToken", refreshQuickAttacksHud\)/);
   assert.match(hud, /quickAttacksFromItems\(actor\.items\)/);
+  assert.match(hud, /unlockedPathAttackOptions\(actor\)/);
+  assert.match(hud, /promptAttackOptions\(actor, attack\)/);
+  assert.match(hud, /actor\.rollTraitAttack\(attack\.itemId, options\)/);
+  assert.match(hud, /HRPG\.InvestedStamina/);
+  assert.match(hud, /HRPG\.AttackTaxHint/);
+  assert.match(hud, /HRPG\.PathAbilities/);
   assert.match(hud, /data-hrpg-tab="attacks"/);
   assert.match(hud, /HRPG\.InteractionSkills/);
   assert.doesNotMatch(hud, /HRPG\.DicePoolValue/);
   assert.match(hud, /data-hrpg-tab="stats"/);
+  assert.match(hud, /data-hrpg-tab="actions"/);
+  assert.match(hud, /data-hrpg-action-list/);
+  assert.match(hud, /HRPG\.Actions/);
   assert.match(hud, /actor\.rollAttribute\(key\)/);
   assert.match(hud, /speed: "HRPG\.Speed"/);
   assert.match(hud, /appeal: "HRPG\.Appeal"/);
   assert.match(hud, /dread: "HRPG\.Dread"/);
   assert.match(hud, /actor\.rollSecondary\(key\)/);
-  assert.match(hud, /absorptionButton\(actor\)/);
-  assert.match(hud, /actor\.rollAbsorption\("shell"\)/);
-  assert.match(hud, /HRPG\.AbsorptionHint/);
+  assert.match(hud, /defenseActionButtons\(actor\)/);
+  assert.match(hud, /HRPG\.DefenseAction/);
+  assert.match(hud, /HRPG\.Dodge/);
+  assert.match(hud, /HRPG\.Parry/);
+  assert.match(hud, /HRPG\.DamageAbsorption/);
+  assert.match(hud, /promptDefenseActionOptions\(action\)/);
+  assert.match(hud, /actor\.rollDefenseAction\(action\.key, options\)/);
+  assert.match(hud, /HRPG\.StaminaCost/);
+  assert.match(hud, /staminaCost: Number\(data\.get\("staminaCost"\)\) \|\| 0/);
   assert.match(hud, /makeDraggable\(hud\)/);
   assert.doesNotMatch(styles, /writing-mode/);
   assert.match(styles, /text-overflow: ellipsis/);
   assert.match(styles, /\.hrpg-quick-hud-tabs button \{[^}]*display: block/s);
-  assert.match(styles, /\[data-hrpg-attack-list\] button \{[^}]*gap: \.24rem/s);
+  assert.match(styles, /\[data-hrpg-attack-list\] button \{[^}]*gap: \.38rem/s);
 });
 
 test("path sheet hides inventory metadata and selects ranks from one to three", async () => {
   const template = await readFile(new URL("../templates/item/item-sheet.hbs", import.meta.url), "utf8");
+  const actorTemplate = await readFile(templateUrl, "utf8");
   const itemSheet = await readFile(new URL("../module/sheets/item-sheet.js", import.meta.url), "utf8");
   assert.match(template, /\{\{#unless \(eq item\.type "path"\)\}\}<label>\{\{localize "HRPG\.Quantity"\}\}/);
   assert.match(template, /<select name="system\.rank">\{\{selectOptions pathRankOptions selected=system\.rank\}\}<\/select>/);
+  assert.match(actorTemplate, /\{\{path\.name\}\} - \{\{localize path\.categoryLabel\}\}/);
+  assert.doesNotMatch(actorTemplate, /вЂ”/);
   assert.match(itemSheet, /submitOnChange:\s*true/);
   const pathFields = template.match(/\{\{#if \(eq item\.type "path"\)\}\}([\s\S]*?)\{\{\/if\}\}/)?.[1] ?? "";
   assert.doesNotMatch(pathFields, /name="system\.sourceId"/);
@@ -123,11 +141,31 @@ test("trait item sheet is a readable reference page instead of editable fields",
   assert.match(traitBranch, /trait-readonly/);
   assert.match(traitBranch, /trait-description/);
   assert.match(traitBranch, /trait-modifier-pills/);
-  assert.doesNotMatch(traitBranch, /<input/);
   assert.doesNotMatch(traitBranch, /<select/);
-  assert.doesNotMatch(traitBranch, /name="system\./);
+  assert.match(traitBranch, /traitQualityEditable/);
+  assert.match(traitBranch, /name="system\.quality\.value"/);
+  assert.match(traitBranch, /name="system\.quality\.max"/);
+  assert.doesNotMatch(traitBranch, /name="system\.(?!quality\.)/);
   assert.match(itemSheet, /traitModifierRows/);
+  assert.match(itemSheet, /isNaturalWeaponTrait\(context\.item\)/);
   assert.match(itemSheet, /context\.system = context\.item\.system \?\? \{\}/);
+});
+
+test("actor traits tab tracks trait limit and natural weapon quality", async () => {
+  const template = await readFile(templateUrl, "utf8");
+  const sheet = await readFile(sheetUrl, "utf8");
+  const schema = await readFile(new URL("../template.json", import.meta.url), "utf8");
+  assert.match(template, /traitCounter\.current/);
+  assert.match(template, /name="system\.traits\.max"/);
+  assert.match(template, /data-trait-quality="\{\{trait\.id\}\}"/);
+  assert.match(template, /data-trait-quality-max="\{\{trait\.id\}\}"/);
+  assert.match(sheet, /ordinaryTraits = \(context\.itemsByType\.trait \?\? \[\]\)\.filter/);
+  assert.match(sheet, /kind !== "subtrait"/);
+  assert.match(sheet, /isNaturalWeaponTrait\(trait\)/);
+  assert.match(sheet, /data-trait-quality/);
+  assert.match(sheet, /"system\.quality\.value"/);
+  assert.match(schema, /"traits": \{ "max": 10 \}/);
+  assert.match(schema, /"quality": \{ "value": 0, "max": 0 \}/);
 });
 
 test("paths and traits can be removed from the actor sheet", async () => {
@@ -152,17 +190,46 @@ test("embedded items open even when clicking nested row content", async () => {
   assert.match(sheet, /renderDocumentSheet\(actor\.items\.get\(itemId\)\)/);
 });
 
-test("hunger tooltip includes the maximum satiety threshold", async () => {
+test("secondary tooltips omit visible values and hunger shows the template limit", async () => {
   const sheet = await readFile(sheetUrl, "utf8");
   assert.match(sheet, /key === "hunger"/);
-  assert.match(sheet, /HRPG\.SatietyThreshold/);
-  assert.match(sheet, /system\.resources\.satiety\.max/);
+  assert.match(sheet, /HRPG\.TemplateHungerLimit/);
+  assert.match(sheet, /system\.secondary\.hunger\.max/);
+  assert.doesNotMatch(sheet, /HRPG\.SatietyThreshold/);
+  assert.doesNotMatch(sheet, /system\.resources\.satiety\.max/);
+  assert.doesNotMatch(sheet, /HRPG\.PermanentValue"\)\}: \$\{permanent\}/);
+  assert.doesNotMatch(sheet, /HRPG\.CurrentValue"\)\}: \$\{current\}/);
 });
 
-test("actor document exposes absorption as a Shell roll", async () => {
+test("actor document exposes defensive action rolls", async () => {
   const actor = await readFile(new URL("../module/documents/actor.js", import.meta.url), "utf8");
-  assert.match(actor, /rollAbsorption\(attributeKey = "shell"\)/);
+  assert.match(actor, /spendCombatStamina\(cost = 0\)/);
+  assert.match(actor, /"system\.resources\.stamina\.value": next/);
+  assert.match(actor, /HRPG\.StaminaExceeded/);
+  assert.match(actor, /rollDefenseAction\(actionKey, \{ bonusDice = 0, staminaCost = 0 \} = \{\}\)/);
+  assert.match(actor, /await this\.spendCombatStamina\(staminaCost\)/);
+  assert.match(actor, /dodge: \{ label: "HRPG\.Dodge", attribute: "grace" \}/);
+  assert.match(actor, /parry: \{ label: "HRPG\.Parry", attribute: "power" \}/);
+  assert.match(actor, /absorption: \{ label: "HRPG\.DamageAbsorption", attribute: "shell" \}/);
+  assert.match(actor, /rollAttributeDefense\(attributeKey, \{ label, bonusDice = 0 \} = \{\}\)/);
+  assert.match(actor, /Math\.floor\(value\) \+ Math\.floor\(Number\(bonusDice\) \|\| 0\)/);
+  assert.match(actor, /rollAbsorption\(attributeKey = "shell", options = \{\}\)/);
   assert.match(actor, /effective\?\.attributes\?\.\[attributeKey\]\?\.value/);
-  assert.match(actor, /HRPG\.AbsorptionRoll/);
+  assert.match(actor, /HRPG\.DefenseRoll/);
   assert.match(actor, /reroll: value % 1 >= 0\.5/);
+  assert.match(actor, /naturalWeaponQualityValue\(item\)/);
+  assert.match(actor, /spendAttackStamina\(\{ invested = 0, taxAsDice = false \} = \{\}\)/);
+  assert.match(actor, /"system\.combat\.attackTax": tax \+ 1/);
+  assert.match(actor, /applyPathAttackOptions\(\{ attribute: "power", successThreshold: 5 \}, pathOptions\)/);
+  assert.match(actor, /dice: Math\.floor\(value\) \+ quality \+ stamina\.dice \+ attackOptions\.bonusDice/);
+  assert.match(actor, /successThreshold: attackOptions\.successThreshold/);
+});
+
+test("combat movement highlights Speed overage instead of warning", async () => {
+  const combat = await readFile(new URL("../module/mechanics/combat.js", import.meta.url), "utf8");
+  assert.match(combat, /movementOverageCells/);
+  assert.match(combat, /highlightSpeedOverage\(options\.hrpgMovementOverageCells\)/);
+  assert.match(combat, /SPEED_OVERAGE_LAYER/);
+  assert.match(combat, /color: 0xb82020/);
+  assert.doesNotMatch(combat, /ui\.notifications\.warn\(game\.i18n\.localize\("HRPG\.SpeedExceeded"\)\)/);
 });

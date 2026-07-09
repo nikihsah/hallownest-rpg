@@ -1,3 +1,5 @@
+import { naturalWeaponQualityData } from "../mechanics/trait-quality.js";
+
 let cachedTraits;
 
 export async function loadTraitCatalog() {
@@ -23,6 +25,7 @@ export function traitItemData(trait, { social = "", parentItemId = "" } = {}) {
       sourceId: trait.sourceId,
       active: true,
       modifiers,
+      quality: naturalWeaponQualityData(trait),
       rules: trait.rules ?? [],
       costLabel: trait.costLabel ?? ""
     }

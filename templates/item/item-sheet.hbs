@@ -33,6 +33,16 @@
         </section>
       {{/if}}
 
+      {{#if traitQualityEditable}}
+        <section class="trait-effect-panel trait-quality-panel">
+          <h2>{{localize "HRPG.WeaponQuality"}}</h2>
+          <p>{{localize "HRPG.WeaponQualityHint"}}</p>
+          <label>{{localize "HRPG.Quality"}}
+            <span><input name="system.quality.value" type="number" min="-1" value="{{traitQualityValue}}"><b>/</b><input name="system.quality.max" type="number" min="0" value="{{traitQualityMax}}"></span>
+          </label>
+        </section>
+      {{/if}}
+
       {{#if system.rules.length}}
         <section class="trait-effect-panel">
           <h2>{{localize "HRPG.TraitRules"}}</h2>

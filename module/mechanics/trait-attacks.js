@@ -1,3 +1,5 @@
+import { naturalWeaponQualityValue } from "./trait-quality.js";
+
 const DAMAGE_PATTERNS = [
   /нанос(?:ит|ящее|ящий|ящие|ить)[^.]{0,80}?(\d+(?:[,.]\d+)?)\s*(?:единиц[а-яё]*\s+)?урон[а-яё]*/iu,
   /(\d+(?:[,.]\d+)?)\s*(?:единиц[а-яё]*\s+)?урон[а-яё]*/iu
@@ -17,10 +19,12 @@ export function quickAttackFromTraitWithSubtraits(trait, subtraits = []) {
 
   const activeSubtraits = subtraits.filter((subtrait) => subtrait?.system?.active !== false);
   const damage = applySubtraitDamage(extractDamage(text), activeSubtraits);
+  const quality = naturalWeaponQualityValue(trait);
   return {
     itemId: trait.id,
     name: trait.name,
     damage,
+    quality,
     tooltip: attackTooltip([text, ...activeSubtraits.map((subtrait) => `${subtrait.name}: ${subtrait.system?.description ?? ""}`)].join("\n")),
     subtraits: activeSubtraits.map((subtrait) => subtrait.name)
   };

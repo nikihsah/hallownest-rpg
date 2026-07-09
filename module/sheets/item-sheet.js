@@ -1,3 +1,5 @@
+import { isNaturalWeaponTrait, naturalWeaponQualityMax, naturalWeaponQualityValue } from "../mechanics/trait-quality.js";
+
 export class HallownestItemSheet extends ItemSheet {
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
@@ -34,6 +36,9 @@ export class HallownestItemSheet extends ItemSheet {
         .filter((modifier) => modifier.value !== 0)
         .map((modifier) => ({ ...modifier, signed: signed(modifier.value), positive: modifier.value > 0 }));
       context.traitCategoryLabel = context.system.category ? `HRPG.TraitCategory.${context.system.category}` : "";
+      context.traitQualityEditable = isNaturalWeaponTrait(context.item);
+      context.traitQualityValue = naturalWeaponQualityValue(context.item);
+      context.traitQualityMax = naturalWeaponQualityMax(context.item);
     }
     return context;
   }

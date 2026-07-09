@@ -110,7 +110,7 @@
             <div class="path-picker">
               <select data-path-select aria-label="{{localize 'HRPG.ChoosePath'}}">
                 <option value="">{{localize "HRPG.ChoosePath"}}</option>
-                {{#each pathCatalog as |path|}}<option value="{{path.sourceId}}" {{#if path.disabled}}disabled{{/if}}>{{path.name}} вЂ” {{localize path.categoryLabel}}</option>{{/each}}
+                {{#each pathCatalog as |path|}}<option value="{{path.sourceId}}" {{#if path.disabled}}disabled{{/if}}>{{path.name}} - {{localize path.categoryLabel}}</option>{{/each}}
               </select>
               <button type="button" data-action="add-path">{{localize "HRPG.AddPath"}}</button>
             </div>
@@ -128,9 +128,9 @@
 
       <div class="tab traits" data-group="primary" data-tab="traits">
         <section class="panel collection-panel">
-          <div class="panel-heading"><h2>{{localize "HRPG.Traits"}}</h2><button type="button" data-action="create-item" data-type="trait">+</button></div>
-          {{#each itemsByType.trait as |trait|}}
-            <div class="item-row card-item" data-open-item-id="{{trait.id}}" role="button" tabindex="0"><img src="{{trait.img}}"><div><strong>{{trait.name}}</strong><small>{{#if (eq trait.system.kind "subtrait")}}{{localize "HRPG.Subtrait"}}{{else}}{{localize "HRPG.Trait"}}{{/if}}</small></div><button class="item-delete" type="button" data-action="delete-item" data-item-id="{{trait.id}}" data-tooltip="{{localize 'HRPG.DeleteItem'}}">&times;</button></div>
+          <div class="panel-heading"><h2>{{localize "HRPG.Traits"}}</h2><label class="trait-limit">{{localize "HRPG.TraitLimit"}} <span>{{traitCounter.current}} /</span><input name="system.traits.max" type="number" min="0" value="{{traitCounter.max}}"></label><button type="button" data-action="create-item" data-type="trait">+</button></div>
+          {{#each traitRows as |trait|}}
+            <div class="item-row card-item trait-row" data-open-item-id="{{trait.id}}" role="button" tabindex="0"><img src="{{trait.img}}"><div><strong>{{trait.name}}</strong><small>{{#if (eq trait.system.kind "subtrait")}}{{localize "HRPG.Subtrait"}}{{else}}{{localize "HRPG.Trait"}}{{/if}}</small></div>{{#if trait.qualityEditable}}<label class="trait-quality">{{localize "HRPG.Quality"}} <input data-trait-quality="{{trait.id}}" type="number" min="-1" value="{{trait.qualityValue}}"><span>/</span><input data-trait-quality-max="{{trait.id}}" type="number" min="0" value="{{trait.qualityMax}}"></label>{{/if}}<button class="item-delete" type="button" data-action="delete-item" data-item-id="{{trait.id}}" data-tooltip="{{localize 'HRPG.DeleteItem'}}">&times;</button></div>
           {{else}}<p class="empty-state">{{localize "HRPG.NoTraits"}}</p>{{/each}}
         </section>
       </div>

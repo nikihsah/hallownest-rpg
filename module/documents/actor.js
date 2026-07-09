@@ -3,6 +3,8 @@ import { applySizeTemplate } from "../mechanics/size-templates.js";
 import { calculateAttributeState } from "../mechanics/attribute-state.js";
 import { maneuverFromGrace } from "../mechanics/stat-adjustments.js";
 import { quickAttacksFromItems } from "../mechanics/trait-attacks.js";
+import { naturalWeaponQualityValue } from "../mechanics/trait-quality.js";
+import { applyPathAttackOptions } from "../mechanics/path-abilities.js";
 
 export class HallownestActor extends Actor {
   prepareDerivedData() {
@@ -80,22 +82,81 @@ export class HallownestActor extends Actor {
     return rollDicePool({ actor: this, dice: Math.floor(value), label: game.i18n.localize(labels[secondaryKey]) });
   }
 
-  rollAbsorption(attributeKey = "shell") {
+  async spendCombatStamina(cost = 0) {
+    const spent = Math.max(0, Math.floor(Number(cost) || 0));
+    if (spent <= 0) return true;
+    const current = Number(this.system.resources?.stamina?.value) || 0;
+    const next = Math.max(0, current - spent);
+    await this.update({ "system.resources.stamina.value": next });
+    if (current < spent) ui.notifications.warn(game.i18n.localize("HRPG.StaminaExceeded"));
+    return current >= spent;
+  }
+
+  async spendAttackStamina({ invested = 0, taxAsDice = false } = {}) {
+    const inCombat = Boolean(game.combat?.started);
+    const tax = inCombat ? Math.max(0, Math.floor(Number(this.system.combat?.attackTax) || 0)) : 0;
+    const investedStamina = Math.max(0, Math.floor(Number(invested) || 0));
+    await this.spendCombatStamina(investedStamina + tax);
+    if (inCombat) await this.update({ "system.combat.attackTax": tax + 1 });
+    return {
+      invested: investedStamina,
+      tax,
+      dice: investedStamina + (taxAsDice ? tax : 0),
+      totalCost: investedStamina + tax
+    };
+  }
+
+  async rollDefenseAction(actionKey, { bonusDice = 0, staminaCost = 0 } = {}) {
+    const actions = {
+      protection: { label: "HRPG.DefenseAction", attribute: "" },
+      dodge: { label: "HRPG.Dodge", attribute: "grace" },
+      parry: { label: "HRPG.Parry", attribute: "power" },
+      absorption: { label: "HRPG.DamageAbsorption", attribute: "shell" }
+    };
+    const action = actions[actionKey];
+    if (!action) return null;
+    await this.spendCombatStamina(staminaCost);
+    if (!action.attribute) {
+      return ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: this }),
+        flavor: `<strong>${foundry.utils.escapeHTML(game.i18n.localize(action.label))}</strong><br>${foundry.utils.escapeHTML(game.i18n.localize("HRPG.DefenseActionHint"))}`
+      });
+    }
+    return this.rollAttributeDefense(action.attribute, {
+      label: game.i18n.localize(action.label),
+      bonusDice
+    });
+  }
+
+  rollAttributeDefense(attributeKey, { label, bonusDice = 0 } = {}) {
     const value = Number(this.system.effective?.attributes?.[attributeKey]?.value) || 0;
+    const dice = Math.floor(value) + Math.floor(Number(bonusDice) || 0);
     return rollDicePool({
       actor: this,
-      dice: Math.floor(value),
+      dice,
       reroll: value % 1 >= 0.5,
-      label: game.i18n.format("HRPG.AbsorptionRoll", {
+      label: game.i18n.format("HRPG.DefenseRoll", {
+        action: label ?? game.i18n.localize(CONFIG.HRPG.attributes[attributeKey] ?? attributeKey),
         attribute: game.i18n.localize(CONFIG.HRPG.attributes[attributeKey] ?? attributeKey)
       })
     });
   }
 
-  rollTraitAttack(itemId) {
+  rollAbsorption(attributeKey = "shell", options = {}) {
+    return this.rollAttributeDefense(attributeKey, {
+      label: game.i18n.localize("HRPG.Absorption"),
+      bonusDice: options.bonusDice
+    });
+  }
+
+  async rollTraitAttack(itemId, { investedStamina = 0, pathOptions = [] } = {}) {
     const item = this.items.get(itemId);
     if (!item) return null;
-    const value = Number(this.system.effective?.attributes?.power?.value) || 0;
+    const attackOptions = applyPathAttackOptions({ attribute: "power", successThreshold: 5 }, pathOptions);
+    const stamina = await this.spendAttackStamina({ invested: investedStamina, taxAsDice: attackOptions.taxAsDice });
+    const attributeKey = attackOptions.attribute;
+    const value = Number(this.system.effective?.attributes?.[attributeKey]?.value) || 0;
+    const quality = Math.max(0, Math.floor(naturalWeaponQualityValue(item)));
     const damage = quickAttacksFromItems(this.items).find((attack) => attack.itemId === itemId)?.damage ?? "";
     const label = game.i18n.format("HRPG.TraitAttackRoll", {
       name: item.name,
@@ -103,9 +164,15 @@ export class HallownestActor extends Actor {
     });
     return rollDicePool({
       actor: this,
-      dice: Math.floor(value),
+      dice: Math.floor(value) + quality + stamina.dice + attackOptions.bonusDice,
       reroll: value % 1 >= 0.5,
-      label
+      successThreshold: attackOptions.successThreshold,
+      label,
+      notes: [
+        game.i18n.format("HRPG.AttackStaminaSpent", { invested: stamina.invested, tax: stamina.tax, total: stamina.totalCost }),
+        game.i18n.format("HRPG.AttackAttributeUsed", { attribute: game.i18n.localize(CONFIG.HRPG.attributes[attributeKey] ?? attributeKey) }),
+        ...attackOptions.notes
+      ]
     });
   }
 
