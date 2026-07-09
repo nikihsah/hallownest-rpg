@@ -1,4 +1,5 @@
 import { isNaturalWeaponTrait, naturalWeaponQualityMax, naturalWeaponQualityValue } from "../mechanics/trait-quality.js";
+import { itemModificationOptions, selectedItemModification } from "../data/item-modifications.js";
 
 export class HallownestItemSheet extends ItemSheet {
   static get defaultOptions() {
@@ -15,6 +16,9 @@ export class HallownestItemSheet extends ItemSheet {
     const context = await super.getData(options);
     context.system = context.item.system ?? {};
     context.pathRankOptions = { 1: "1", 2: "2", 3: "3" };
+    context.itemModificationOptions = itemModificationOptions(context.item)
+      .map((modification) => ({ ...modification, selected: modification.key === context.system.modification }));
+    context.selectedItemModification = selectedItemModification(context.item);
     if (context.item.type === "trait") {
       const modifierLabels = {
         power: "HRPG.AttributePower",
@@ -45,6 +49,16 @@ export class HallownestItemSheet extends ItemSheet {
 
   get template() {
     return "systems/hallownest-rpg/templates/item/item-sheet.hbs";
+  }
+
+  activateListeners(html) {
+    super.activateListeners(html);
+    const element = html?.[0];
+    if (!element) return;
+    element.scrollTop = this.sheetScrollTop ?? 0;
+    element.addEventListener("scroll", () => {
+      this.sheetScrollTop = element.scrollTop;
+    }, { passive: true });
   }
 }
 

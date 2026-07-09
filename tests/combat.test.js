@@ -31,6 +31,22 @@ test("initiative sums Grace dice instead of counting successes", () => {
   configureInitiative(config);
   assert.deepEqual(config.initiative, { formula: INITIATIVE_FORMULA, decimals: 0 });
   assert.equal(initiativeFormulaForActor({ system: { effective: { attributes: { grace: { value: 3 } } } } }), "3d6");
+  assert.equal(initiativeFormulaForActor({
+    items: [{ type: "weapon", system: { sourceId: "equipment.weapon.igla", equipped: true } }],
+    system: { effective: { attributes: { grace: { value: 3 } } } }
+  }), "3d6+2");
+  assert.equal(initiativeFormulaForActor({
+    items: [{ type: "weapon", system: { sourceId: "equipment.weapon.igla", equipped: true } }],
+    system: { effective: { attributes: { grace: { value: 0 } } } }
+  }), "2");
+  assert.equal(initiativeFormulaForActor({
+    items: [{ type: "trait", system: { sourceId: "traits.uvlechennyy", active: true } }],
+    system: { effective: { attributes: { grace: { value: 2 } } } }
+  }), "4d6");
+  assert.equal(initiativeFormulaForActor({
+    items: [{ type: "trait", system: { sourceId: "traits.mechtatel", active: true } }],
+    system: { effective: { attributes: { grace: { value: 1 } } } }
+  }), "0");
   assert.equal(initiativeFormulaForActor({ system: { effective: { attributes: { grace: { value: 0 } } } } }), "0");
 });
 

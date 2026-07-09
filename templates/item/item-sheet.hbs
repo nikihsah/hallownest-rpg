@@ -61,6 +61,14 @@
     {{#unless (eq item.type "path")}}<label>{{localize "HRPG.Price"}} <input name="system.price" type="text" value="{{system.price}}"></label>{{/unless}}
     {{#unless (eq item.type "path")}}<label>{{localize "HRPG.Subtype"}} <input name="system.subtype" type="text" value="{{system.subtype}}"></label>{{/unless}}
     {{#unless (eq item.type "path")}}{{#if system.equipped}}<label class="item-equipped-editor">{{localize "HRPG.Equipped"}} <input name="system.equipped" type="checkbox" checked></label>{{else}}<label class="item-equipped-editor">{{localize "HRPG.Equipped"}} <input name="system.equipped" type="checkbox"></label>{{/if}}{{/unless}}
+    {{#if itemModificationOptions.length}}
+      <label>{{localize "HRPG.ItemModification"}}
+        <select name="system.modification">
+          <option value="">{{localize "HRPG.NoModification"}}</option>
+          {{#each itemModificationOptions as |modification|}}<option value="{{modification.key}}" {{#if modification.selected}}selected{{/if}}>{{modification.name}}</option>{{/each}}
+        </select>
+      </label>
+    {{/if}}
     {{#if (eq item.type "path")}}
       <label>{{localize "HRPG.Rank"}}
         <select name="system.rank">{{selectOptions pathRankOptions selected=system.rank}}</select>
@@ -116,6 +124,12 @@
     </section>
   {{/if}}
   {{#unless (eq item.type "path")}}{{editor system.description target="system.description" button=true owner=owner editable=editable}}{{/unless}}
+  {{#if selectedItemModification}}
+    <section class="item-modification-description">
+      <h2>{{localize "HRPG.ItemModification"}}: {{selectedItemModification.name}}</h2>
+      <p>{{selectedItemModification.description}}</p>
+    </section>
+  {{/if}}
   {{#if system.rawText}}<section class="item-raw-text"><h2>{{localize "HRPG.ItemRawText"}}</h2><p>{{system.rawText}}</p></section>{{/if}}
   {{/if}}
 </form>

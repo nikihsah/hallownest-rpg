@@ -74,6 +74,10 @@ export function unlockedPathAttackOptions(actor) {
   return options;
 }
 
+export function availablePathAttackOptions(actor, attack) {
+  return unlockedPathAttackOptions(actor).filter((option) => pathAttackOptionApplies(option, attack));
+}
+
 export function applyPathAttackOptions(base, selectedOptions = []) {
   const result = {
     attribute: base.attribute,
@@ -91,4 +95,26 @@ export function applyPathAttackOptions(base, selectedOptions = []) {
     result.notes.push(`${option.pathName}: ${option.label}. ${option.note}`);
   }
   return result;
+}
+
+function pathAttackOptionApplies(option, attack) {
+  if (option.key === "needle-grace") return isNeedleGraceAttack(attack);
+  if (option.key === "hook-grace") return isLightEquippedWeapon(attack);
+  return true;
+}
+
+function isNeedleGraceAttack(attack) {
+  if (attack?.sourceType !== "weapon") return false;
+  const text = [attack.name, attack.itemType].filter(Boolean).join(" ").toLocaleLowerCase("ru");
+  if (/игл|needle/u.test(text)) return true;
+  return isLightEquippedWeapon(attack) && isMeleeAttack(attack);
+}
+
+function isLightEquippedWeapon(attack) {
+  return attack?.sourceType === "weapon" && (Number(attack.weight) || 0) <= 2;
+}
+
+function isMeleeAttack(attack) {
+  const range = String(attack?.range ?? "").toLocaleLowerCase("ru");
+  return !range || /ближ|melee/u.test(range);
 }

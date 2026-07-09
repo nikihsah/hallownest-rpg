@@ -1,3 +1,6 @@
+
+import { itemPassiveEffects } from "./item-effects.js";
+
 export function gridMovementCost(origin, destination, gridSize) {
   const size = Math.max(1, Number(gridSize) || 1);
   const dx = Math.abs((Number(destination.x) || 0) - (Number(origin.x) || 0));
@@ -37,7 +40,22 @@ export function configureInitiative(combatConfig) {
 
 export function initiativeFormulaForActor(actor) {
   const grace = Math.floor(Number(actor?.system?.effective?.attributes?.grace?.value) || 0);
-  return grace > 0 ? `${grace}d6` : "0";
+  const traitDice = traitInitiativeDice(actor?.items);
+  const itemEffects = actor?.system?.effective?.itemEffects ?? itemPassiveEffects(actor?.items);
+  const bonus = Number(itemEffects?.initiativeBonus) || 0;
+  const diceCount = Math.max(0, grace + traitDice);
+  if (diceCount <= 0) return bonus ? `${bonus}` : "0";
+  return bonus ? `${diceCount}d6+${bonus}` : `${diceCount}d6`;
+}
+
+function traitInitiativeDice(items) {
+  let dice = 0;
+  for (const item of Array.from(items ?? [])) {
+    if (item?.type !== "trait" || item.system?.active === false) continue;
+    if (item.system?.sourceId === "traits.uvlechennyy") dice += 2;
+    if (item.system?.sourceId === "traits.mechtatel") dice -= 2;
+  }
+  return dice;
 }
 
 export function patchBugInitiativeRolls() {

@@ -106,6 +106,7 @@ test("equipped weapons become quick attacks and unequipped weapons stay hidden",
       damage: "3",
       range: "1Р",
       grip: "1",
+      modification: "heavy",
       quality: { value: 2, max: 3 },
       description: "Точная дуэльная игла."
     }
@@ -118,6 +119,7 @@ test("equipped weapons become quick attacks and unequipped weapons stay hidden",
   };
 
   assert.equal(quickAttackFromWeapon(equipped).quality, 2);
+  assert.equal(quickAttackFromWeapon(equipped).modification, "Тяжёлое");
   assert.equal(quickAttackFromWeapon(unequipped), null);
   assert.deepEqual(quickAttacksFromItems([equipped, unequipped]).map((attack) => attack.itemId), ["needle"]);
 });

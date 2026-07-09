@@ -45,6 +45,7 @@ export function catalogItemData(item) {
       sourceId: item.sourceId,
       catalogType: item.type,
       subtype: item.subtype ?? "",
+      modification: item.modification ?? "",
       quantity: Number(item.quantity) || 1,
       weight: Number(item.weight) || 0,
       weightLabel: item.weightLabel ?? "",
@@ -95,6 +96,7 @@ export function customItemData(type, name) {
     system: {
       catalogType: type,
       subtype: "",
+      modification: "",
       description: "",
       quantity: 1,
       weight: 0,

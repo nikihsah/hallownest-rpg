@@ -112,9 +112,11 @@ async function deleteItemAction(event, target) {
 
 function selectTabAction(_event, target) {
   const tab = target.dataset.tab;
+  this.activeTab = tab;
+  this.sheetScrollTop = 0;
   const root = target.closest("form");
-  root?.querySelectorAll(".sheet-tabs [data-tab]").forEach((element) => element.classList.toggle("active", element.dataset.tab === tab));
-  root?.querySelectorAll(".sheet-body > .tab").forEach((element) => element.classList.toggle("active", element.dataset.tab === tab));
+  activateActorSheetTab(root, tab);
+  root?.querySelector(".sheet-body")?.scrollTo({ top: 0 });
 }
 
 async function rollSecondaryAction(_event, target) {
@@ -284,11 +286,33 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
       if (key === "hunger") lines.push(`${game.i18n.localize("HRPG.TemplateHungerLimit")}: ${system.secondary.hunger.max}`);
       return { key, label: labels[key], permanent, current, tooltip: lines.join("\n"), rollable: key === "speed" };
     });
+    const carriedWeight = Number(system.derived.carriedWeight) || 0;
+    const loadMaximum = Number(system.derived.load) || 0;
+    context.loadSummary = {
+      current: formatNumber(carriedWeight),
+      maximum: formatNumber(loadMaximum),
+      over: carriedWeight > loadMaximum,
+      overage: formatNumber(Math.max(0, carriedWeight - loadMaximum)),
+      tooltip: [
+        `${game.i18n.localize("HRPG.CarriedWeight")}: ${formatNumber(carriedWeight)}`,
+        `${game.i18n.localize("HRPG.LoadMaximum")}: ${formatNumber(loadMaximum)}`,
+        ...(carriedWeight > loadMaximum ? [`${game.i18n.localize("HRPG.LoadOverage")}: ${formatNumber(carriedWeight - loadMaximum)}`] : [])
+      ].join("\n")
+    };
     return context;
   }
 
   async _onRender(context, options) {
     await super._onRender(context, options);
+    const activeTab = this.activeTab ?? "overview";
+    activateActorSheetTab(this.element, activeTab);
+    const sheetBody = this.element.querySelector(".sheet-body");
+    if (sheetBody) {
+      sheetBody.scrollTop = this.sheetScrollTop ?? 0;
+      sheetBody.addEventListener("scroll", () => {
+        this.sheetScrollTop = sheetBody.scrollTop;
+      }, { passive: true });
+    }
     this.element.querySelector("[data-actor-portrait]")?.addEventListener("keydown", (event) => {
       if (!["Enter", " "].includes(event.key)) return;
       event.preventDefault();
@@ -364,4 +388,14 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
 function signed(value) {
   const number = Number(value) || 0;
   return number > 0 ? `+${number}` : `${number}`;
+}
+
+function formatNumber(value) {
+  const number = Number(value) || 0;
+  return Number.isInteger(number) ? String(number) : number.toFixed(2).replace(/0+$/u, "").replace(/\.$/u, "");
+}
+
+function activateActorSheetTab(root, tab) {
+  root?.querySelectorAll(".sheet-tabs [data-tab]").forEach((element) => element.classList.toggle("active", element.dataset.tab === tab));
+  root?.querySelectorAll(".sheet-body > .tab").forEach((element) => element.classList.toggle("active", element.dataset.tab === tab));
 }

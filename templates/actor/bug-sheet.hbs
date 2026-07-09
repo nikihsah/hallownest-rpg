@@ -77,6 +77,11 @@
 
           <section class="panel secondary-panel">
             <div class="panel-heading"><h2>{{localize "HRPG.Secondary"}}</h2><span>{{localize (lookup config.sizes system.secondary.size)}}</span></div>
+            <div class="load-summary {{#if loadSummary.over}}overloaded{{/if}}" data-tooltip="{{loadSummary.tooltip}}" data-tooltip-direction="UP">
+              <span>{{localize "HRPG.CarriedWeight"}}</span>
+              <strong>{{loadSummary.current}} / {{loadSummary.maximum}}</strong>
+              {{#if loadSummary.over}}<small>{{localize "HRPG.LoadOverage"}} {{loadSummary.overage}}</small>{{else}}<small>{{localize "HRPG.LoadMaximum"}}</small>{{/if}}
+            </div>
             <div class="resource-stat-grid">
               <div class="resource-stat-card custom-resource-stat">
                 <input name="system.resources.custom1.label" type="text" value="{{system.resources.custom1.label}}" placeholder="{{localize 'HRPG.CustomResource'}}">

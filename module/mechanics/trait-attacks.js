@@ -1,4 +1,5 @@
 import { naturalWeaponQualityValue } from "./trait-quality.js";
+import { selectedItemModification } from "../data/item-modifications.js";
 
 const DAMAGE_PATTERNS = [
   /нанос(?:ит|ящее|ящий|ящие|ить)[^.]{0,80}?(\d+(?:[,.]\d+)?)\s*(?:единиц[а-яё]*\s+)?урон[а-яё]*/iu,
@@ -16,6 +17,7 @@ function weaponQualityValue(weapon) {
 export function quickAttackFromWeapon(weapon) {
   if (!weapon || weapon.type !== "weapon" || weapon.system?.equipped !== true) return null;
   const text = [weapon.system.description, weapon.system.rawText].filter(Boolean).join("\n");
+  const modification = selectedItemModification(weapon);
   return {
     itemId: weapon.id,
     name: weapon.name,
@@ -26,6 +28,8 @@ export function quickAttackFromWeapon(weapon) {
     itemType: weapon.system.itemType ?? "",
     range: weapon.system.range ?? "",
     grip: weapon.system.grip ?? "",
+    weight: Number(weapon.system.weight) || 0,
+    modification: modification?.name ?? "",
     sourceType: "weapon"
   };
 }

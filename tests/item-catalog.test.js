@@ -25,6 +25,7 @@ test("catalog item data preserves equipment fields for Foundry Items", async () 
   const charm = items.find((item) => item.type === "charm");
 
   assert.equal(catalogItemData(needle).type, "weapon");
+  assert.equal(catalogItemData(needle).system.modification, "");
   assert.equal(catalogItemData(needle).system.quality.value, 1);
   assert.equal(catalogItemData(needle).system.itemType, "игла");
   assert.equal(catalogItemData(armor).system.protection >= 0, true);
@@ -49,6 +50,7 @@ test("custom item data creates editable blank items of the requested type", () =
   assert.equal(item.type, "weapon");
   assert.equal(item.name, "Custom Needle");
   assert.equal(item.system.catalogType, "weapon");
+  assert.equal(item.system.modification, "");
   assert.equal(item.system.equipped, false);
 });
 

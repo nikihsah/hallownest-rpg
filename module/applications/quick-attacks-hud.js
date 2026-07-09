@@ -1,5 +1,7 @@
 import { quickAttacksFromItems } from "../mechanics/trait-attacks.js";
-import { unlockedPathAttackOptions } from "../mechanics/path-abilities.js";
+import { availablePathAttackOptions } from "../mechanics/path-abilities.js";
+import { hasEquippedItem, itemPassiveEffects, itemPromptEffects } from "../mechanics/item-effects.js";
+import { traitConditionalOptions, traitPromptEffects } from "../mechanics/trait-effects.js";
 
 const HUD_ID = "hrpg-quick-attacks-hud";
 
@@ -80,12 +82,13 @@ function attackButton(actor, attack) {
     attack.damage ? game.i18n.format("HRPG.DamageValue", { damage: attack.damage }) : game.i18n.localize("HRPG.DamageUnspecified"),
     ...(attack.subtraits?.length ? [attack.subtraits.join(", ")] : [])
   ].join(" · ");
-  if (attack.itemType || attack.range) {
+  if (attack.itemType || attack.range || attack.modification) {
     details.textContent = [
       ...(attack.itemType ? [attack.itemType] : []),
       game.i18n.format("HRPG.QualityValue", { quality: attack.quality ?? 1 }),
       attack.damage ? game.i18n.format("HRPG.DamageValue", { damage: attack.damage }) : game.i18n.localize("HRPG.DamageUnspecified"),
       ...(attack.range ? [attack.range] : []),
+      ...(attack.modification ? [attack.modification] : []),
       ...(attack.subtraits?.length ? [attack.subtraits.join(", ")] : [])
     ].join(" · ");
   }
@@ -100,7 +103,10 @@ function attackButton(actor, attack) {
 }
 
 async function promptAttackOptions(actor, attack) {
-  const pathOptions = unlockedPathAttackOptions(actor);
+  const pathOptions = availablePathAttackOptions(actor, attack);
+  const itemEffects = itemPromptEffects(actor.items, "attack", { itemId: attack.itemId });
+  const traitEffects = traitPromptEffects(actor.items, "attack", { itemId: attack.itemId });
+  const traitOptions = traitConditionalOptions(actor, "attack", { itemId: attack.itemId });
   const id = `hrpg-attack-${attack.itemId}-${foundry.utils.randomID()}`;
   const DialogV2 = foundry.applications?.api?.DialogV2;
   if (!DialogV2?.prompt) {
@@ -121,6 +127,9 @@ async function promptAttackOptions(actor, attack) {
         </label>
         <p>${game.i18n.format("HRPG.AttackTaxHint", { tax: Number(actor.system.combat?.attackTax) || 0 })}</p>
         ${buttons ? `<section><h3>${game.i18n.localize("HRPG.PathAbilities")}</h3>${buttons}</section>` : `<p>${game.i18n.localize("HRPG.NoPathAbilities")}</p>`}
+        ${itemEffects.length ? `<section><h3>${game.i18n.localize("HRPG.ItemEffects")}</h3>${effectNotes(itemEffects)}</section>` : ""}
+        ${traitEffects.length ? `<section><h3>${game.i18n.localize("HRPG.TraitEffects")}</h3>${effectNotes(traitEffects)}</section>` : ""}
+        ${traitOptions.length ? `<section><h3>${game.i18n.localize("HRPG.ConditionalTraitOptions")}</h3>${traitOptionInputs(traitOptions)}</section>` : ""}
       </form>`,
     ok: {
       label: game.i18n.localize("HRPG.Roll"),
@@ -129,7 +138,8 @@ async function promptAttackOptions(actor, attack) {
         const data = new FormData(form);
         return {
           investedStamina: Number(data.get("investedStamina")) || 0,
-          pathOptions: data.getAll("pathOption").map((value) => pathOptions[Number(value)]).filter(Boolean)
+          pathOptions: data.getAll("pathOption").map((value) => pathOptions[Number(value)]).filter(Boolean),
+          traitOptions: data.getAll("traitOption").map(String)
         };
       }
     },
@@ -165,10 +175,11 @@ function secondaryButtons(actor) {
 }
 
 function defenseActionButtons(actor) {
+  const armorPenalty = Number(actor.system.effective?.itemEffects?.defenseStaminaPenalty) || itemPassiveEffects(actor.items).defenseStaminaPenalty;
   return [
     actionButton(actor, { key: "protection", label: "HRPG.DefenseAction", hint: "HRPG.DefenseActionHint", prompt: true, staminaCost: 1 }),
-    actionButton(actor, { key: "dodge", label: "HRPG.Dodge", hint: "HRPG.DodgeHint", prompt: true, staminaCost: 1, attributes: dodgeAttributeOptions(actor) }),
-    actionButton(actor, { key: "parry", label: "HRPG.Parry", hint: "HRPG.ParryHint", prompt: true, staminaCost: 1 }),
+    actionButton(actor, { key: "dodge", label: "HRPG.Dodge", hint: "HRPG.DodgeHint", prompt: true, staminaCost: 1 + armorPenalty, attributes: dodgeAttributeOptions(actor) }),
+    actionButton(actor, { key: "parry", label: "HRPG.Parry", hint: "HRPG.ParryHint", prompt: true, staminaCost: 1 + armorPenalty, attributes: parryAttributeOptions(actor) }),
     actionButton(actor, { key: "absorption", label: "HRPG.DamageAbsorption", hint: "HRPG.DamageAbsorptionHint", prompt: true, staminaCost: 0 })
   ];
 }
@@ -184,15 +195,18 @@ function actionButton(actor, action) {
   button.append(name);
   button.append(details);
   button.addEventListener("click", async () => {
-    const options = action.prompt ? await promptDefenseActionOptions(action) : { bonusDice: 0, staminaCost: action.staminaCost ?? 0 };
+    const options = action.prompt ? await promptDefenseActionOptions(actor, action) : { bonusDice: 0, staminaCost: action.staminaCost ?? 0 };
     if (!options) return;
     await actor.rollDefenseAction(action.key, options);
   });
   return button;
 }
 
-async function promptDefenseActionOptions(action) {
+async function promptDefenseActionOptions(actor, action) {
   const id = `hrpg-defense-${action.key}-${foundry.utils.randomID()}`;
+  const effects = defensePromptEffects(actor, action.key);
+  const traitEffects = traitPromptEffects(actor.items, action.key);
+  const traitOptions = traitConditionalOptions(actor, action.key);
   const DialogV2 = foundry.applications?.api?.DialogV2;
   if (!DialogV2?.prompt) {
     return { bonusDice: Number(window.prompt(game.i18n.localize("HRPG.BonusDice"), "0")) || 0, staminaCost: action.staminaCost ?? 0 };
@@ -211,6 +225,9 @@ async function promptDefenseActionOptions(action) {
         <label>${game.i18n.localize("HRPG.StaminaCost")}
           <input type="number" name="staminaCost" value="${action.staminaCost ?? 0}" min="0" step="1">
         </label>
+        ${effects.length ? `<section><h3>${game.i18n.localize("HRPG.ItemEffects")}</h3>${effectNotes(effects)}</section>` : ""}
+        ${traitEffects.length ? `<section><h3>${game.i18n.localize("HRPG.TraitEffects")}</h3>${effectNotes(traitEffects)}</section>` : ""}
+        ${traitOptions.length ? `<section><h3>${game.i18n.localize("HRPG.ConditionalTraitOptions")}</h3>${traitOptionInputs(traitOptions)}</section>` : ""}
       </form>`,
     ok: {
       label: game.i18n.localize("HRPG.Roll"),
@@ -220,7 +237,8 @@ async function promptDefenseActionOptions(action) {
         return {
           bonusDice: Number(data.get("bonusDice")) || 0,
           staminaCost: Number(data.get("staminaCost")) || 0,
-          attribute: String(data.get("attribute") || "")
+          attribute: String(data.get("attribute") || ""),
+          traitOptions: data.getAll("traitOption").map(String)
         };
       }
     },
@@ -230,12 +248,60 @@ async function promptDefenseActionOptions(action) {
 
 function dodgeAttributeOptions(actor) {
   const options = [{ key: "grace", label: "HRPG.AttributeGrace" }];
-  if (hasTrait(actor, "traits.jumping")) options.push({ key: "speed", label: "HRPG.Speed" });
+  if (hasEquippedItem(actor.items, "charms.combat.prygayushchiy-kon")) {
+    options.push({ key: "power", label: "HRPG.AttributePower" });
+  }
+  if (hasTrait(actor, "traits.prygayushchiy")
+    || hasTrait(actor, "traits.jumping")
+    || hasEquippedItem(actor.items, "charms.general.spryatannaya-strekoza")) {
+    options.push({ key: "speed", label: "HRPG.Speed" });
+  }
+  return options;
+}
+
+function parryAttributeOptions(actor) {
+  const options = [{ key: "power", label: "HRPG.AttributePower" }];
+  if (hasEquippedItem(actor.items, "charms.combat.kradushchiysya-pauk")) {
+    options.push({ key: "grace", label: "HRPG.AttributeGrace" });
+  }
   return options;
 }
 
 function hasTrait(actor, sourceId) {
   return actor.items?.some?.((item) => item.type === "trait" && item.system?.active !== false && item.system?.sourceId === sourceId);
+}
+
+function heavyArmorDefensePenalty(actor) {
+  return actor.items?.some?.((item) => item.type === "armor"
+    && item.system?.equipped === true
+    && (item.system?.sourceId === "equipment.armor.tyazhelaya-bronya"
+      || (item.system?.subtype === "armor" && (Number(item.system?.weight) || 0) >= 3))) ? 1 : 0;
+}
+
+function defensePromptEffects(actor, actionKey) {
+  const triggers = actionKey === "parry" ? ["parry", "defense"]
+    : actionKey === "absorption" ? ["absorption"]
+      : actionKey === "dodge" ? ["defense"]
+        : ["defense"];
+  return triggers.flatMap((trigger) => itemPromptEffects(actor.items, trigger));
+}
+
+function effectNotes(effects) {
+  return effects.map((effect) => `
+    <article class="hrpg-effect-note">
+      <strong>${foundry.utils.escapeHTML(effect.label)}</strong>
+      <small>${foundry.utils.escapeHTML(effect.itemName)}</small>
+      <p>${foundry.utils.escapeHTML(effect.note)}</p>
+    </article>`).join("");
+}
+
+function traitOptionInputs(options) {
+  return options.map((option) => `
+    <label class="hrpg-path-option">
+      <input type="checkbox" name="traitOption" value="${foundry.utils.escapeHTML(option.key)}">
+      <span>${foundry.utils.escapeHTML(option.label)}</span>
+      <small>${foundry.utils.escapeHTML(option.note)}</small>
+    </label>`).join("");
 }
 
 function emptyState(label) {

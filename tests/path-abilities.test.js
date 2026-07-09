@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { applyPathAttackOptions, unlockedPathAttackOptions } from "../module/mechanics/path-abilities.js";
+import { applyPathAttackOptions, availablePathAttackOptions, unlockedPathAttackOptions } from "../module/mechanics/path-abilities.js";
 
 test("path ranks expose their attack choices", () => {
   const actor = {
@@ -30,4 +30,15 @@ test("selected path attack choices modify attack math", () => {
   assert.equal(result.successThreshold, 4);
   assert.equal(result.taxAsDice, true);
   assert.equal(result.notes.length, 4);
+});
+
+test("needle fast strikes are offered only for eligible weapons", () => {
+  const actor = { items: [{ type: "path", name: "Игла", system: { sourceId: "paths.needle", rank: 1 } }] };
+  const heavyRanged = { sourceType: "weapon", name: "Тяжёлая праща", itemType: "праща", weight: 3, range: "Дальний (5)" };
+  const lightMelee = { sourceType: "weapon", name: "Лёгкий клинок", itemType: "гвоздь", weight: 1, range: "Ближний" };
+  const needle = { sourceType: "weapon", name: "Штопальная игла", itemType: "игла", weight: 3, range: "Ближний" };
+
+  assert.equal(availablePathAttackOptions(actor, heavyRanged).some((option) => option.key === "needle-grace"), false);
+  assert.equal(availablePathAttackOptions(actor, lightMelee).some((option) => option.key === "needle-grace"), true);
+  assert.equal(availablePathAttackOptions(actor, needle).some((option) => option.key === "needle-grace"), true);
 });

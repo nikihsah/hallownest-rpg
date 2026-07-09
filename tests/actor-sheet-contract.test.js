@@ -24,6 +24,9 @@ test("actor sheet uses the Foundry V2 application framework", async () => {
   assert.doesNotMatch(source, /extends ActorSheet\s*\{/);
   assert.match(source, /"apply-size": applySizeAction/);
   assert.match(source, /window: \{ resizable: true \}/);
+  assert.match(source, /this\.activeTab = tab/);
+  assert.match(source, /activateActorSheetTab\(this\.element, activeTab\)/);
+  assert.match(source, /this\.sheetScrollTop = sheetBody\.scrollTop/);
 });
 
 test("actor sheet exposes the character milestone selector", async () => {
@@ -62,7 +65,14 @@ test("header exposes heart soul and stamina with temporary hit points", async ()
 test("secondary panel exposes three editable custom resources", async () => {
   const template = await readFile(templateUrl, "utf8");
   const schema = await readFile(new URL("../template.json", import.meta.url), "utf8");
+  const sheet = await readFile(sheetUrl, "utf8");
   assert.match(template, /class="resource-stat-grid"/);
+  assert.match(template, /class="load-summary \{\{#if loadSummary\.over\}\}overloaded\{\{\/if\}\}"/);
+  assert.match(template, /HRPG\.CarriedWeight/);
+  assert.match(template, /HRPG\.LoadMaximum/);
+  assert.match(sheet, /context\.loadSummary/);
+  assert.match(sheet, /system\.derived\.carriedWeight/);
+  assert.match(sheet, /system\.derived\.load/);
   for (const key of ["custom1", "custom2", "custom3"]) {
     assert.match(template, new RegExp(`name="system\\.resources\\.${key}\\.label"`));
     assert.match(template, new RegExp(`name="system\\.resources\\.${key}\\.value"`));
@@ -86,7 +96,7 @@ test("quick trait attacks are exposed through the selected-token HUD", async () 
   assert.match(hud, /quickAttacksFromItems\(actor\.items\)/);
   assert.match(hud, /attack\.itemType/);
   assert.match(hud, /attack\.range/);
-  assert.match(hud, /unlockedPathAttackOptions\(actor\)/);
+  assert.match(hud, /availablePathAttackOptions\(actor, attack\)/);
   assert.match(hud, /promptAttackOptions\(actor, attack\)/);
   assert.match(hud, /actor\.rollTraitAttack\(attack\.itemId, options\)/);
   assert.match(hud, /HRPG\.InvestedStamina/);
@@ -109,11 +119,25 @@ test("quick trait attacks are exposed through the selected-token HUD", async () 
   assert.match(hud, /HRPG\.Dodge/);
   assert.match(hud, /HRPG\.Parry/);
   assert.match(hud, /HRPG\.DamageAbsorption/);
-  assert.match(hud, /promptDefenseActionOptions\(action\)/);
+  assert.match(hud, /promptDefenseActionOptions\(actor, action\)/);
   assert.match(hud, /actor\.rollDefenseAction\(action\.key, options\)/);
   assert.match(hud, /HRPG\.StaminaCost/);
   assert.match(hud, /dodgeAttributeOptions\(actor\)/);
-  assert.match(hud, /traits\.jumping/);
+  assert.match(hud, /parryAttributeOptions\(actor\)/);
+  assert.match(hud, /traits\.prygayushchiy/);
+  assert.match(hud, /itemPassiveEffects\(actor\.items\)\.defenseStaminaPenalty/);
+  assert.match(hud, /staminaCost: 1 \+ armorPenalty/);
+  assert.match(hud, /itemPromptEffects\(actor\.items, "attack", \{ itemId: attack\.itemId \}\)/);
+  assert.match(hud, /traitPromptEffects\(actor\.items, "attack", \{ itemId: attack\.itemId \}\)/);
+  assert.match(hud, /traitConditionalOptions\(actor, "attack", \{ itemId: attack\.itemId \}\)/);
+  assert.match(hud, /itemPromptEffects\(actor\.items, trigger\)/);
+  assert.match(hud, /HRPG\.ItemEffects/);
+  assert.match(hud, /HRPG\.TraitEffects/);
+  assert.match(hud, /HRPG\.ConditionalTraitOptions/);
+  assert.match(hud, /traitOptionInputs\(traitOptions\)/);
+  assert.match(hud, /charms\.general\.spryatannaya-strekoza/);
+  assert.match(hud, /charms\.combat\.prygayushchiy-kon/);
+  assert.match(hud, /charms\.combat\.kradushchiysya-pauk/);
   assert.match(hud, /HRPG\.DefenseAttribute/);
   assert.match(hud, /staminaCost: Number\(data\.get\("staminaCost"\)\) \|\| 0/);
   assert.match(hud, /makeDraggable\(hud\)/);
@@ -133,6 +157,8 @@ test("path sheet hides inventory metadata and selects ranks from one to three", 
   assert.match(actorTemplate, /\{\{path\.name\}\} - \{\{localize path\.categoryLabel\}\}/);
   assert.doesNotMatch(actorTemplate, /вЂ”/);
   assert.match(itemSheet, /submitOnChange:\s*true/);
+  assert.match(itemSheet, /activateListeners\(html\)/);
+  assert.match(itemSheet, /element\.scrollTop = this\.sheetScrollTop/);
   const pathFields = template.match(/\{\{#if \(eq item\.type "path"\)\}\}([\s\S]*?)\{\{\/if\}\}/)?.[1] ?? "";
   assert.doesNotMatch(pathFields, /name="system\.sourceId"/);
 });
@@ -191,6 +217,8 @@ test("actor sheet opens item catalogs and toggles equipment", async () => {
   assert.match(itemTemplate, /name="system\.damageReduction"/);
   assert.match(itemTemplate, /name="system\.notches"/);
   assert.match(itemTemplate, /name="system\.uses\.value"/);
+  assert.match(itemTemplate, /name="system\.modification"/);
+  assert.match(itemTemplate, /selectedItemModification/);
   assert.match(itemTemplate, /item-raw-text/);
 });
 
@@ -232,7 +260,7 @@ test("actor document exposes defensive action rolls", async () => {
   assert.match(actor, /spendCombatStamina\(cost = 0\)/);
   assert.match(actor, /"system\.resources\.stamina\.value": next/);
   assert.match(actor, /HRPG\.StaminaExceeded/);
-  assert.match(actor, /rollDefenseAction\(actionKey, \{ bonusDice = 0, staminaCost = 0, attribute = "" \} = \{\}\)/);
+  assert.match(actor, /rollDefenseAction\(actionKey, \{ bonusDice = 0, staminaCost = 0, attribute = "", traitOptions = \[\] \} = \{\}\)/);
   assert.match(actor, /await this\.spendCombatStamina\(staminaCost\)/);
   assert.match(actor, /dodge: \{ label: "HRPG\.Dodge", attribute: "grace" \}/);
   assert.match(actor, /parry: \{ label: "HRPG\.Parry", attribute: "power" \}/);
@@ -240,18 +268,32 @@ test("actor document exposes defensive action rolls", async () => {
   assert.match(actor, /rollAttributeDefense\(attributeKey, \{ label, bonusDice = 0, notes = \[\] \} = \{\}\)/);
   assert.match(actor, /Math\.floor\(value\) \+ Math\.floor\(Number\(bonusDice\) \|\| 0\)/);
   assert.match(actor, /rollAbsorption\(attributeKey = "shell", options = \{\}\)/);
+  assert.match(actor, /itemPassiveEffects\(this\.items\)/);
+  assert.match(actor, /itemDefenseBonus\(this, actionKey\)/);
+  assert.match(actor, /applyTraitConditionalOptions\(traitConditionalOptions\(this, actionKey\), traitOptions\)/);
+  assert.match(actor, /traitPromptNotes\(this\.items, \[actionKey\]\)/);
+  assert.match(actor, /itemPromptNotes\(this\.items, defensePromptTriggers\(actionKey\)\)/);
+  assert.match(actor, /itemPromptNotes\(this\.items, \["attack"\], \{ itemId \}\)/);
+  assert.match(actor, /attackTaxReduction/);
+  assert.match(actor, /itemEffects\.modifiers/);
+  assert.match(actor, /pathSupplyBonus\(path\.system\?\.sourceId, rank\)/);
+  assert.match(actor, /pathAppealBonus\(path\.system\?\.sourceId, rank\)/);
+  assert.match(actor, /itemEffectNotes\(this\.system\.effective\?\.itemEffects/);
   assert.match(actor, /effective\?\.attributes\?\.\[attributeKey\]\?\.value/);
   assert.match(actor, /HRPG\.DefenseRoll/);
   assert.match(actor, /reroll: value % 1 >= 0\.5/);
   assert.match(actor, /naturalWeaponQualityValue\(item\)/);
   assert.match(actor, /spendAttackStamina\(\{ invested = 0, taxAsDice = false \} = \{\}\)/);
   assert.match(actor, /const base = 1/);
-  assert.match(actor, /"system\.combat\.attackTax": tax \+ 1/);
+  assert.match(actor, /"system\.combat\.attackTax": rawTax \+ 1/);
   assert.match(actor, /baseAttackConfig\(this, item\)/);
+  assert.match(actor, /equipment\.magic-focus\.palochka/);
+  assert.match(actor, /HRPG\.MagicFocusInsightAttack/);
+  assert.match(actor, /function defensePromptTriggers\(actionKey\)/);
   assert.match(actor, /applyPathAttackOptions\(\{ attribute: baseAttack\.attribute, successThreshold: 5 \}, pathOptions\)/);
   assert.match(actor, /paths\.needle/);
   assert.match(actor, /HRPG\.NeedlePathWeaponGrace/);
-  assert.match(actor, /dice: Math\.floor\(value\) \+ quality \+ stamina\.dice \+ attackOptions\.bonusDice/);
+  assert.match(actor, /dice: Math\.floor\(value\) \+ quality \+ stamina\.dice \+ attackOptions\.bonusDice \+ traitAdjustment\.bonusDice/);
   assert.match(actor, /successThreshold: attackOptions\.successThreshold/);
 });
 
@@ -262,4 +304,14 @@ test("combat movement highlights Speed overage instead of warning", async () => 
   assert.match(combat, /SPEED_OVERAGE_LAYER/);
   assert.match(combat, /color: 0xb82020/);
   assert.doesNotMatch(combat, /ui\.notifications\.warn\(game\.i18n\.localize\("HRPG\.SpeedExceeded"\)\)/);
+});
+
+test("long item and catalog descriptions scroll inside their panels", async () => {
+  const styles = await readFile(new URL("../styles/system.css", import.meta.url), "utf8");
+
+  assert.match(styles, /\.hrpg\.sheet\.item form \{[^}]*overflow: auto/s);
+  assert.match(styles, /\.trait-choice details, \.item-choice details \{[^}]*max-height: 9rem/s);
+  assert.match(styles, /\.trait-choice details, \.item-choice details \{[^}]*overflow-y: auto/s);
+  assert.match(styles, /\.hrpg \.path-ranks \{[^}]*max-height: 22rem/s);
+  assert.match(styles, /\.hrpg \.path-ranks \{[^}]*overflow-y: auto/s);
 });
