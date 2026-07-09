@@ -9,6 +9,27 @@ export function quickAttackFromTrait(trait) {
   return quickAttackFromTraitWithSubtraits(trait, []);
 }
 
+function weaponQualityValue(weapon) {
+  return Math.max(0, Math.floor(Number(weapon.system?.quality?.value ?? 1) || 0));
+}
+
+export function quickAttackFromWeapon(weapon) {
+  if (!weapon || weapon.type !== "weapon" || weapon.system?.equipped !== true) return null;
+  const text = [weapon.system.description, weapon.system.rawText].filter(Boolean).join("\n");
+  return {
+    itemId: weapon.id,
+    name: weapon.name,
+    damage: weapon.system.damage ?? "",
+    quality: weaponQualityValue(weapon),
+    tooltip: attackTooltip(text || weapon.name),
+    subtraits: [],
+    itemType: weapon.system.itemType ?? "",
+    range: weapon.system.range ?? "",
+    grip: weapon.system.grip ?? "",
+    sourceType: "weapon"
+  };
+}
+
 export function quickAttackFromTraitWithSubtraits(trait, subtraits = []) {
   if (!trait || trait.type !== "trait" || trait.system?.active === false) return null;
   if (trait.system?.category !== "weapons") return null;
@@ -49,9 +70,13 @@ export function quickAttacksFromItems(items) {
     subtraitsByParentItem.set(parentItemId, list);
   }
 
-  return parentTraits
+  const traitAttacks = parentTraits
     .map((item) => quickAttackFromTraitWithSubtraits(item, subtraitsByParentItem.get(item.id) ?? []))
     .filter(Boolean);
+  const weaponAttacks = Array.from(items ?? [])
+    .map((item) => quickAttackFromWeapon(item))
+    .filter(Boolean);
+  return [...traitAttacks, ...weaponAttacks];
 }
 
 function legacySingleParentId(parentsBySource, parentSourceId) {

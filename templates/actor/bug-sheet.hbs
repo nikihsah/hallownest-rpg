@@ -138,7 +138,7 @@
       <div class="tab charms" data-group="primary" data-tab="charms">
         <section class="panel collection-panel">
           <div class="panel-heading"><h2>{{localize "HRPG.Charms"}}</h2><button type="button" data-action="create-item" data-type="charm">+</button></div>
-          {{#each itemsByType.charm as |item|}}<div class="item-row card-item" data-open-item-id="{{item.id}}" role="button" tabindex="0"><img src="{{item.img}}"><strong>{{item.name}}</strong></div>{{else}}<p class="empty-state">{{localize "HRPG.NoCharms"}}</p>{{/each}}
+          {{#each itemsByType.charm as |item|}}<div class="item-row card-item" data-open-item-id="{{item.id}}" role="button" tabindex="0"><img src="{{item.img}}"><div><strong>{{item.name}}</strong><small>{{#if item.system.notches}}{{localize "HRPG.Notches"}} {{item.system.notches}}{{/if}}</small></div><label class="item-equipped"><input data-item-equipped="{{item.id}}" type="checkbox" {{#if item.system.equipped}}checked{{/if}}> {{localize "HRPG.Equipped"}}</label><button class="item-delete" type="button" data-action="delete-item" data-item-id="{{item.id}}" data-tooltip="{{localize 'HRPG.DeleteItem'}}">&times;</button></div>{{else}}<p class="empty-state">{{localize "HRPG.NoCharms"}}</p>{{/each}}
         </section>
       </div>
 
@@ -155,7 +155,7 @@
 
       <div class="tab inventory" data-group="primary" data-tab="inventory">
         {{#each inventoryItemTypes as |label type|}}
-          <section class="panel item-group"><div class="panel-heading"><h2>{{localize label}}</h2><button type="button" data-action="create-item" data-type="{{type}}">+</button></div>{{#each (lookup ../itemsByType type) as |item|}}<div class="item-row line-item" data-open-item-id="{{item.id}}" role="button" tabindex="0"><img src="{{item.img}}"><span>{{item.name}}</span><small>{{item.system.weight}}</small></div>{{/each}}</section>
+          <section class="panel item-group"><div class="panel-heading"><h2>{{localize label}}</h2><button type="button" data-action="create-item" data-type="{{type}}">+</button></div>{{#each (lookup ../itemsByType type) as |item|}}<div class="item-row line-item" data-open-item-id="{{item.id}}" role="button" tabindex="0"><img src="{{item.img}}"><span>{{item.name}}</span><small>{{#if item.system.weightLabel}}{{item.system.weightLabel}}{{else}}{{item.system.weight}}{{/if}}</small><label class="item-equipped"><input data-item-equipped="{{item.id}}" type="checkbox" {{#if item.system.equipped}}checked{{/if}}> {{localize "HRPG.Equipped"}}</label><button class="item-delete" type="button" data-action="delete-item" data-item-id="{{item.id}}" data-tooltip="{{localize 'HRPG.DeleteItem'}}">&times;</button></div>{{else}}<p class="empty-state">{{localize "HRPG.EmptyItemGroup"}}</p>{{/each}}</section>
         {{/each}}
       </div>
 

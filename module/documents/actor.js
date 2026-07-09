@@ -95,18 +95,20 @@ export class HallownestActor extends Actor {
   async spendAttackStamina({ invested = 0, taxAsDice = false } = {}) {
     const inCombat = Boolean(game.combat?.started);
     const tax = inCombat ? Math.max(0, Math.floor(Number(this.system.combat?.attackTax) || 0)) : 0;
+    const base = 1;
     const investedStamina = Math.max(0, Math.floor(Number(invested) || 0));
-    await this.spendCombatStamina(investedStamina + tax);
+    await this.spendCombatStamina(base + investedStamina + tax);
     if (inCombat) await this.update({ "system.combat.attackTax": tax + 1 });
     return {
+      base,
       invested: investedStamina,
       tax,
       dice: investedStamina + (taxAsDice ? tax : 0),
-      totalCost: investedStamina + tax
+      totalCost: base + investedStamina + tax
     };
   }
 
-  async rollDefenseAction(actionKey, { bonusDice = 0, staminaCost = 0 } = {}) {
+  async rollDefenseAction(actionKey, { bonusDice = 0, staminaCost = 0, attribute = "" } = {}) {
     const actions = {
       protection: { label: "HRPG.DefenseAction", attribute: "" },
       dodge: { label: "HRPG.Dodge", attribute: "grace" },
@@ -116,29 +118,39 @@ export class HallownestActor extends Actor {
     const action = actions[actionKey];
     if (!action) return null;
     await this.spendCombatStamina(staminaCost);
+    const attributeKey = attribute || action.attribute;
     if (!action.attribute) {
       return ChatMessage.create({
         speaker: ChatMessage.getSpeaker({ actor: this }),
         flavor: `<strong>${foundry.utils.escapeHTML(game.i18n.localize(action.label))}</strong><br>${foundry.utils.escapeHTML(game.i18n.localize("HRPG.DefenseActionHint"))}`
       });
     }
-    return this.rollAttributeDefense(action.attribute, {
+    return this.rollAttributeDefense(attributeKey, {
       label: game.i18n.localize(action.label),
-      bonusDice
+      bonusDice,
+      notes: [game.i18n.format("HRPG.DefenseStaminaSpent", { cost: Math.max(0, Math.floor(Number(staminaCost) || 0)) })]
     });
   }
 
-  rollAttributeDefense(attributeKey, { label, bonusDice = 0 } = {}) {
-    const value = Number(this.system.effective?.attributes?.[attributeKey]?.value) || 0;
+  rollAttributeDefense(attributeKey, { label, bonusDice = 0, notes = [] } = {}) {
+    const isSecondary = ["speed", "appeal", "dread"].includes(attributeKey);
+    const value = isSecondary
+      ? Math.max(0, (Number(this.system.effective?.secondary?.[attributeKey]) || 0) + (Number(this.system.adjustments?.[attributeKey]) || 0) - (attributeKey === "speed" ? Number(this.system.combat?.speedSpent) || 0 : 0))
+      : Number(this.system.effective?.attributes?.[attributeKey]?.value) || 0;
     const dice = Math.floor(value) + Math.floor(Number(bonusDice) || 0);
+    const attributeLabel = game.i18n.localize(CONFIG.HRPG.attributes?.[attributeKey] ?? secondaryDefenseLabels[attributeKey] ?? attributeKey);
     return rollDicePool({
       actor: this,
       dice,
       reroll: value % 1 >= 0.5,
       label: game.i18n.format("HRPG.DefenseRoll", {
         action: label ?? game.i18n.localize(CONFIG.HRPG.attributes[attributeKey] ?? attributeKey),
-        attribute: game.i18n.localize(CONFIG.HRPG.attributes[attributeKey] ?? attributeKey)
-      })
+        attribute: attributeLabel
+      }),
+      notes: [
+        game.i18n.format("HRPG.DefenseAttributeUsed", { attribute: attributeLabel, dice }),
+        ...notes
+      ]
     });
   }
 
@@ -152,11 +164,12 @@ export class HallownestActor extends Actor {
   async rollTraitAttack(itemId, { investedStamina = 0, pathOptions = [] } = {}) {
     const item = this.items.get(itemId);
     if (!item) return null;
-    const attackOptions = applyPathAttackOptions({ attribute: "power", successThreshold: 5 }, pathOptions);
+    const baseAttack = baseAttackConfig(this, item);
+    const attackOptions = applyPathAttackOptions({ attribute: baseAttack.attribute, successThreshold: 5 }, pathOptions);
     const stamina = await this.spendAttackStamina({ invested: investedStamina, taxAsDice: attackOptions.taxAsDice });
     const attributeKey = attackOptions.attribute;
     const value = Number(this.system.effective?.attributes?.[attributeKey]?.value) || 0;
-    const quality = Math.max(0, Math.floor(naturalWeaponQualityValue(item)));
+    const quality = item.type === "weapon" ? weaponQualityValue(item) : Math.max(0, Math.floor(naturalWeaponQualityValue(item)));
     const damage = quickAttacksFromItems(this.items).find((attack) => attack.itemId === itemId)?.damage ?? "";
     const label = game.i18n.format("HRPG.TraitAttackRoll", {
       name: item.name,
@@ -169,8 +182,9 @@ export class HallownestActor extends Actor {
       successThreshold: attackOptions.successThreshold,
       label,
       notes: [
-        game.i18n.format("HRPG.AttackStaminaSpent", { invested: stamina.invested, tax: stamina.tax, total: stamina.totalCost }),
+        game.i18n.format("HRPG.AttackStaminaSpent", { base: stamina.base, invested: stamina.invested, tax: stamina.tax, total: stamina.totalCost }),
         game.i18n.format("HRPG.AttackAttributeUsed", { attribute: game.i18n.localize(CONFIG.HRPG.attributes[attributeKey] ?? attributeKey) }),
+        ...baseAttack.notes,
         ...attackOptions.notes
       ]
     });
@@ -184,4 +198,32 @@ export class HallownestActor extends Actor {
 function cappedResourceMax(key, value) {
   const number = Number(value) || 0;
   return ["stamina", "soul"].includes(key) ? Math.min(7, number) : number;
+}
+
+const secondaryDefenseLabels = { speed: "HRPG.Speed", appeal: "HRPG.Appeal", dread: "HRPG.Dread" };
+
+function baseAttackConfig(actor, item) {
+  if (item.type !== "weapon") return { attribute: "power", notes: [] };
+  const weight = Number(item.system?.weight) || 0;
+  const weaponText = [item.name, item.system?.itemType, item.system?.subtype, item.system?.description, item.system?.rawText]
+    .filter(Boolean)
+    .join(" ")
+    .toLocaleLowerCase();
+  if (hasPath(actor, "paths.needle", 1) && (weight <= 2 || /игл|needle/u.test(weaponText))) {
+    return { attribute: "grace", notes: [game.i18n.localize("HRPG.NeedlePathWeaponGrace")] };
+  }
+  if (hasPath(actor, "paths.hook", 1) && weight <= 2 && /крюк|hook|серп|sickle/u.test(weaponText)) {
+    return { attribute: "grace", notes: [game.i18n.localize("HRPG.HookPathWeaponGrace")] };
+  }
+  return { attribute: "power", notes: [] };
+}
+
+function hasPath(actor, sourceId, minimumRank = 1) {
+  return actor.items.some((item) => item.type === "path"
+    && item.system?.sourceId === sourceId
+    && Math.floor(Number(item.system?.rank) || 0) >= minimumRank);
+}
+
+function weaponQualityValue(item) {
+  return Math.max(0, Math.floor(Number(item.system?.quality?.value ?? 1) || 0));
 }

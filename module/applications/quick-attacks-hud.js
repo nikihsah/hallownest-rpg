@@ -80,6 +80,15 @@ function attackButton(actor, attack) {
     attack.damage ? game.i18n.format("HRPG.DamageValue", { damage: attack.damage }) : game.i18n.localize("HRPG.DamageUnspecified"),
     ...(attack.subtraits?.length ? [attack.subtraits.join(", ")] : [])
   ].join(" · ");
+  if (attack.itemType || attack.range) {
+    details.textContent = [
+      ...(attack.itemType ? [attack.itemType] : []),
+      game.i18n.format("HRPG.QualityValue", { quality: attack.quality ?? 1 }),
+      attack.damage ? game.i18n.format("HRPG.DamageValue", { damage: attack.damage }) : game.i18n.localize("HRPG.DamageUnspecified"),
+      ...(attack.range ? [attack.range] : []),
+      ...(attack.subtraits?.length ? [attack.subtraits.join(", ")] : [])
+    ].join(" · ");
+  }
   button.append(details);
 
   button.addEventListener("click", async () => {
@@ -158,7 +167,7 @@ function secondaryButtons(actor) {
 function defenseActionButtons(actor) {
   return [
     actionButton(actor, { key: "protection", label: "HRPG.DefenseAction", hint: "HRPG.DefenseActionHint", prompt: true, staminaCost: 1 }),
-    actionButton(actor, { key: "dodge", label: "HRPG.Dodge", hint: "HRPG.DodgeHint", prompt: true, staminaCost: 1 }),
+    actionButton(actor, { key: "dodge", label: "HRPG.Dodge", hint: "HRPG.DodgeHint", prompt: true, staminaCost: 1, attributes: dodgeAttributeOptions(actor) }),
     actionButton(actor, { key: "parry", label: "HRPG.Parry", hint: "HRPG.ParryHint", prompt: true, staminaCost: 1 }),
     actionButton(actor, { key: "absorption", label: "HRPG.DamageAbsorption", hint: "HRPG.DamageAbsorptionHint", prompt: true, staminaCost: 0 })
   ];
@@ -193,6 +202,9 @@ async function promptDefenseActionOptions(action) {
     content: `
       <form id="${id}" class="hrpg-defense-dialog">
         <p>${foundry.utils.escapeHTML(game.i18n.localize(action.hint))}</p>
+        ${action.attributes?.length ? `<label>${game.i18n.localize("HRPG.DefenseAttribute")}
+          <select name="attribute">${action.attributes.map((option) => `<option value="${option.key}">${foundry.utils.escapeHTML(game.i18n.localize(option.label))}</option>`).join("")}</select>
+        </label>` : ""}
         <label>${game.i18n.localize("HRPG.BonusDice")}
           <input type="number" name="bonusDice" value="0" step="1">
         </label>
@@ -207,12 +219,23 @@ async function promptDefenseActionOptions(action) {
         const data = new FormData(form);
         return {
           bonusDice: Number(data.get("bonusDice")) || 0,
-          staminaCost: Number(data.get("staminaCost")) || 0
+          staminaCost: Number(data.get("staminaCost")) || 0,
+          attribute: String(data.get("attribute") || "")
         };
       }
     },
     rejectClose: false
   });
+}
+
+function dodgeAttributeOptions(actor) {
+  const options = [{ key: "grace", label: "HRPG.AttributeGrace" }];
+  if (hasTrait(actor, "traits.jumping")) options.push({ key: "speed", label: "HRPG.Speed" });
+  return options;
+}
+
+function hasTrait(actor, sourceId) {
+  return actor.items?.some?.((item) => item.type === "trait" && item.system?.active !== false && item.system?.sourceId === sourceId);
 }
 
 function emptyState(label) {

@@ -4,6 +4,7 @@ import { currentStatValue, statAdjustment } from "../mechanics/stat-adjustments.
 import { restActor } from "../mechanics/rest.js";
 import { loadPathCatalog, pathItemData } from "../data/path-catalog.js";
 import { TraitCatalogApplication } from "../applications/trait-catalog.js";
+import { ItemCatalogApplication } from "../applications/item-catalog.js";
 import { isNaturalWeaponTrait, naturalWeaponQualityMax, naturalWeaponQualityValue } from "../mechanics/trait-quality.js";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
@@ -35,6 +36,19 @@ async function createItemAction(_event, target) {
     } catch (error) {
       console.error("Hallownest RPG | Failed to open trait catalog", error);
       return ui.notifications.error(game.i18n.localize("HRPG.TraitCatalogFailed"));
+    }
+  }
+  if (["weapon", "armor", "charm", "gear", "consumable"].includes(type)) {
+    try {
+      this.itemCatalogs ??= {};
+      this.itemCatalogs[type] ??= new ItemCatalogApplication(this.actor, {
+        id: `hrpg-item-catalog-${this.actor.id}-${type}`,
+        catalogType: type
+      });
+      return await this.itemCatalogs[type].render({ force: true });
+    } catch (error) {
+      console.error("Hallownest RPG | Failed to open item catalog", error);
+      return ui.notifications.error(game.i18n.localize("HRPG.ItemCatalogFailed"));
     }
   }
   const [created] = await this.actor.createEmbeddedDocuments("Item", [{
@@ -314,6 +328,14 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
         const item = this.actor.items.get(event.currentTarget.dataset.traitQualityMax);
         if (!item) return;
         await item.update({ "system.quality.max": Math.max(0, Number(event.currentTarget.value) || 0) });
+      });
+    }
+    for (const input of this.element.querySelectorAll("[data-item-equipped]")) {
+      input.addEventListener("change", async (event) => {
+        event.stopPropagation();
+        const item = this.actor.items.get(event.currentTarget.dataset.itemEquipped);
+        if (!item) return;
+        await item.update({ "system.equipped": event.currentTarget.checked });
       });
     }
     for (const row of this.element.querySelectorAll("[data-action='open-item'][data-item-id]")) {

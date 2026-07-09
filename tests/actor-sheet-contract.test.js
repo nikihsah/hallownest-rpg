@@ -84,6 +84,8 @@ test("quick trait attacks are exposed through the selected-token HUD", async () 
   assert.match(main, /registerQuickAttacksHud\(\)/);
   assert.match(hud, /Hooks\.on\("controlToken", refreshQuickAttacksHud\)/);
   assert.match(hud, /quickAttacksFromItems\(actor\.items\)/);
+  assert.match(hud, /attack\.itemType/);
+  assert.match(hud, /attack\.range/);
   assert.match(hud, /unlockedPathAttackOptions\(actor\)/);
   assert.match(hud, /promptAttackOptions\(actor, attack\)/);
   assert.match(hud, /actor\.rollTraitAttack\(attack\.itemId, options\)/);
@@ -110,12 +112,16 @@ test("quick trait attacks are exposed through the selected-token HUD", async () 
   assert.match(hud, /promptDefenseActionOptions\(action\)/);
   assert.match(hud, /actor\.rollDefenseAction\(action\.key, options\)/);
   assert.match(hud, /HRPG\.StaminaCost/);
+  assert.match(hud, /dodgeAttributeOptions\(actor\)/);
+  assert.match(hud, /traits\.jumping/);
+  assert.match(hud, /HRPG\.DefenseAttribute/);
   assert.match(hud, /staminaCost: Number\(data\.get\("staminaCost"\)\) \|\| 0/);
   assert.match(hud, /makeDraggable\(hud\)/);
   assert.doesNotMatch(styles, /writing-mode/);
   assert.match(styles, /text-overflow: ellipsis/);
   assert.match(styles, /\.hrpg-quick-hud-tabs button \{[^}]*display: block/s);
-  assert.match(styles, /\[data-hrpg-attack-list\] button \{[^}]*gap: \.38rem/s);
+  assert.match(styles, /\[data-hrpg-attack-list\] button, \.hrpg-quick-hud \[data-hrpg-action-list\] button \{[^}]*gap: \.48rem/s);
+  assert.match(styles, /\.hrpg-defense-dialog \{[^}]*background: rgba\(242,238,226,\.96\)/s);
 });
 
 test("path sheet hides inventory metadata and selects ranks from one to three", async () => {
@@ -164,14 +170,34 @@ test("actor traits tab tracks trait limit and natural weapon quality", async () 
   assert.match(sheet, /isNaturalWeaponTrait\(trait\)/);
   assert.match(sheet, /data-trait-quality/);
   assert.match(sheet, /"system\.quality\.value"/);
-  assert.match(schema, /"traits": \{ "max": 10 \}/);
+  assert.match(schema, /"traits": \{ "max": 7 \}/);
   assert.match(schema, /"quality": \{ "value": 0, "max": 0 \}/);
+});
+
+test("actor sheet opens item catalogs and toggles equipment", async () => {
+  const template = await readFile(templateUrl, "utf8");
+  const sheet = await readFile(sheetUrl, "utf8");
+  const itemTemplate = await readFile(new URL("../templates/item/item-sheet.hbs", import.meta.url), "utf8");
+
+  assert.match(sheet, /import \{ ItemCatalogApplication \}/);
+  assert.match(sheet, /new ItemCatalogApplication\(this\.actor/);
+  assert.match(sheet, /\["weapon", "armor", "charm", "gear", "consumable"\]\.includes\(type\)/);
+  assert.match(sheet, /data-item-equipped/);
+  assert.match(sheet, /"system\.equipped": event\.currentTarget\.checked/);
+  assert.match(template, /data-item-equipped="\{\{item\.id\}\}"/);
+  assert.match(template, /HRPG\.Equipped/);
+  assert.match(itemTemplate, /name="system\.itemType"/);
+  assert.match(itemTemplate, /name="system\.quality\.value"/);
+  assert.match(itemTemplate, /name="system\.damageReduction"/);
+  assert.match(itemTemplate, /name="system\.notches"/);
+  assert.match(itemTemplate, /name="system\.uses\.value"/);
+  assert.match(itemTemplate, /item-raw-text/);
 });
 
 test("paths and traits can be removed from the actor sheet", async () => {
   const template = await readFile(templateUrl, "utf8");
   const sheet = await readFile(sheetUrl, "utf8");
-  assert.equal((template.match(/data-action="delete-item"/g) ?? []).length, 2);
+  assert.equal((template.match(/data-action="delete-item"/g) ?? []).length, 4);
   assert.match(template, /&times;/);
   assert.doesNotMatch(template, /Г—/);
   assert.match(sheet, /"delete-item": deleteItemAction/);
@@ -206,12 +232,12 @@ test("actor document exposes defensive action rolls", async () => {
   assert.match(actor, /spendCombatStamina\(cost = 0\)/);
   assert.match(actor, /"system\.resources\.stamina\.value": next/);
   assert.match(actor, /HRPG\.StaminaExceeded/);
-  assert.match(actor, /rollDefenseAction\(actionKey, \{ bonusDice = 0, staminaCost = 0 \} = \{\}\)/);
+  assert.match(actor, /rollDefenseAction\(actionKey, \{ bonusDice = 0, staminaCost = 0, attribute = "" \} = \{\}\)/);
   assert.match(actor, /await this\.spendCombatStamina\(staminaCost\)/);
   assert.match(actor, /dodge: \{ label: "HRPG\.Dodge", attribute: "grace" \}/);
   assert.match(actor, /parry: \{ label: "HRPG\.Parry", attribute: "power" \}/);
   assert.match(actor, /absorption: \{ label: "HRPG\.DamageAbsorption", attribute: "shell" \}/);
-  assert.match(actor, /rollAttributeDefense\(attributeKey, \{ label, bonusDice = 0 \} = \{\}\)/);
+  assert.match(actor, /rollAttributeDefense\(attributeKey, \{ label, bonusDice = 0, notes = \[\] \} = \{\}\)/);
   assert.match(actor, /Math\.floor\(value\) \+ Math\.floor\(Number\(bonusDice\) \|\| 0\)/);
   assert.match(actor, /rollAbsorption\(attributeKey = "shell", options = \{\}\)/);
   assert.match(actor, /effective\?\.attributes\?\.\[attributeKey\]\?\.value/);
@@ -219,8 +245,12 @@ test("actor document exposes defensive action rolls", async () => {
   assert.match(actor, /reroll: value % 1 >= 0\.5/);
   assert.match(actor, /naturalWeaponQualityValue\(item\)/);
   assert.match(actor, /spendAttackStamina\(\{ invested = 0, taxAsDice = false \} = \{\}\)/);
+  assert.match(actor, /const base = 1/);
   assert.match(actor, /"system\.combat\.attackTax": tax \+ 1/);
-  assert.match(actor, /applyPathAttackOptions\(\{ attribute: "power", successThreshold: 5 \}, pathOptions\)/);
+  assert.match(actor, /baseAttackConfig\(this, item\)/);
+  assert.match(actor, /applyPathAttackOptions\(\{ attribute: baseAttack\.attribute, successThreshold: 5 \}, pathOptions\)/);
+  assert.match(actor, /paths\.needle/);
+  assert.match(actor, /HRPG\.NeedlePathWeaponGrace/);
   assert.match(actor, /dice: Math\.floor\(value\) \+ quality \+ stamina\.dice \+ attackOptions\.bonusDice/);
   assert.match(actor, /successThreshold: attackOptions\.successThreshold/);
 });

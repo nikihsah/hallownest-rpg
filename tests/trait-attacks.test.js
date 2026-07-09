@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { quickAttackFromTrait, quickAttacksFromItems } from "../module/mechanics/trait-attacks.js";
+import { quickAttackFromTrait, quickAttackFromWeapon, quickAttacksFromItems } from "../module/mechanics/trait-attacks.js";
 
 const catalogUrl = new URL("../data/traits.json", import.meta.url);
 
@@ -93,4 +93,31 @@ test("quick attacks only include active attack-like weapon traits", () => {
 
   assert.deepEqual(attacks.map((attack) => attack.itemId), ["horn"]);
   assert.deepEqual(attacks.map((attack) => attack.quality), [1]);
+});
+
+test("equipped weapons become quick attacks and unequipped weapons stay hidden", () => {
+  const equipped = {
+    id: "needle",
+    name: "Игла",
+    type: "weapon",
+    system: {
+      equipped: true,
+      itemType: "игла",
+      damage: "3",
+      range: "1Р",
+      grip: "1",
+      quality: { value: 2, max: 3 },
+      description: "Точная дуэльная игла."
+    }
+  };
+  const unequipped = {
+    id: "fang",
+    name: "Клык",
+    type: "weapon",
+    system: { equipped: false, damage: "4", quality: { value: 1, max: 1 } }
+  };
+
+  assert.equal(quickAttackFromWeapon(equipped).quality, 2);
+  assert.equal(quickAttackFromWeapon(unequipped), null);
+  assert.deepEqual(quickAttacksFromItems([equipped, unequipped]).map((attack) => attack.itemId), ["needle"]);
 });
