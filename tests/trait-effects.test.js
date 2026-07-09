@@ -51,6 +51,40 @@ test("conditional trait options expose only owned and applicable options", () =>
   assert.deepEqual(traitConditionalOptions(actor, "dodge").map((option) => option.key), ["resist-forced-movement"]);
 });
 
+test("common combat trait options expose manual scene toggles", () => {
+  const actor = {
+    items: [
+      trait("traits.podlyy"),
+      trait("traits.fasetochnoe-vision"),
+      trait("traits.prygayushchiy.naletchik"),
+      trait("traits.razdrazhayushchie-bristles"),
+      trait("traits.shipastyy"),
+      trait("traits.myagkoe-telo")
+    ]
+  };
+
+  assert.deepEqual(traitConditionalOptions(actor, "attack").map((option) => option.key), [
+    "desperate-low-heart",
+    "ranged-facet-vision",
+    "jumping-attack"
+  ]);
+  assert.deepEqual(traitConditionalOptions(actor, "parry").map((option) => option.key), [
+    "bristles-triggered",
+    "spiked-contact"
+  ]);
+  assert.deepEqual(traitConditionalOptions(actor, "absorption").map((option) => option.key), ["soft-body-absorption"]);
+});
+
+test("defense prompts include broader defensive trait notes", () => {
+  const effects = traitPromptEffects([
+    trait("traits.prygayushchiy"),
+    trait("traits.shipastyy"),
+    trait("traits.blocking-arms")
+  ], "parry");
+
+  assert.deepEqual(effects.map((effect) => effect.label), ["Прыгающий", "Шипастый", "Блокирующие Руки"]);
+});
+
 test("selected conditional trait options add dice and chat notes", () => {
   const options = [
     { key: "ally-hit-target", bonusDice: 1, note: "ally" },

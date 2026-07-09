@@ -1,5 +1,5 @@
 import { naturalWeaponQualityValue } from "./trait-quality.js";
-import { selectedItemModification } from "../data/item-modifications.js";
+import { selectedItemModification, selectedItemModificationEffects } from "../data/item-modifications.js";
 
 const DAMAGE_PATTERNS = [
   /нанос(?:ит|ящее|ящий|ящие|ить)[^.]{0,80}?(\d+(?:[,.]\d+)?)\s*(?:единиц[а-яё]*\s+)?урон[а-яё]*/iu,
@@ -18,18 +18,20 @@ export function quickAttackFromWeapon(weapon) {
   if (!weapon || weapon.type !== "weapon" || weapon.system?.equipped !== true) return null;
   const text = [weapon.system.description, weapon.system.rawText].filter(Boolean).join("\n");
   const modification = selectedItemModification(weapon);
+  const modificationEffects = selectedItemModificationEffects(weapon);
   return {
     itemId: weapon.id,
     name: weapon.name,
-    damage: weapon.system.damage ?? "",
+    damage: modifiedDamage(weapon.system.damage ?? "", modificationEffects.damageBonus),
     quality: weaponQualityValue(weapon),
     tooltip: attackTooltip(text || weapon.name),
     subtraits: [],
     itemType: weapon.system.itemType ?? "",
     range: weapon.system.range ?? "",
     grip: weapon.system.grip ?? "",
-    weight: Number(weapon.system.weight) || 0,
+    weight: Math.max(0, (Number(weapon.system.weight) || 0) + (Number(modificationEffects.weightBonus) || 0)),
     modification: modification?.name ?? "",
+    modificationEffects,
     sourceType: "weapon"
   };
 }
@@ -114,6 +116,13 @@ function applySubtraitDamage(baseDamage, subtraits) {
     if (increase) damage += Number(increase[1].replace(",", "."));
   }
   return Number.isInteger(damage) ? String(damage) : String(damage);
+}
+
+function modifiedDamage(baseDamage, bonus = 0) {
+  const damage = Number(String(baseDamage).replace(",", "."));
+  if (!Number.isFinite(damage)) return baseDamage;
+  const result = Math.max(0, damage + (Number(bonus) || 0));
+  return Number.isInteger(result) ? String(result) : String(result);
 }
 
 function attackTooltip(text) {

@@ -9,6 +9,16 @@ const TRAIT_PROMPT_EFFECTS = {
     label: "Подлый",
     note: "Когда у жука 1 Сердце или меньше, его отчаянные преимущества могут повлиять на бой; проверьте правило черты."
   },
+  "traits.prygayushchiy": {
+    trigger: "defense",
+    label: "Прыгающий",
+    note: "Можно прыгнуть вместо уклонения и использовать Скорость для уклонения вместо Грации."
+  },
+  "traits.prygayushchiy.naletchik": {
+    trigger: "attack",
+    label: "Налётчик",
+    note: "После прыжка в свой ход можно сразу совершить рукопашную атаку; Выносливость прыжка также используется для атаки."
+  },
   "traits.kollektivnyy-razum": {
     trigger: "attack",
     label: "Коллективный разум",
@@ -18,6 +28,21 @@ const TRAIT_PROMPT_EFFECTS = {
     trigger: "attack",
     label: "Клешни",
     note: "Клешни получают +2 переброса к проверкам захвата и наносят больше урона уже схваченным ими жукам."
+  },
+  "traits.razdrazhayushchie-bristles": {
+    trigger: "defense",
+    label: "Раздражающие Щетинки",
+    note: "Когда жук в пределах 3 клеток поражает владельца атакой, на атакующего накладывается статусный эффект от щетинок."
+  },
+  "traits.shipastyy": {
+    trigger: "defense",
+    label: "Шипастый",
+    note: "Атакующий может получить впитываемый урон, если поражает владельца природным оружием или взаимодействует с захватом."
+  },
+  "traits.fasetochnoe-vision": {
+    trigger: "attack",
+    label: "Фасеточное Зрение",
+    note: "Можно увеличить дальность дальнобойной атаки, если подходит условие черты."
   },
   "traits.shchupaltse": {
     trigger: "attack",
@@ -48,6 +73,11 @@ const TRAIT_PROMPT_EFFECTS = {
     trigger: "defense",
     label: "Защитный Клубок",
     note: "Защитное скручивание меняет позицию и защиту жука; проверьте выбранное действие и подчёрты."
+  },
+  "traits.defensive-curl.katyashchiysya-ryvok": {
+    trigger: "attack",
+    label: "Катящийся Рывок",
+    note: "Во время защитного скручивания можно прокатиться и при наличии Шипастого или Удара совершить атаку природным оружием."
   }
 };
 
@@ -74,6 +104,54 @@ const CONDITIONAL_OPTIONS = {
     trigger: "attack",
     label: "Цель уже схвачена Клешнями",
     note: "Клешни: урон по уже схваченной ими цели выше; примените урон по правилу черты.",
+    bonusDice: 0
+  },
+  "desperate-low-heart": {
+    key: "desperate-low-heart",
+    sourceId: "traits.podlyy",
+    trigger: "attack",
+    label: "У жука 1 Сердце или меньше",
+    note: "Подлый: включены отчаянные преимущества черты; проверьте точный эффект по описанию.",
+    bonusDice: 0
+  },
+  "ranged-facet-vision": {
+    key: "ranged-facet-vision",
+    sourceId: "traits.fasetochnoe-vision",
+    trigger: "attack",
+    label: "Дальнобойная атака",
+    note: "Фасеточное Зрение: можно увеличить дальность этой дальнобойной атаки.",
+    bonusDice: 0
+  },
+  "jumping-attack": {
+    key: "jumping-attack",
+    sourceId: "traits.prygayushchiy.naletchik",
+    trigger: "attack",
+    label: "Атака после прыжка",
+    note: "Налётчик: атака после прыжка не требует дополнительной Выносливости; Выносливость прыжка также используется для атаки.",
+    bonusDice: 0
+  },
+  "bristles-triggered": {
+    key: "bristles-triggered",
+    sourceId: "traits.razdrazhayushchie-bristles",
+    trigger: "defense",
+    label: "Атакующий попал в пределах 3 клеток",
+    note: "Раздражающие Щетинки: атакующий получает 3 очка статусного эффекта; он может сопротивляться Панцирем.",
+    bonusDice: 0
+  },
+  "spiked-contact": {
+    key: "spiked-contact",
+    sourceId: "traits.shipastyy",
+    trigger: "defense",
+    label: "Контакт с шипами",
+    note: "Шипастый: атакующий или участник захвата может получить впитываемый урон по правилу черты.",
+    bonusDice: 0
+  },
+  "soft-body-absorption": {
+    key: "soft-body-absorption",
+    sourceId: "traits.myagkoe-telo",
+    trigger: "absorption",
+    label: "Впитывание Мягкого Тела",
+    note: "Мягкое Тело: Панцирь не добавляется к этому Впитыванию; при необходимости выберите другой параметр или задайте штраф вручную.",
     bonusDice: 0
   },
   "resist-forced-movement": {

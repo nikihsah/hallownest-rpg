@@ -1,3 +1,5 @@
+import { selectedItemModificationEffects } from "../data/item-modifications.js";
+
 const MODIFIER_KEYS = ["power", "insight", "shell", "grace", "heart", "stamina", "soul", "speed", "hunger", "appeal", "dread", "marks", "load"];
 
 const PASSIVE_EFFECTS = {
@@ -307,7 +309,7 @@ export function itemPassiveEffects(items) {
 
 export function itemPromptEffects(items, trigger = "", { itemId = "" } = {}) {
   return equippedItems(items)
-    .map((item) => ({ item, effect: PROMPT_EFFECTS[item.system?.sourceId] }))
+    .flatMap((item) => promptEntriesForItem(item))
     .filter((entry) => entry.effect && (!trigger || entry.effect.trigger === trigger))
     .filter((entry) => !entry.effect.scope || entry.effect.scope !== "self" || !itemId || entry.item.id === itemId)
     .map((entry) => ({
@@ -317,6 +319,23 @@ export function itemPromptEffects(items, trigger = "", { itemId = "" } = {}) {
       trigger: entry.effect.trigger,
       note: entry.effect.note
     }));
+}
+
+function promptEntriesForItem(item) {
+  const entries = [{ item, effect: PROMPT_EFFECTS[item.system?.sourceId] }];
+  const modification = selectedItemModificationEffects(item);
+  if (modification.key && modification.note) {
+    entries.push({
+      item,
+      effect: {
+        trigger: item.type === "armor" && item.system?.subtype === "shield" ? "parry" : "attack",
+        scope: item.type === "weapon" ? "self" : "",
+        label: modification.name,
+        note: modification.note
+      }
+    });
+  }
+  return entries;
 }
 
 export function hasEquippedItem(items, sourceId) {
@@ -334,8 +353,9 @@ export function itemDefenseBonus(actor, actionKey) {
 
 export function effectiveItemWeight(item, effects = null) {
   const weight = Number(item?.system?.weight) || 0;
+  const modificationWeight = Number(selectedItemModificationEffects(item).weightBonus) || 0;
   const spiritArmament = effects?.spiritArmament ?? false;
-  return Math.max(0, weight - (spiritArmament && ["weapon", "armor"].includes(item?.type) ? 1 : 0));
+  return Math.max(0, weight + modificationWeight - (spiritArmament && ["weapon", "armor"].includes(item?.type) ? 1 : 0));
 }
 
 function applyPassiveEffect(result, effect) {

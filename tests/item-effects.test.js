@@ -89,6 +89,12 @@ test("spirit armament reduces carried weapon and armor weight", () => {
   assert.equal(effectiveItemWeight({ type: "gear", system: { weight: 2 } }, effects), 2);
 });
 
+test("item modification weight changes carried weight", () => {
+  assert.equal(effectiveItemWeight({ type: "weapon", system: { weight: 2, modification: "heavy" } }), 3);
+  assert.equal(effectiveItemWeight({ type: "weapon", system: { weight: 2, modification: "lightened" } }), 1);
+  assert.equal(effectiveItemWeight({ type: "armor", system: { subtype: "shield", weight: 1, modification: "lightened" } }), 0);
+});
+
 test("hasEquippedItem ignores inventory copies", () => {
   assert.equal(hasEquippedItem([item("x", { equipped: false })], "x"), false);
   assert.equal(hasEquippedItem([item("x")], "x"), true);

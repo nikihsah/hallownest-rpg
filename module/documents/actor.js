@@ -7,6 +7,7 @@ import { naturalWeaponQualityValue } from "../mechanics/trait-quality.js";
 import { applyPathAttackOptions } from "../mechanics/path-abilities.js";
 import { effectiveItemWeight, itemDefenseBonus, itemPassiveEffects, itemPromptEffects } from "../mechanics/item-effects.js";
 import { applyTraitConditionalOptions, traitConditionalOptions, traitPromptEffects } from "../mechanics/trait-effects.js";
+import { selectedItemModificationEffects } from "../data/item-modifications.js";
 
 export class HallownestActor extends Actor {
   prepareDerivedData() {
@@ -197,6 +198,7 @@ export class HallownestActor extends Actor {
     const baseAttack = baseAttackConfig(this, item);
     const attackOptions = applyPathAttackOptions({ attribute: baseAttack.attribute, successThreshold: 5 }, pathOptions);
     const traitAdjustment = applyTraitConditionalOptions(traitConditionalOptions(this, "attack", { itemId }), traitOptions);
+    const modificationEffects = item.type === "weapon" ? selectedItemModificationEffects(item) : null;
     const stamina = await this.spendAttackStamina({ invested: investedStamina, taxAsDice: attackOptions.taxAsDice });
     const attributeKey = attackOptions.attribute;
     const value = Number(this.system.effective?.attributes?.[attributeKey]?.value) || 0;
@@ -208,7 +210,7 @@ export class HallownestActor extends Actor {
     });
     return rollDicePool({
       actor: this,
-      dice: Math.floor(value) + quality + stamina.dice + attackOptions.bonusDice + traitAdjustment.bonusDice,
+      dice: Math.floor(value) + quality + stamina.dice + attackOptions.bonusDice + traitAdjustment.bonusDice + (Number(modificationEffects?.attackBonusDice) || 0),
       reroll: value % 1 >= 0.5,
       successThreshold: attackOptions.successThreshold,
       label,
@@ -217,6 +219,7 @@ export class HallownestActor extends Actor {
         game.i18n.format("HRPG.AttackAttributeUsed", { attribute: game.i18n.localize(CONFIG.HRPG.attributes[attributeKey] ?? attributeKey) }),
         ...baseAttack.notes,
         ...itemPromptNotes(this.items, ["attack"], { itemId }),
+        ...modificationNotes(modificationEffects),
         ...traitPromptNotes(this.items, ["attack"], { itemId }),
         ...traitAdjustment.notes,
         ...attackOptions.notes
@@ -248,7 +251,7 @@ const secondaryDefenseLabels = { speed: "HRPG.Speed", appeal: "HRPG.Appeal", dre
 
 function baseAttackConfig(actor, item) {
   if (item.type !== "weapon") return { attribute: "power", notes: [] };
-  const weight = Number(item.system?.weight) || 0;
+  const weight = (Number(item.system?.weight) || 0) + (Number(selectedItemModificationEffects(item).weightBonus) || 0);
   const weaponText = [item.name, item.system?.itemType, item.system?.subtype, item.system?.description, item.system?.rawText]
     .filter(Boolean)
     .join(" ")
@@ -276,7 +279,17 @@ function hasPath(actor, sourceId, minimumRank = 1) {
 }
 
 function weaponQualityValue(item) {
-  return Math.max(0, Math.floor(Number(item.system?.quality?.value ?? 1) || 0));
+  return Math.max(0, Math.floor((Number(item.system?.quality?.value ?? 1) || 0) + (Number(selectedItemModificationEffects(item).qualityBonus) || 0)));
+}
+
+function modificationNotes(effects) {
+  if (!effects?.key) return [];
+  const notes = [];
+  if (effects.note) notes.push(`${effects.name}: ${effects.note}`);
+  if (Number(effects.attackBonusDice) !== 0) notes.push(`${effects.name}: ${effects.attackBonusDice > 0 ? "+" : ""}${effects.attackBonusDice} кость к атаке.`);
+  if (Number(effects.damageBonus) !== 0) notes.push(`${effects.name}: ${effects.damageBonus > 0 ? "+" : ""}${effects.damageBonus} к урону.`);
+  if (Number(effects.qualityBonus) !== 0) notes.push(`${effects.name}: ${effects.qualityBonus > 0 ? "+" : ""}${effects.qualityBonus} к Качеству.`);
+  return notes;
 }
 
 function itemEffectNotes(itemEffects, keys = []) {

@@ -274,6 +274,8 @@ test("actor document exposes defensive action rolls", async () => {
   assert.match(actor, /traitPromptNotes\(this\.items, \[actionKey\]\)/);
   assert.match(actor, /itemPromptNotes\(this\.items, defensePromptTriggers\(actionKey\)\)/);
   assert.match(actor, /itemPromptNotes\(this\.items, \["attack"\], \{ itemId \}\)/);
+  assert.match(actor, /selectedItemModificationEffects\(item\)/);
+  assert.match(actor, /modificationNotes\(modificationEffects\)/);
   assert.match(actor, /attackTaxReduction/);
   assert.match(actor, /itemEffects\.modifiers/);
   assert.match(actor, /pathSupplyBonus\(path\.system\?\.sourceId, rank\)/);
@@ -293,7 +295,7 @@ test("actor document exposes defensive action rolls", async () => {
   assert.match(actor, /applyPathAttackOptions\(\{ attribute: baseAttack\.attribute, successThreshold: 5 \}, pathOptions\)/);
   assert.match(actor, /paths\.needle/);
   assert.match(actor, /HRPG\.NeedlePathWeaponGrace/);
-  assert.match(actor, /dice: Math\.floor\(value\) \+ quality \+ stamina\.dice \+ attackOptions\.bonusDice \+ traitAdjustment\.bonusDice/);
+  assert.match(actor, /dice: Math\.floor\(value\) \+ quality \+ stamina\.dice \+ attackOptions\.bonusDice \+ traitAdjustment\.bonusDice \+ \(Number\(modificationEffects\?\.attackBonusDice\) \|\| 0\)/);
   assert.match(actor, /successThreshold: attackOptions\.successThreshold/);
 });
 

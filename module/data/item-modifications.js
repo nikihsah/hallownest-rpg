@@ -28,6 +28,29 @@ const SHIELD_MODIFICATIONS = [
   { key: "reflecting", name: "Отражающий", description: "Щит может парировать заклинания и прочие атаки заклинательного типа; владелец получает один повторный бросок при такой защите." }
 ];
 
+const MODIFICATION_EFFECTS = {
+  worn: { qualityBonus: -1, note: "Изношенное: Качество -1." },
+  extended: { weightBonus: 1, note: "Удлинённое: вес +1, оружие получает Досягаемость." },
+  heavy: { attackBonusDice: -1, damageBonus: 1, weightBonus: 1, note: "Тяжёлое: -1 кость к атаке, +1 к урону, вес +1." },
+  lightened: { attackBonusDice: 1, damageBonus: -1, weightBonus: -1, note: "Облегчённое: +1 кость к атаке, -1 к урону, вес -1." },
+  blade: { targetAbsorptionPenalty: -1, note: "Лезвие: Впитывание против урона от этого оружия получает -1." },
+  "beast-slayer": { weightBonus: 1, note: "Убийца зверей: вес +1; против Зверей урон +2." },
+  butcher: { note: "Мясницкое: против незащищённой плоти урон +1, но Впитывание против него считает 4+ успехом." },
+  cruel: { note: "Жестокое: если цель вкладывает дополнительную Выносливость в защиту, атака получает +1 к урону." },
+  graceful: { note: "Изящное: при броске урона можно выбрать на один успех больше." },
+  balanced: { note: "Сбалансированное: дальность 3+ увеличивается на 1; оружие получает тип Праща, если не имело его." },
+  threaded: { note: "Нитяное: оружие можно притянуть к себе за 1 Скорость." },
+  trick: { note: "Обманка: оружие или щит может менять форму по правилу модификации." },
+  universal: { note: "Универсальное: добавляет один тип оружия для совместимости Боевых искусств." },
+  pipette: { note: "Пипетка: можно снарядить одной склянкой и применить её при попадании." },
+  arcane: { note: "Чародейское: можно наложить заклинание на первую цель атаки; потраченная Душа добавляется к броску." },
+  "dream-forged": { note: "Выкованное в Грёзах: может наносить обычный урон полуматериальным целям и духам." },
+  reinforced: { qualityBonus: 1, weightBonus: 1, note: "Укреплённый: Качество +1, вес +1." },
+  spiked: { note: "Шипованный: при полном парировании противник рискует получить урон как от Шипастого." },
+  practical: { note: "Практичный: щит также считается выбранным инструментом." },
+  reflecting: { note: "Отражающий: может парировать заклинательные атаки и даёт один повторный бросок при такой защите." }
+};
+
 export function itemModificationOptions(item) {
   if (item?.type === "weapon") return WEAPON_MODIFICATIONS;
   if (item?.type === "armor" && item.system?.subtype === "shield") return SHIELD_MODIFICATIONS;
@@ -37,4 +60,27 @@ export function itemModificationOptions(item) {
 export function selectedItemModification(item) {
   const key = item?.system?.modification ?? "";
   return itemModificationOptions(item).find((modification) => modification.key === key) ?? null;
+}
+
+export function selectedItemModificationEffects(item) {
+  const modification = selectedItemModification(item);
+  if (!modification) return { key: "", name: "", attackBonusDice: 0, damageBonus: 0, qualityBonus: 0, weightBonus: 0, note: "" };
+  const shieldEffects = item?.type === "armor" && item.system?.subtype === "shield" ? shieldModificationEffects(modification.key) : {};
+  return {
+    key: modification.key,
+    name: modification.name,
+    attackBonusDice: 0,
+    damageBonus: 0,
+    qualityBonus: 0,
+    weightBonus: 0,
+    note: modification.description,
+    ...(MODIFICATION_EFFECTS[modification.key] ?? {}),
+    ...shieldEffects
+  };
+}
+
+function shieldModificationEffects(key) {
+  if (key === "lightened") return { attackBonusDice: 0, damageBonus: 0, qualityBonus: 1, weightBonus: -1, note: "Облегчённый щит: вес -1, Качество +1." };
+  if (key === "reinforced") return { qualityBonus: 1, weightBonus: 1, note: "Укреплённый щит: вес +1, Качество +1." };
+  return {};
 }
