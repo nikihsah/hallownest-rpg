@@ -483,7 +483,11 @@ test("skill items expose four skill names and aggregate roll buttons", async () 
   assert.match(sheet, /updateSkillRank/);
   assert.match(sheet, /updateSkillMastery/);
   assert.match(sheet, /updateSkillSlot/);
-  assert.match(sheet, /\[`system\.skills\.\$\{index\}\.name`\]/);
+  assert.match(sheet, /queueSkillSlotUpdate/);
+  assert.match(sheet, /skillSlotUpdateData\(item, input\.dataset\.skillSlotIndex, input\.value\)/);
+  assert.match(sheet, /input\.addEventListener\("input", queueSkillSlotUpdate\.bind\(this\)\)/);
+  assert.match(sheet, /input\.addEventListener\("focusout", updateSkillSlot\.bind\(this\)\)/);
+  assert.match(sheet, /event\.stopImmediatePropagation\(\)/);
   assert.match(sheet, /"roll-skill": rollSkillAction/);
   assert.match(itemTemplate, /class="skill-editor"/);
   assert.match(itemTemplate, /name="system\.skills\.\{\{row\.key\}\}\.name"/);

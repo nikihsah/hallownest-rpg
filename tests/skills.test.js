@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { normalizeSkillName, skillBreakdown, skillRowsForItem, skillTotal, skillTotals } from "../module/mechanics/skills.js";
+import { normalizeSkillName, skillBreakdown, skillRowsForItem, skillSlotUpdateData, skillTotal, skillTotals } from "../module/mechanics/skills.js";
 
 function skillItem(name, rank, skills, { mastery = "" } = {}) {
   return {
@@ -30,6 +30,17 @@ test("matching skill names add ranks together but rank dice are capped at three"
   assert.equal(skillTotal(items, "Акробатика").total, 2);
   assert.equal(skillTotal(items, "Выживание").total, 2);
   assert.equal(skillTotal(items, "Общение").total, 1);
+});
+
+test("skill slot update writes the whole skills array for embedded item persistence", () => {
+  assert.deepEqual(skillSlotUpdateData(skillItem("Scout", 1, ["A", "B"]), 2, " Stealth "), {
+    "system.skills": [
+      { name: "A" },
+      { name: "B" },
+      { name: "Stealth" },
+      { name: "" }
+    ]
+  });
 });
 
 test("skill rank cap applies before mastery bonus", () => {

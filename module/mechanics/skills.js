@@ -15,6 +15,13 @@ export function skillRowsForItem(item) {
   }));
 }
 
+export function skillSlotUpdateData(item, index, name) {
+  const slot = Math.max(0, Math.min(SKILL_SLOTS - 1, Math.floor(Number(index) || 0)));
+  const skills = skillRowsForItem(item).map((row) => ({ name: String(row.name ?? "") }));
+  skills[slot] = { name: String(name ?? "").trim() };
+  return { "system.skills": skills };
+}
+
 export function skillRank(item) {
   return Math.max(1, Math.min(3, Math.floor(Number(item?.system?.rank) || 1)));
 }

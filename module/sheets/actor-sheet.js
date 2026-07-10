@@ -7,7 +7,7 @@ import { TraitCatalogApplication } from "../applications/trait-catalog.js";
 import { ItemCatalogApplication } from "../applications/item-catalog.js";
 import { isNaturalWeaponTrait, naturalWeaponQualityMax, naturalWeaponQualityValue } from "../mechanics/trait-quality.js";
 import { isTechniqueType, techniqueSlotsSummary } from "../data/technique-catalog.js";
-import { normalizeSkillName, skillBreakdown, skillRowsForItem, skillTotals } from "../mechanics/skills.js";
+import { normalizeSkillName, skillBreakdown, skillRowsForItem, skillSlotUpdateData, skillTotals } from "../mechanics/skills.js";
 import { HRPG_STATUS_EFFECTS, statusEffectDefinition } from "../data/status-effects.js";
 import { HRPG_EFFECT_SCOPE, setHrpgStatusEffect } from "../mechanics/active-effects.js";
 import { defaultItemIcon } from "../data/item-icons.js";
@@ -151,21 +151,21 @@ async function removeStatusAction(event, target) {
 }
 
 async function updateSkillItemName(event) {
-  event.stopPropagation();
+  event.stopImmediatePropagation();
   const item = this.actor.items.get(event.currentTarget.dataset.skillItemName);
   if (!item || item.type !== "skill") return;
   await item.update({ name: String(event.currentTarget.value || "").trim() || game.i18n.localize("HRPG.ItemSkill") });
 }
 
 async function updateSkillRank(event) {
-  event.stopPropagation();
+  event.stopImmediatePropagation();
   const item = this.actor.items.get(event.currentTarget.dataset.skillRank);
   if (!item || item.type !== "skill") return;
   await item.update({ "system.rank": Math.max(1, Math.min(3, Math.floor(Number(event.currentTarget.value) || 1))) });
 }
 
 async function updateSkillMastery(event) {
-  event.stopPropagation();
+  event.stopImmediatePropagation();
   const item = this.actor.items.get(event.currentTarget.dataset.skillMastery);
   if (!item || item.type !== "skill") return;
   await item.update({ "system.mastery": String(event.currentTarget.value || "") });
@@ -173,11 +173,21 @@ async function updateSkillMastery(event) {
 
 async function updateSkillSlot(event) {
   event.preventDefault();
-  event.stopPropagation();
-  const item = this.actor.items.get(event.currentTarget.dataset.skillSlot);
+  event.stopImmediatePropagation();
+  await saveSkillSlotInput(this, event.currentTarget);
+}
+
+function queueSkillSlotUpdate(event) {
+  event.stopImmediatePropagation();
+  const input = event.currentTarget;
+  clearTimeout(input._hrpgSkillSlotTimer);
+  input._hrpgSkillSlotTimer = setTimeout(() => saveSkillSlotInput(this, input), 250);
+}
+
+async function saveSkillSlotInput(sheet, input) {
+  const item = sheet.actor.items.get(input.dataset.skillSlot);
   if (!item || item.type !== "skill") return;
-  const index = Math.max(0, Math.min(3, Math.floor(Number(event.currentTarget.dataset.skillSlotIndex) || 0)));
-  await item.update({ [`system.skills.${index}.name`]: String(event.currentTarget.value || "").trim() });
+  await item.update(skillSlotUpdateData(item, input.dataset.skillSlotIndex, input.value));
 }
 
 function milestoneChanged(event) {
@@ -559,7 +569,9 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
       input.addEventListener("change", updateSkillMastery.bind(this));
     }
     for (const input of this.element.querySelectorAll("[data-skill-slot]")) {
+      input.addEventListener("input", queueSkillSlotUpdate.bind(this));
       input.addEventListener("change", updateSkillSlot.bind(this));
+      input.addEventListener("focusout", updateSkillSlot.bind(this));
     }
     this.element.querySelector("[data-milestone-select]")?.addEventListener("change", milestoneChanged);
     for (const row of this.element.querySelectorAll("[data-action='open-item'][data-item-id]")) {
