@@ -5,7 +5,10 @@ import {
   customTechniqueData,
   groupTechniques,
   preparedTechniqueCount,
+  techniqueAvailable,
   techniqueItemData,
+  techniqueMismatchWarning,
+  techniquePathIds,
   techniqueSlotsSummary
 } from "../module/data/technique-catalog.js";
 import {
@@ -72,6 +75,32 @@ test("technique grouping marks path availability", () => {
   assert.equal(groups.length, 1);
   assert.equal(groups[0].items[0].owned, true);
   assert.equal(groups[0].items[0].available, true);
+});
+
+test("martial arts tied to selected paths are listed before mismatched arts", () => {
+  const groups = groupTechniques([
+    { sourceId: "combat-arts.fang", type: "art", name: "Клык", pathFamily: "martial", pathName: "Воинский путь", cost: {}, requirements: [{ value: "Клык" }] },
+    { sourceId: "combat-arts.needle", type: "art", name: "Игла", pathFamily: "martial", pathName: "Воинский путь", cost: {}, requirements: [{ value: "Игла" }] }
+  ], {
+    type: "art",
+    actor: { items: [{ type: "path", system: { sourceId: "paths.needle", category: "martial", rank: 1 } }] }
+  });
+
+  assert.equal(techniquePathIds(groups[0].items[0])[0], "paths.needle");
+  assert.equal(groups[0].preferred, true);
+  assert.equal(groups[0].items[0].available, true);
+  assert.equal(groups[0].items[0].warning, "");
+  assert.equal(groups[1].items[0].available, false);
+  assert.equal(groups[1].items[0].warning, "HRPG.TechniqueWrongMartialPath");
+  assert.equal(groups[0].label, "HRPG.TechniquePath.needle");
+});
+
+test("mismatched mysteries keep warning text when path or rank is missing", () => {
+  const mystery = { sourceId: "magic.spire.hard", type: "spell", name: "Тайна", pathFamily: "mystic", pathId: "paths.spire", pathName: "Шпиль", cost: { difficulty: 4 }, requirements: [] };
+  const actor = { items: [{ type: "path", system: { sourceId: "paths.spire", category: "mystic", rank: 1 } }] };
+
+  assert.equal(techniqueAvailable(actor, mystery), false);
+  assert.equal(techniqueMismatchWarning(mystery), "HRPG.TechniqueWrongMysticPath");
 });
 
 test("prepared technique slots count down from derived slots", () => {

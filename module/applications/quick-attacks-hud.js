@@ -2,7 +2,7 @@ import { quickAttacksFromItems } from "../mechanics/trait-attacks.js";
 import { availablePathAttackOptions } from "../mechanics/path-abilities.js";
 import { hasEquippedItem, itemPassiveEffects, itemPromptEffects } from "../mechanics/item-effects.js";
 import { traitConditionalOptions, traitPromptEffects } from "../mechanics/trait-effects.js";
-import { techniquePromptOptions } from "../mechanics/techniques.js";
+import { preparedTechniques, techniquePromptOptions, techniqueSummary } from "../mechanics/techniques.js";
 
 const HUD_ID = "hrpg-quick-attacks-hud";
 
@@ -18,6 +18,7 @@ export function registerQuickAttacksHud() {
 export function refreshQuickAttacksHud() {
   const actor = selectedBugActor();
   const attacks = actor ? quickAttacksFromItems(actor.items) : [];
+  const techniques = actor ? preparedTechniques(actor.items) : [];
   const existing = document.getElementById(HUD_ID);
   if (!actor) {
     existing?.remove();
@@ -26,7 +27,9 @@ export function refreshQuickAttacksHud() {
 
   const hud = existing ?? createHud();
   hud.querySelector("[data-hrpg-attack-list]").replaceChildren(...(
-    attacks.length ? attacks.map((attack) => attackButton(actor, attack)) : [emptyState("HRPG.NoInteractionSkills")]
+    attacks.length || techniques.length
+      ? [...attacks.map((attack) => attackButton(actor, attack)), ...techniques.map((technique) => techniqueButton(actor, technique))]
+      : [emptyState("HRPG.NoInteractionSkills")]
   ));
   hud.querySelector("[data-hrpg-stat-list]").replaceChildren(...attributeButtons(actor), ...secondaryButtons(actor));
   hud.querySelector("[data-hrpg-action-list]").replaceChildren(...defenseActionButtons(actor));
@@ -99,6 +102,30 @@ function attackButton(actor, attack) {
     const options = await promptAttackOptions(actor, attack);
     if (!options) return;
     await actor.rollTraitAttack(attack.itemId, options);
+  });
+  return button;
+}
+
+function techniqueButton(actor, technique) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.dataset.itemId = technique.id;
+  button.title = techniqueSummary(technique);
+
+  const name = document.createElement("span");
+  name.textContent = technique.name;
+  button.append(name);
+
+  const details = document.createElement("small");
+  details.textContent = [
+    game.i18n.localize(technique.type === "spell" ? "HRPG.ItemSpell" : "HRPG.ItemArt"),
+    technique.system?.cost?.raw,
+    technique.system?.pathName
+  ].filter(Boolean).join(" · ");
+  button.append(details);
+
+  button.addEventListener("click", async () => {
+    await actor.useTechnique(technique.id);
   });
   return button;
 }

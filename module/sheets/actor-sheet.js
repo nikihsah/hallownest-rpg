@@ -129,10 +129,6 @@ async function restAction() {
   ui.notifications.info(game.i18n.format("HRPG.RestComplete", { satiety: result.nextSatiety }));
 }
 
-async function useTechniqueAction(_event, target) {
-  await this.actor.useTechnique(target.dataset.itemId);
-}
-
 function choosePortraitAction() {
   openActorPortraitPicker(this.actor);
 }
@@ -161,7 +157,6 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
       "select-tab": selectTabAction,
       "roll-secondary": rollSecondaryAction,
       "rest": restAction,
-      "use-technique": useTechniqueAction,
       "choose-portrait": choosePortraitAction
     }
   };

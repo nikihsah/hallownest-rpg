@@ -14,6 +14,19 @@ const TECHNIQUE_TYPE_LABELS = {
   secret: "HRPG.TechniqueType.secret"
 };
 
+const MARTIAL_REQUIREMENT_PATHS = {
+  "гвоздь": "paths.nail",
+  "игла": "paths.needle",
+  "клык": "paths.fang",
+  "крюк": "paths.hook",
+  "праща": "paths.sling",
+  "склянка": "paths.vial",
+  "щит": "paths.shell",
+  "тяжелое оружие": "paths.fang",
+  "тяжёлое оружие": "paths.fang",
+  "парное оружие": "paths.needle"
+};
+
 export async function loadTechniqueCatalog() {
   if (cachedTechniques) return cachedTechniques;
   const response = await fetch("systems/hallownest-rpg/data/techniques.json");
@@ -30,22 +43,27 @@ export function groupTechniques(techniques, { type = "", ownedSourceIds = new Se
   const filtered = type ? techniques.filter((technique) => technique.type === type) : techniques;
   const groups = new Map();
   for (const technique of filtered) {
-    const key = technique.pathId || technique.pathFamily || technique.subtype || technique.type;
+    const pathIds = techniquePathIds(technique);
+    const key = technique.pathId || pathIds[0] || technique.pathFamily || technique.subtype || technique.type;
     if (!groups.has(key)) groups.set(key, []);
+    const available = techniqueAvailable(actor, technique);
     groups.get(key).push({
       ...technique,
+      pathIds,
       typeLabel: TYPE_LABELS[technique.type] ?? technique.type,
       typeName: techniqueTypeName(technique),
       owned: ownedSourceIds.has(technique.sourceId),
-      available: techniqueAvailable(actor, technique),
+      available,
+      warning: actor && !available ? techniqueMismatchWarning(technique) : "",
       meta: techniqueMeta(technique)
     });
   }
   return Array.from(groups, ([key, entries]) => ({
     key,
     label: groupLabel(entries[0]),
-    items: entries
-  }));
+    preferred: entries.some((entry) => entry.available),
+    items: entries.sort((left, right) => Number(right.available) - Number(left.available) || left.name.localeCompare(right.name, "ru"))
+  })).sort((left, right) => Number(right.preferred) - Number(left.preferred) || String(left.label).localeCompare(String(right.label), "ru"));
 }
 
 export function techniqueItemData(technique) {
@@ -62,6 +80,7 @@ export function techniqueItemData(technique) {
       prepared: Boolean(technique.prepared),
       pathFamily: technique.pathFamily ?? "",
       pathId: technique.pathId ?? "",
+      pathIds: technique.pathIds ?? techniquePathIds(technique),
       pathName: technique.pathName ?? "",
       techniqueType: technique.techniqueType ?? "",
       requirementLabel: technique.requirementLabel ?? "",
@@ -148,7 +167,9 @@ export function techniqueSlotsSummary(actor) {
 export function techniqueAvailable(actor, technique) {
   if (!actor) return true;
   if (technique.pathFamily === "martial") {
-    return actor.items?.some?.((item) => item.type === "path" && item.system?.category === "martial" && Number(item.system?.rank) > 0) ?? false;
+    const pathIds = techniquePathIds(technique);
+    if (!pathIds.length) return actor.items?.some?.((item) => item.type === "path" && item.system?.category === "martial" && Number(item.system?.rank) > 0) ?? false;
+    return pathIds.some((pathId) => hasActorPath(actor, pathId));
   }
   if (technique.pathId) {
     const path = actor.items?.find?.((item) => item.type === "path" && item.system?.sourceId === technique.pathId);
@@ -159,8 +180,28 @@ export function techniqueAvailable(actor, technique) {
   return true;
 }
 
+export function techniqueMismatchWarning(technique) {
+  return technique.type === "spell" ? "HRPG.TechniqueWrongMysticPath" : "HRPG.TechniqueWrongMartialPath";
+}
+
+export function techniquePathIds(technique) {
+  if (technique.pathId) return [technique.pathId];
+  const requirements = Array.isArray(technique.requirements) ? technique.requirements : technique.system?.requirements ?? [];
+  const ids = new Set();
+  for (const requirement of requirements) {
+    const value = String(requirement?.value ?? "").toLocaleLowerCase("ru").trim();
+    for (const [needle, pathId] of Object.entries(MARTIAL_REQUIREMENT_PATHS)) {
+      if (value.includes(needle)) ids.add(pathId);
+    }
+  }
+  return Array.from(ids);
+}
+
 function groupLabel(technique) {
+  const pathId = technique.pathIds?.[0];
+  if (technique.pathFamily === "martial" && pathId) return `HRPG.TechniquePath.${pathId.replace("paths.", "")}`;
   if (technique.pathName) return technique.pathName;
+  if (pathId) return `HRPG.TechniquePath.${pathId.replace("paths.", "")}`;
   if (technique.pathFamily === "martial") return "HRPG.PathMartial";
   if (technique.pathFamily === "mystic") return "HRPG.PathMystic";
   return TYPE_LABELS[technique.type] ?? technique.type;
@@ -168,4 +209,10 @@ function groupLabel(technique) {
 
 function localLabel(key) {
   return globalThis.game?.i18n?.localize?.(key) ?? key;
+}
+
+function hasActorPath(actor, pathId) {
+  return actor.items?.some?.((item) => item.type === "path"
+    && item.system?.sourceId === pathId
+    && Number(item.system?.rank) > 0) ?? false;
 }

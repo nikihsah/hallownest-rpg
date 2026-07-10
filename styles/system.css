@@ -151,6 +151,7 @@
 .item-choice button { margin-top: auto; }
 .item-choice.owned { box-shadow: inset 0 0 0 2px rgba(49,95,104,.18); }
 .item-choice.unavailable { opacity: .72; }
+.item-choice-warning { color: #8f2419 !important; }
 .trait-cost { padding: .4rem .55rem; border-left: 3px solid #735533; background: rgba(115,85,51,.08); }
 .trait-readonly { height: 100%; overflow: auto; padding: 1rem; color: var(--ink); }
 .trait-readonly-header { display: grid; grid-template-columns: 98px minmax(0, 1fr); gap: 1rem; align-items: start; padding: 1rem; border: 2px solid var(--line); background: linear-gradient(135deg, rgba(255,255,255,.36), rgba(222,215,197,.55)); }
@@ -231,10 +232,10 @@
 .hrpg .item-modification-description h2, .hrpg .item-raw-text h2 { margin-bottom: .45rem; color: #17191a; font-weight: 700; }
 .hrpg .item-modification-description p, .hrpg .item-raw-text p { margin: 0; white-space: pre-line; line-height: 1.45; }
 .hrpg .technique-row { flex-wrap: wrap; }
-.hrpg .technique-row > button[data-action="use-technique"] { flex: 0 0 auto; padding-inline: .55rem; }
-.hrpg .technique-effect-text, .hrpg .item-attachments { margin: .75rem; padding: .75rem; border: 1px solid #75644e; background: rgba(235,225,202,.38); }
-.hrpg .technique-effect-text h2, .hrpg .item-attachments h2 { margin-bottom: .45rem; color: #17191a; font-weight: 700; }
+.hrpg .technique-effect-text, .hrpg .item-attachments, .hrpg .item-description-editor { margin: .75rem; padding: .75rem; border: 1px solid #75644e; background: rgba(235,225,202,.38); }
+.hrpg .technique-effect-text h2, .hrpg .item-attachments h2, .hrpg .item-description-editor h2 { margin-bottom: .45rem; color: #17191a; font-weight: 700; }
 .hrpg .technique-effect-text textarea { width: 100%; min-height: 9rem; resize: vertical; white-space: pre-line; }
+.hrpg .item-description-editor textarea { width: 100%; min-height: 8rem; resize: vertical; white-space: pre-line; }
 .hrpg .item-attachments { display: grid; gap: .45rem; }
 .hrpg .item-attachments label { display: grid; gap: .2rem; color: #30332f; font-weight: 700; }
 .hrpg .item-attachments label span { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .35rem; }

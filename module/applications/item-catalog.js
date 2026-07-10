@@ -1,4 +1,5 @@
 import { catalogItemData, customItemData, groupCatalogItems, itemCatalogTypes, loadCatalogItems } from "../data/item-catalog.js";
+import { isTechniqueType, techniqueAvailable, techniqueMismatchWarning } from "../data/technique-catalog.js";
 
 async function addCatalogItem(event, target) {
   event?.preventDefault?.();
@@ -6,6 +7,9 @@ async function addCatalogItem(event, target) {
   const item = (await loadCatalogItems(this.catalogType)).find((entry) => entry.sourceId === sourceId);
   if (!item) return ui.notifications.error(game.i18n.localize("HRPG.ItemCatalogNotFound"));
   const [created] = await this.actor.createEmbeddedDocuments("Item", [catalogItemData(item)]);
+  if (isTechniqueType(item.type) && !techniqueAvailable(this.actor, item)) {
+    ui.notifications.warn(game.i18n.localize(techniqueMismatchWarning(item)));
+  }
   ui.notifications.info(game.i18n.format("HRPG.ItemCatalogAdded", { name: item.name }));
   renderDocumentSheet(created);
 }

@@ -147,7 +147,12 @@
       {{/each}}
     </section>
   {{/if}}
-  {{#unless (eq item.type "path")}}{{editor system.description target="system.description" button=true owner=owner editable=editable}}{{/unless}}
+  {{#unless (eq item.type "path")}}
+    <section class="item-description-editor">
+      <h2>{{localize "HRPG.Biography"}}</h2>
+      <textarea name="system.description" placeholder="{{localize 'HRPG.ItemDescriptionHint'}}">{{system.description}}</textarea>
+    </section>
+  {{/unless}}
   {{#if isTechniqueItem}}
     <section class="technique-effect-text">
       <h2>{{localize "HRPG.TechniqueEffect"}}</h2>

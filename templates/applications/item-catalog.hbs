@@ -16,6 +16,7 @@
               </header>
               {{#if item.typeName}}<small>{{localize item.typeName}}</small>{{/if}}
               {{#if item.meta}}<small>{{item.meta}}</small>{{/if}}
+              {{#if item.warning}}<small class="item-choice-warning">{{localize item.warning}}</small>{{/if}}
               {{#if item.description}}<p>{{item.description}}</p>{{/if}}
               {{#if item.rawText}}
                 <details>

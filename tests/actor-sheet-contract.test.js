@@ -94,6 +94,10 @@ test("quick trait attacks are exposed through the selected-token HUD", async () 
   assert.match(main, /registerQuickAttacksHud\(\)/);
   assert.match(hud, /Hooks\.on\("controlToken", refreshQuickAttacksHud\)/);
   assert.match(hud, /quickAttacksFromItems\(actor\.items\)/);
+  assert.match(hud, /preparedTechniques\(actor\.items\)/);
+  assert.match(hud, /techniques\.map\(\(technique\) => techniqueButton\(actor, technique\)\)/);
+  assert.match(hud, /techniqueSummary\(technique\)/);
+  assert.match(hud, /actor\.useTechnique\(technique\.id\)/);
   assert.match(hud, /attack\.itemType/);
   assert.match(hud, /attack\.range/);
   assert.match(hud, /availablePathAttackOptions\(actor, attack\)/);
@@ -220,6 +224,10 @@ test("actor sheet opens item catalogs and toggles equipment", async () => {
   assert.match(itemTemplate, /name="system\.modification"/);
   assert.match(itemTemplate, /selectedItemModification/);
   assert.match(itemTemplate, /item-raw-text/);
+  assert.match(itemTemplate, /item-description-editor/);
+  assert.match(itemTemplate, /name="system\.description"/);
+  assert.match(itemTemplate, /HRPG\.ItemDescriptionHint/);
+  assert.doesNotMatch(itemTemplate, /\{\{editor system\.description/);
 });
 
 test("paths and traits can be removed from the actor sheet", async () => {
