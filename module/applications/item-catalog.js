@@ -1,9 +1,9 @@
-import { catalogItemData, customItemData, groupCatalogItems, itemCatalogTypes, loadItemCatalog } from "../data/item-catalog.js";
+import { catalogItemData, customItemData, groupCatalogItems, itemCatalogTypes, loadCatalogItems } from "../data/item-catalog.js";
 
 async function addCatalogItem(event, target) {
   event?.preventDefault?.();
   const sourceId = target.closest("[data-item-source-id]")?.dataset.itemSourceId;
-  const item = (await loadItemCatalog()).find((entry) => entry.sourceId === sourceId);
+  const item = (await loadCatalogItems(this.catalogType)).find((entry) => entry.sourceId === sourceId);
   if (!item) return ui.notifications.error(game.i18n.localize("HRPG.ItemCatalogNotFound"));
   const [created] = await this.actor.createEmbeddedDocuments("Item", [catalogItemData(item)]);
   ui.notifications.info(game.i18n.format("HRPG.ItemCatalogAdded", { name: item.name }));
@@ -47,14 +47,14 @@ export class ItemCatalogApplication extends foundry.applications.api.HandlebarsA
 
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
-    const items = await loadItemCatalog();
+    const items = await loadCatalogItems(this.catalogType);
     const ownedSourceIds = new Set(this.actor.items.filter((item) => item.system?.sourceId).map((item) => item.system.sourceId));
     return {
       ...context,
       actor: this.actor,
       catalogType: this.catalogType,
       catalogTypeLabel: itemCatalogTypes()[this.catalogType] ?? "HRPG.ItemCatalogTitle",
-      groups: groupCatalogItems(items, { type: this.catalogType, ownedSourceIds })
+      groups: groupCatalogItems(items, { type: this.catalogType, ownedSourceIds, actor: this.actor })
     };
   }
 

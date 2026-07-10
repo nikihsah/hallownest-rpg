@@ -207,7 +207,7 @@ test("actor sheet opens item catalogs and toggles equipment", async () => {
 
   assert.match(sheet, /import \{ ItemCatalogApplication \}/);
   assert.match(sheet, /new ItemCatalogApplication\(this\.actor/);
-  assert.match(sheet, /\["weapon", "armor", "charm", "gear", "consumable"\]\.includes\(type\)/);
+  assert.match(sheet, /\["weapon", "armor", "charm", "gear", "consumable", "art", "spell"\]\.includes\(type\)/);
   assert.match(sheet, /data-item-equipped/);
   assert.match(sheet, /"system\.equipped": event\.currentTarget\.checked/);
   assert.match(template, /data-item-equipped="\{\{item\.id\}\}"/);
@@ -225,7 +225,7 @@ test("actor sheet opens item catalogs and toggles equipment", async () => {
 test("paths and traits can be removed from the actor sheet", async () => {
   const template = await readFile(templateUrl, "utf8");
   const sheet = await readFile(sheetUrl, "utf8");
-  assert.equal((template.match(/data-action="delete-item"/g) ?? []).length, 4);
+  assert.equal((template.match(/data-action="delete-item"/g) ?? []).length, 6);
   assert.match(template, /&times;/);
   assert.doesNotMatch(template, /Г—/);
   assert.match(sheet, /"delete-item": deleteItemAction/);
@@ -260,8 +260,8 @@ test("actor document exposes defensive action rolls", async () => {
   assert.match(actor, /spendCombatStamina\(cost = 0\)/);
   assert.match(actor, /"system\.resources\.stamina\.value": next/);
   assert.match(actor, /HRPG\.StaminaExceeded/);
-  assert.match(actor, /rollDefenseAction\(actionKey, \{ bonusDice = 0, staminaCost = 0, attribute = "", traitOptions = \[\] \} = \{\}\)/);
-  assert.match(actor, /await this\.spendCombatStamina\(staminaCost\)/);
+  assert.match(actor, /rollDefenseAction\(actionKey, \{ bonusDice = 0, staminaCost = 0, attribute = "", traitOptions = \[\], techniqueOptions = \[\] \} = \{\}\)/);
+  assert.match(actor, /await this\.spendCombatStamina\(staminaCost \+ techniqueCost\.stamina\)/);
   assert.match(actor, /dodge: \{ label: "HRPG\.Dodge", attribute: "grace" \}/);
   assert.match(actor, /parry: \{ label: "HRPG\.Parry", attribute: "power" \}/);
   assert.match(actor, /absorption: \{ label: "HRPG\.DamageAbsorption", attribute: "shell" \}/);
@@ -276,6 +276,9 @@ test("actor document exposes defensive action rolls", async () => {
   assert.match(actor, /itemPromptNotes\(this\.items, \["attack"\], \{ itemId \}\)/);
   assert.match(actor, /selectedItemModificationEffects\(item\)/);
   assert.match(actor, /modificationNotes\(modificationEffects\)/);
+  assert.match(actor, /selectedTechniqueCost\(this, techniqueOptions, actionKey\)/);
+  assert.match(actor, /techniqueNotesFromIds\(this, techniqueOptions, "attack"/);
+  assert.match(actor, /useTechnique\(itemId/);
   assert.match(actor, /attackTaxReduction/);
   assert.match(actor, /itemEffects\.modifiers/);
   assert.match(actor, /pathSupplyBonus\(path\.system\?\.sourceId, rank\)/);

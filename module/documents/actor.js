@@ -8,6 +8,8 @@ import { applyPathAttackOptions } from "../mechanics/path-abilities.js";
 import { effectiveItemWeight, itemDefenseBonus, itemPassiveEffects, itemPromptEffects } from "../mechanics/item-effects.js";
 import { applyTraitConditionalOptions, traitConditionalOptions, traitPromptEffects } from "../mechanics/trait-effects.js";
 import { selectedItemModificationEffects } from "../data/item-modifications.js";
+import { isTechniqueType } from "../data/technique-catalog.js";
+import { selectedTechniqueCost, techniqueNotesFromIds, techniqueSummary, techniqueSynergyNotes } from "../mechanics/techniques.js";
 
 export class HallownestActor extends Actor {
   prepareDerivedData() {
@@ -126,7 +128,35 @@ export class HallownestActor extends Actor {
     };
   }
 
-  async rollDefenseAction(actionKey, { bonusDice = 0, staminaCost = 0, attribute = "", traitOptions = [] } = {}) {
+  async spendTechniqueResources(cost = {}) {
+    const update = {};
+    for (const key of ["stamina", "soul", "essence"]) {
+      const spent = Math.max(0, Math.floor(Number(cost[key]) || 0));
+      if (!spent) continue;
+      const current = Number(this.system.resources?.[key]?.value) || 0;
+      update[`system.resources.${key}.value`] = Math.max(0, current - spent);
+      if (current < spent) ui.notifications.warn(game.i18n.format("HRPG.ResourceExceeded", { resource: game.i18n.localize(resourceLabels[key]), cost: spent }));
+    }
+    if (Object.keys(update).length) await this.update(update);
+  }
+
+  async useTechnique(itemId, { trigger = "" } = {}) {
+    const item = this.items.get(itemId);
+    if (!item || !isTechniqueType(item.type)) return null;
+    const cost = techniqueCostFromItem(item);
+    await this.spendTechniqueResources(cost);
+    const notes = [
+      techniqueSummary(item),
+      ...techniqueSynergyNotes(this, item, trigger || techniqueDefaultTrigger(item), { itemId })
+    ].filter(Boolean);
+    return ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor: this }),
+      flavor: `<strong>${foundry.utils.escapeHTML(game.i18n.format("HRPG.TechniqueUsed", { name: item.name }))}</strong>`,
+      content: `<div class="hrpg-chat-notes">${notes.map((note) => `<p>${foundry.utils.escapeHTML(note)}</p>`).join("")}</div>`
+    });
+  }
+
+  async rollDefenseAction(actionKey, { bonusDice = 0, staminaCost = 0, attribute = "", traitOptions = [], techniqueOptions = [] } = {}) {
     const actions = {
       protection: { label: "HRPG.DefenseAction", attribute: "" },
       dodge: { label: "HRPG.Dodge", attribute: "grace" },
@@ -135,7 +165,9 @@ export class HallownestActor extends Actor {
     };
     const action = actions[actionKey];
     if (!action) return null;
-    await this.spendCombatStamina(staminaCost);
+    const techniqueCost = selectedTechniqueCost(this, techniqueOptions, actionKey);
+    await this.spendCombatStamina(staminaCost + techniqueCost.stamina);
+    await this.spendTechniqueResources({ soul: techniqueCost.soul, essence: techniqueCost.essence });
     const attributeKey = attribute || action.attribute;
     if (!action.attribute) {
       return ChatMessage.create({
@@ -155,6 +187,7 @@ export class HallownestActor extends Actor {
         game.i18n.format("HRPG.DefenseStaminaSpent", { cost: Math.max(0, Math.floor(Number(staminaCost) || 0)) }),
         ...itemBonus.notes,
         ...itemPromptNotes(this.items, defensePromptTriggers(actionKey)),
+        ...techniqueNotesFromIds(this, techniqueOptions, actionKey),
         ...traitPromptNotes(this.items, [actionKey]),
         ...traitAdjustment.notes,
         ...(actionKey === "absorption" ? itemEffectNotes(this.system.effective?.itemEffects, ["absorptionBonus", "absorptionRerolls"]) : [])
@@ -192,14 +225,16 @@ export class HallownestActor extends Actor {
     });
   }
 
-  async rollTraitAttack(itemId, { investedStamina = 0, pathOptions = [], traitOptions = [] } = {}) {
+  async rollTraitAttack(itemId, { investedStamina = 0, pathOptions = [], traitOptions = [], techniqueOptions = [] } = {}) {
     const item = this.items.get(itemId);
     if (!item) return null;
     const baseAttack = baseAttackConfig(this, item);
     const attackOptions = applyPathAttackOptions({ attribute: baseAttack.attribute, successThreshold: 5 }, pathOptions);
     const traitAdjustment = applyTraitConditionalOptions(traitConditionalOptions(this, "attack", { itemId }), traitOptions);
     const modificationEffects = item.type === "weapon" ? selectedItemModificationEffects(item) : null;
+    const techniqueCost = selectedTechniqueCost(this, techniqueOptions, "attack", { itemId });
     const stamina = await this.spendAttackStamina({ invested: investedStamina, taxAsDice: attackOptions.taxAsDice });
+    await this.spendTechniqueResources(techniqueCost);
     const attributeKey = attackOptions.attribute;
     const value = Number(this.system.effective?.attributes?.[attributeKey]?.value) || 0;
     const quality = item.type === "weapon" ? weaponQualityValue(item) : Math.max(0, Math.floor(naturalWeaponQualityValue(item)));
@@ -220,6 +255,7 @@ export class HallownestActor extends Actor {
         ...baseAttack.notes,
         ...itemPromptNotes(this.items, ["attack"], { itemId }),
         ...modificationNotes(modificationEffects),
+        ...techniqueNotesFromIds(this, techniqueOptions, "attack", { itemId }),
         ...traitPromptNotes(this.items, ["attack"], { itemId }),
         ...traitAdjustment.notes,
         ...attackOptions.notes
@@ -248,6 +284,7 @@ function pathAppealBonus(sourceId, rank) {
 }
 
 const secondaryDefenseLabels = { speed: "HRPG.Speed", appeal: "HRPG.Appeal", dread: "HRPG.Dread" };
+const resourceLabels = { stamina: "HRPG.ResourceStamina", soul: "HRPG.ResourceSoul", essence: "HRPG.ResourceEssence" };
 
 function baseAttackConfig(actor, item) {
   if (item.type !== "weapon") return { attribute: "power", notes: [] };
@@ -318,4 +355,24 @@ function defensePromptTriggers(actionKey) {
   if (actionKey === "parry") return ["parry", "defense"];
   if (actionKey === "absorption") return ["absorption"];
   return ["defense"];
+}
+
+function techniqueCostFromItem(item) {
+  return {
+    stamina: Math.max(0, Math.floor(Number(item.system?.cost?.stamina) || 0)),
+    soul: Math.max(0, Math.floor(Number(item.system?.cost?.soul) || 0)),
+    essence: Math.max(0, Math.floor(Number(item.system?.cost?.essence) || 0))
+  };
+}
+
+function techniqueDefaultTrigger(item) {
+  const text = [item.system?.techniqueType, item.system?.effectText, item.system?.description, item.system?.rawText]
+    .filter(Boolean)
+    .join(" ")
+    .toLocaleLowerCase("ru");
+  if (/парир|щит/u.test(text)) return "parry";
+  if (/уклон/u.test(text)) return "dodge";
+  if (/впитыв|панцир/u.test(text)) return "absorption";
+  if (/атак|удар|урон|цель/u.test(text)) return "attack";
+  return item.type === "spell" ? "attack" : "";
 }

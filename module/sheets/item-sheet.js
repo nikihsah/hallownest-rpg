@@ -19,6 +19,19 @@ export class HallownestItemSheet extends ItemSheet {
     context.itemModificationOptions = itemModificationOptions(context.item)
       .map((modification) => ({ ...modification, selected: modification.key === context.system.modification }));
     context.selectedItemModification = selectedItemModification(context.item);
+    context.isTechniqueItem = ["art", "spell"].includes(context.item.type);
+    context.attachmentRows = Object.entries(context.system.attachments ?? { one: "", two: "", three: "" })
+      .map(([key, value]) => ({ key, value }));
+    if (context.isTechniqueItem) {
+      context.techniqueTypeOptions = {
+        boost: "HRPG.TechniqueType.boost",
+        normal: "HRPG.TechniqueType.normal",
+        reaction: "HRPG.TechniqueType.reaction",
+        special: "HRPG.TechniqueType.special",
+        unique: "HRPG.TechniqueType.unique",
+        secret: "HRPG.TechniqueType.secret"
+      };
+    }
     if (context.item.type === "trait") {
       const modifierLabels = {
         power: "HRPG.AttributePower",
@@ -59,6 +72,17 @@ export class HallownestItemSheet extends ItemSheet {
     element.addEventListener("scroll", () => {
       this.sheetScrollTop = element.scrollTop;
     }, { passive: true });
+    for (const button of element.querySelectorAll("[data-attachment-picker]")) {
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        const key = event.currentTarget.dataset.attachmentPicker;
+        new FilePicker({
+          type: "any",
+          current: this.item.system?.attachments?.[key] ?? "",
+          callback: (path) => this.item.update({ [`system.attachments.${key}`]: path })
+        }).render(true);
+      });
+    }
   }
 }
 

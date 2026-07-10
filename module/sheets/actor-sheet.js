@@ -6,6 +6,7 @@ import { loadPathCatalog, pathItemData } from "../data/path-catalog.js";
 import { TraitCatalogApplication } from "../applications/trait-catalog.js";
 import { ItemCatalogApplication } from "../applications/item-catalog.js";
 import { isNaturalWeaponTrait, naturalWeaponQualityMax, naturalWeaponQualityValue } from "../mechanics/trait-quality.js";
+import { isTechniqueType, techniqueSlotsSummary } from "../data/technique-catalog.js";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -38,7 +39,7 @@ async function createItemAction(_event, target) {
       return ui.notifications.error(game.i18n.localize("HRPG.TraitCatalogFailed"));
     }
   }
-  if (["weapon", "armor", "charm", "gear", "consumable"].includes(type)) {
+  if (["weapon", "armor", "charm", "gear", "consumable", "art", "spell"].includes(type)) {
     try {
       this.itemCatalogs ??= {};
       this.itemCatalogs[type] ??= new ItemCatalogApplication(this.actor, {
@@ -128,6 +129,10 @@ async function restAction() {
   ui.notifications.info(game.i18n.format("HRPG.RestComplete", { satiety: result.nextSatiety }));
 }
 
+async function useTechniqueAction(_event, target) {
+  await this.actor.useTechnique(target.dataset.itemId);
+}
+
 function choosePortraitAction() {
   openActorPortraitPicker(this.actor);
 }
@@ -156,6 +161,7 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
       "select-tab": selectTabAction,
       "roll-secondary": rollSecondaryAction,
       "rest": restAction,
+      "use-technique": useTechniqueAction,
       "choose-portrait": choosePortraitAction
     }
   };
@@ -215,6 +221,18 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
       qualityValue: naturalWeaponQualityValue(trait),
       qualityMax: naturalWeaponQualityMax(trait)
     }));
+    const techniqueSlots = techniqueSlotsSummary(this.actor);
+    context.techniqueSlots = {
+      ...techniqueSlots,
+      tooltip: [
+        `${game.i18n.localize("HRPG.TechniqueSlotsUsed")}: ${techniqueSlots.used}`,
+        `${game.i18n.localize("HRPG.TechniqueSlots")}: ${techniqueSlots.maximum}`,
+        `${game.i18n.localize("HRPG.TechniqueSlotsRemaining")}: ${techniqueSlots.remaining}`,
+        ...techniqueSlots.prepared.map((name) => `• ${name}`)
+      ].join("\n")
+    };
+    context.artRows = (context.itemsByType.art ?? []).map((item) => techniqueRow(item));
+    context.spellRows = (context.itemsByType.spell ?? []).map((item) => techniqueRow(item));
     const ownedPathIds = new Set((context.itemsByType.path ?? []).map((item) => item.system.sourceId));
     context.pathCatalog = (await loadPathCatalog()).map((path) => ({
       ...path,
@@ -362,6 +380,19 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
         await item.update({ "system.equipped": event.currentTarget.checked });
       });
     }
+    for (const input of this.element.querySelectorAll("[data-technique-prepared]")) {
+      input.addEventListener("change", async (event) => {
+        event.stopPropagation();
+        const item = this.actor.items.get(event.currentTarget.dataset.techniquePrepared);
+        if (!item || !isTechniqueType(item.type)) return;
+        const summary = techniqueSlotsSummary(this.actor);
+        if (event.currentTarget.checked && summary.used >= summary.maximum) {
+          event.currentTarget.checked = false;
+          return ui.notifications.warn(game.i18n.localize("HRPG.TechniqueSlotsFull"));
+        }
+        await item.update({ "system.prepared": event.currentTarget.checked });
+      });
+    }
     for (const row of this.element.querySelectorAll("[data-action='open-item'][data-item-id]")) {
       row.addEventListener("click", (event) => {
         if (event.target.closest("[data-action='delete-item']")) return;
@@ -393,6 +424,23 @@ function signed(value) {
 function formatNumber(value) {
   const number = Number(value) || 0;
   return Number.isInteger(number) ? String(number) : number.toFixed(2).replace(/0+$/u, "").replace(/\.$/u, "");
+}
+
+function techniqueRow(item) {
+  const cost = item.system?.cost ?? {};
+  return {
+    id: item.id,
+    img: item.img,
+    name: item.name,
+    system: item.system,
+    prepared: item.system?.prepared === true,
+    costLabel: cost.raw || [
+      Number(cost.stamina) ? `${cost.stamina} ${globalThis.game?.i18n?.localize?.("HRPG.ResourceStamina") ?? "stamina"}` : "",
+      Number(cost.soul) ? `${cost.soul} ${globalThis.game?.i18n?.localize?.("HRPG.ResourceSoul") ?? "soul"}` : "",
+      Number(cost.essence) ? `${cost.essence} ${globalThis.game?.i18n?.localize?.("HRPG.ResourceEssence") ?? "essence"}` : ""
+    ].filter(Boolean).join(", "),
+    meta: [item.system?.pathName, item.system?.techniqueType, item.system?.requirementLabel].filter(Boolean).join(" · ")
+  };
 }
 
 function activateActorSheetTab(root, tab) {

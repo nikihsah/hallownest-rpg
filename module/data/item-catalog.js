@@ -1,9 +1,13 @@
+import { customTechniqueData, groupTechniques, isTechniqueType, loadTechniqueCatalog, techniqueItemData } from "./technique-catalog.js";
+
 let cachedItems;
 
 const TYPE_LABELS = {
   weapon: "HRPG.ItemWeapon",
   armor: "HRPG.ItemArmor",
   charm: "HRPG.ItemCharm",
+  art: "HRPG.ItemArt",
+  spell: "HRPG.ItemSpell",
   gear: "HRPG.ItemGear",
   consumable: "HRPG.ItemConsumable"
 };
@@ -16,11 +20,17 @@ export async function loadItemCatalog() {
   return cachedItems;
 }
 
+export async function loadCatalogItems(type = "") {
+  if (isTechniqueType(type)) return loadTechniqueCatalog();
+  return loadItemCatalog();
+}
+
 export function itemCatalogTypes() {
   return TYPE_LABELS;
 }
 
-export function groupCatalogItems(items, { type = "", ownedSourceIds = new Set() } = {}) {
+export function groupCatalogItems(items, { type = "", ownedSourceIds = new Set(), actor = null } = {}) {
+  if (isTechniqueType(type)) return groupTechniques(items, { type, ownedSourceIds, actor });
   const filtered = type ? items.filter((item) => item.type === type) : items;
   const groups = new Map();
   for (const item of filtered) {
@@ -37,6 +47,7 @@ export function groupCatalogItems(items, { type = "", ownedSourceIds = new Set()
 }
 
 export function catalogItemData(item) {
+  if (isTechniqueType(item.type)) return techniqueItemData(item);
   const base = {
     name: item.name,
     type: item.type,
@@ -90,6 +101,7 @@ export function catalogItemData(item) {
 }
 
 export function customItemData(type, name) {
+  if (isTechniqueType(type)) return customTechniqueData(type, name);
   return {
     name,
     type,
@@ -98,6 +110,8 @@ export function customItemData(type, name) {
       subtype: "",
       modification: "",
       description: "",
+      rawText: "",
+      attachments: { one: "", two: "", three: "" },
       quantity: 1,
       weight: 0,
       equipped: false

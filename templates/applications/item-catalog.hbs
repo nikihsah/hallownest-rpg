@@ -9,11 +9,12 @@
         <h2>{{localize group.label}}</h2>
         <div class="item-catalog-grid">
           {{#each group.items as |item|}}
-            <article class="item-choice {{#if item.owned}}owned{{/if}}" data-item-source-id="{{item.sourceId}}">
+            <article class="item-choice {{#if item.owned}}owned{{/if}} {{#unless item.available}}unavailable{{/unless}}" data-item-source-id="{{item.sourceId}}">
               <header>
                 <h3>{{item.name}}</h3>
                 <span>{{localize item.typeLabel}}</span>
               </header>
+              {{#if item.typeName}}<small>{{localize item.typeName}}</small>{{/if}}
               {{#if item.meta}}<small>{{item.meta}}</small>{{/if}}
               {{#if item.description}}<p>{{item.description}}</p>{{/if}}
               {{#if item.rawText}}

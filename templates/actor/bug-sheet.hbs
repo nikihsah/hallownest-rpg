@@ -148,9 +148,24 @@
       </div>
 
       <div class="tab techniques" data-group="primary" data-tab="techniques">
+        <section class="panel technique-slots-panel {{#if techniqueSlots.over}}overloaded{{/if}}" data-tooltip="{{techniqueSlots.tooltip}}" data-tooltip-direction="UP">
+          <h2>{{localize "HRPG.TechniqueSlots"}}</h2>
+          <strong>{{techniqueSlots.remaining}} / {{techniqueSlots.maximum}}</strong>
+          <small>{{localize "HRPG.TechniqueSlotsRemaining"}}</small>
+        </section>
         <div class="split-grid">
-          <section class="panel collection-panel"><div class="panel-heading"><h2>{{localize "HRPG.ItemArt"}}</h2><button type="button" data-action="create-item" data-type="art">+</button></div>{{#each itemsByType.art as |item|}}<div class="item-row line-item" data-open-item-id="{{item.id}}" role="button" tabindex="0"><img src="{{item.img}}"><span>{{item.name}}</span></div>{{/each}}</section>
-          <section class="panel collection-panel"><div class="panel-heading"><h2>{{localize "HRPG.ItemSpell"}}</h2><button type="button" data-action="create-item" data-type="spell">+</button></div>{{#each itemsByType.spell as |item|}}<div class="item-row line-item" data-open-item-id="{{item.id}}" role="button" tabindex="0"><img src="{{item.img}}"><span>{{item.name}}</span></div>{{/each}}</section>
+          <section class="panel collection-panel">
+            <div class="panel-heading"><h2>{{localize "HRPG.ItemArt"}}</h2><button type="button" data-action="create-item" data-type="art">+</button></div>
+            {{#each artRows as |item|}}
+              <div class="item-row line-item technique-row" data-open-item-id="{{item.id}}" role="button" tabindex="0"><img src="{{item.img}}"><span>{{item.name}}</span><small>{{item.costLabel}}</small><label class="item-equipped"><input data-technique-prepared="{{item.id}}" type="checkbox" {{#if item.prepared}}checked{{/if}}> {{localize "HRPG.Prepared"}}</label><button type="button" data-action="use-technique" data-item-id="{{item.id}}">{{localize "HRPG.Use"}}</button><button class="item-delete" type="button" data-action="delete-item" data-item-id="{{item.id}}" data-tooltip="{{localize 'HRPG.DeleteItem'}}">&times;</button></div>
+            {{else}}<p class="empty-state">{{localize "HRPG.NoArts"}}</p>{{/each}}
+          </section>
+          <section class="panel collection-panel">
+            <div class="panel-heading"><h2>{{localize "HRPG.ItemSpell"}}</h2><button type="button" data-action="create-item" data-type="spell">+</button></div>
+            {{#each spellRows as |item|}}
+              <div class="item-row line-item technique-row" data-open-item-id="{{item.id}}" role="button" tabindex="0"><img src="{{item.img}}"><span>{{item.name}}</span><small>{{item.costLabel}}</small><label class="item-equipped"><input data-technique-prepared="{{item.id}}" type="checkbox" {{#if item.prepared}}checked{{/if}}> {{localize "HRPG.Prepared"}}</label><button type="button" data-action="use-technique" data-item-id="{{item.id}}">{{localize "HRPG.Use"}}</button><button class="item-delete" type="button" data-action="delete-item" data-item-id="{{item.id}}" data-tooltip="{{localize 'HRPG.DeleteItem'}}">&times;</button></div>
+            {{else}}<p class="empty-state">{{localize "HRPG.NoSpells"}}</p>{{/each}}
+          </section>
         </div>
       </div>
 

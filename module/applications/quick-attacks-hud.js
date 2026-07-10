@@ -2,6 +2,7 @@ import { quickAttacksFromItems } from "../mechanics/trait-attacks.js";
 import { availablePathAttackOptions } from "../mechanics/path-abilities.js";
 import { hasEquippedItem, itemPassiveEffects, itemPromptEffects } from "../mechanics/item-effects.js";
 import { traitConditionalOptions, traitPromptEffects } from "../mechanics/trait-effects.js";
+import { techniquePromptOptions } from "../mechanics/techniques.js";
 
 const HUD_ID = "hrpg-quick-attacks-hud";
 
@@ -107,6 +108,7 @@ async function promptAttackOptions(actor, attack) {
   const itemEffects = itemPromptEffects(actor.items, "attack", { itemId: attack.itemId });
   const traitEffects = traitPromptEffects(actor.items, "attack", { itemId: attack.itemId });
   const traitOptions = traitConditionalOptions(actor, "attack", { itemId: attack.itemId });
+  const techniqueOptions = techniquePromptOptions(actor, "attack", { itemId: attack.itemId });
   const id = `hrpg-attack-${attack.itemId}-${foundry.utils.randomID()}`;
   const DialogV2 = foundry.applications?.api?.DialogV2;
   if (!DialogV2?.prompt) {
@@ -128,6 +130,7 @@ async function promptAttackOptions(actor, attack) {
         <p>${game.i18n.format("HRPG.AttackTaxHint", { tax: Number(actor.system.combat?.attackTax) || 0 })}</p>
         ${buttons ? `<section><h3>${game.i18n.localize("HRPG.PathAbilities")}</h3>${buttons}</section>` : `<p>${game.i18n.localize("HRPG.NoPathAbilities")}</p>`}
         ${itemEffects.length ? `<section><h3>${game.i18n.localize("HRPG.ItemEffects")}</h3>${effectNotes(itemEffects)}</section>` : ""}
+        ${techniqueOptions.length ? `<section><h3>${game.i18n.localize("HRPG.Techniques")}</h3>${techniqueOptionInputs(techniqueOptions)}</section>` : ""}
         ${traitEffects.length ? `<section><h3>${game.i18n.localize("HRPG.TraitEffects")}</h3>${effectNotes(traitEffects)}</section>` : ""}
         ${traitOptions.length ? `<section><h3>${game.i18n.localize("HRPG.ConditionalTraitOptions")}</h3>${traitOptionInputs(traitOptions)}</section>` : ""}
       </form>`,
@@ -139,7 +142,8 @@ async function promptAttackOptions(actor, attack) {
         return {
           investedStamina: Number(data.get("investedStamina")) || 0,
           pathOptions: data.getAll("pathOption").map((value) => pathOptions[Number(value)]).filter(Boolean),
-          traitOptions: data.getAll("traitOption").map(String)
+          traitOptions: data.getAll("traitOption").map(String),
+          techniqueOptions: data.getAll("techniqueOption").map(String)
         };
       }
     },
@@ -207,6 +211,7 @@ async function promptDefenseActionOptions(actor, action) {
   const effects = defensePromptEffects(actor, action.key);
   const traitEffects = traitPromptEffects(actor.items, action.key);
   const traitOptions = traitConditionalOptions(actor, action.key);
+  const techniqueOptions = techniquePromptOptions(actor, action.key);
   const DialogV2 = foundry.applications?.api?.DialogV2;
   if (!DialogV2?.prompt) {
     return { bonusDice: Number(window.prompt(game.i18n.localize("HRPG.BonusDice"), "0")) || 0, staminaCost: action.staminaCost ?? 0 };
@@ -226,6 +231,7 @@ async function promptDefenseActionOptions(actor, action) {
           <input type="number" name="staminaCost" value="${action.staminaCost ?? 0}" min="0" step="1">
         </label>
         ${effects.length ? `<section><h3>${game.i18n.localize("HRPG.ItemEffects")}</h3>${effectNotes(effects)}</section>` : ""}
+        ${techniqueOptions.length ? `<section><h3>${game.i18n.localize("HRPG.Techniques")}</h3>${techniqueOptionInputs(techniqueOptions)}</section>` : ""}
         ${traitEffects.length ? `<section><h3>${game.i18n.localize("HRPG.TraitEffects")}</h3>${effectNotes(traitEffects)}</section>` : ""}
         ${traitOptions.length ? `<section><h3>${game.i18n.localize("HRPG.ConditionalTraitOptions")}</h3>${traitOptionInputs(traitOptions)}</section>` : ""}
       </form>`,
@@ -238,7 +244,8 @@ async function promptDefenseActionOptions(actor, action) {
           bonusDice: Number(data.get("bonusDice")) || 0,
           staminaCost: Number(data.get("staminaCost")) || 0,
           attribute: String(data.get("attribute") || ""),
-          traitOptions: data.getAll("traitOption").map(String)
+          traitOptions: data.getAll("traitOption").map(String),
+          techniqueOptions: data.getAll("techniqueOption").map(String)
         };
       }
     },
@@ -299,6 +306,15 @@ function traitOptionInputs(options) {
   return options.map((option) => `
     <label class="hrpg-path-option">
       <input type="checkbox" name="traitOption" value="${foundry.utils.escapeHTML(option.key)}">
+      <span>${foundry.utils.escapeHTML(option.label)}</span>
+      <small>${foundry.utils.escapeHTML(option.note)}</small>
+    </label>`).join("");
+}
+
+function techniqueOptionInputs(options) {
+  return options.map((option) => `
+    <label class="hrpg-path-option">
+      <input type="checkbox" name="techniqueOption" value="${foundry.utils.escapeHTML(option.key)}">
       <span>${foundry.utils.escapeHTML(option.label)}</span>
       <small>${foundry.utils.escapeHTML(option.note)}</small>
     </label>`).join("");

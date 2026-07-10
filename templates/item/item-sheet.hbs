@@ -81,6 +81,30 @@
       <label>{{localize "HRPG.Rank"}} <input name="system.rank" type="number" min="0" value="{{system.rank}}"></label>
       <label>{{localize "HRPG.Mastery"}} <input name="system.mastery" type="text" value="{{system.mastery}}"></label>
     {{/if}}
+    {{#if (eq item.type "art")}}
+      <label class="item-equipped-editor">{{localize "HRPG.Prepared"}} <input name="system.prepared" type="checkbox" {{#if system.prepared}}checked{{/if}}></label>
+      <label>{{localize "HRPG.TechniqueTypeLabel"}}
+        <select name="system.techniqueType">{{selectOptions techniqueTypeOptions selected=system.techniqueType localize=true}}</select>
+      </label>
+      <label>{{localize "HRPG.PathFamily"}} <input name="system.pathName" type="text" value="{{system.pathName}}"></label>
+      <label>{{localize "HRPG.Requirements"}} <input name="system.requirementLabel" type="text" value="{{system.requirementLabel}}"></label>
+      <label>{{localize "HRPG.Cost"}} <input name="system.cost.raw" type="text" value="{{system.cost.raw}}"></label>
+      <label>{{localize "HRPG.ResourceStamina"}} <input name="system.cost.stamina" type="number" min="0" value="{{system.cost.stamina}}"></label>
+      <label>{{localize "HRPG.ResourceSoul"}} <input name="system.cost.soul" type="number" min="0" value="{{system.cost.soul}}"></label>
+      <label>{{localize "HRPG.ResourceEssence"}} <input name="system.cost.essence" type="number" min="0" value="{{system.cost.essence}}"></label>
+    {{/if}}
+    {{#if (eq item.type "spell")}}
+      <label class="item-equipped-editor">{{localize "HRPG.Prepared"}} <input name="system.prepared" type="checkbox" {{#if system.prepared}}checked{{/if}}></label>
+      <label>{{localize "HRPG.PathMystic"}} <input name="system.pathName" type="text" value="{{system.pathName}}"></label>
+      <label>{{localize "HRPG.Requirements"}} <input name="system.requirementLabel" type="text" value="{{system.requirementLabel}}"></label>
+      <label>{{localize "HRPG.Cost"}} <input name="system.cost.raw" type="text" value="{{system.cost.raw}}"></label>
+      <label>{{localize "HRPG.SpellDifficulty"}} <input name="system.cost.difficulty" type="number" min="0" value="{{system.cost.difficulty}}"></label>
+      <label>{{localize "HRPG.ResourceSoul"}} <input name="system.cost.soul" type="number" min="0" value="{{system.cost.soul}}"></label>
+      <label>{{localize "HRPG.ResourceStamina"}} <input name="system.cost.stamina" type="number" min="0" value="{{system.cost.stamina}}"></label>
+      <label>{{localize "HRPG.ResourceEssence"}} <input name="system.cost.essence" type="number" min="0" value="{{system.cost.essence}}"></label>
+      <label>{{localize "HRPG.Range"}} <input name="system.range" type="text" value="{{system.range}}"></label>
+      <label>{{localize "HRPG.Duration"}} <input name="system.duration" type="text" value="{{system.duration}}"></label>
+    {{/if}}
     {{#if (eq item.type "weapon")}}
       <label>{{localize "HRPG.ItemType"}} <input name="system.itemType" type="text" value="{{system.itemType}}"></label>
       <label>{{localize "HRPG.Damage"}} <input name="system.damage" type="text" value="{{system.damage}}"></label>
@@ -124,6 +148,22 @@
     </section>
   {{/if}}
   {{#unless (eq item.type "path")}}{{editor system.description target="system.description" button=true owner=owner editable=editable}}{{/unless}}
+  {{#if isTechniqueItem}}
+    <section class="technique-effect-text">
+      <h2>{{localize "HRPG.TechniqueEffect"}}</h2>
+      <textarea name="system.effectText" placeholder="{{localize 'HRPG.TechniqueEffectHint'}}">{{system.effectText}}</textarea>
+    </section>
+  {{/if}}
+  {{#unless (eq item.type "path")}}
+    <section class="item-attachments">
+      <h2>{{localize "HRPG.Attachments"}}</h2>
+      {{#each attachmentRows as |attachment|}}
+        <label>{{localize "HRPG.Attachment"}}
+          <span><input name="system.attachments.{{attachment.key}}" type="text" value="{{attachment.value}}"><button type="button" data-attachment-picker="{{attachment.key}}">{{localize "HRPG.ChooseFile"}}</button></span>
+        </label>
+      {{/each}}
+    </section>
+  {{/unless}}
   {{#if selectedItemModification}}
     <section class="item-modification-description">
       <h2>{{localize "HRPG.ItemModification"}}: {{selectedItemModification.name}}</h2>

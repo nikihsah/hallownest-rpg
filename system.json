@@ -2,7 +2,7 @@
   "id": "hallownest-rpg",
   "title": "Hallownest RPG — Unofficial System",
   "description": "Независимая неофициальная система для приключений в мире жуков.",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "compatibility": {
     "minimum": 13,
     "verified": 13
