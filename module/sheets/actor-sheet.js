@@ -8,6 +8,8 @@ import { ItemCatalogApplication } from "../applications/item-catalog.js";
 import { isNaturalWeaponTrait, naturalWeaponQualityMax, naturalWeaponQualityValue } from "../mechanics/trait-quality.js";
 import { isTechniqueType, techniqueSlotsSummary } from "../data/technique-catalog.js";
 import { normalizeSkillName, skillBreakdown, skillRowsForItem, skillTotals } from "../mechanics/skills.js";
+import { HRPG_STATUS_EFFECTS, statusEffectDefinition } from "../data/status-effects.js";
+import { HRPG_EFFECT_SCOPE, setHrpgStatusEffect } from "../mechanics/active-effects.js";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -129,6 +131,23 @@ async function rollSkillAction(_event, target) {
   await this.actor.rollSkill(target.dataset.skillName);
 }
 
+async function applyStatusAction(event, target) {
+  event.stopPropagation();
+  const panel = target.closest(".status-panel");
+  const select = panel?.querySelector("[data-status-select]");
+  const key = select?.value;
+  if (!key) return ui.notifications.warn(game.i18n.localize("HRPG.ChooseStatusEffect"));
+  const definition = statusEffectDefinition(key);
+  const rawValue = Number(panel?.querySelector("[data-status-value]")?.value) || 1;
+  const value = definition?.stackable ? rawValue : 1;
+  await setHrpgStatusEffect(this.actor, key, value);
+}
+
+async function removeStatusAction(event, target) {
+  event.stopPropagation();
+  await setHrpgStatusEffect(this.actor, target.dataset.statusKey, 0);
+}
+
 async function updateSkillItemName(event) {
   event.stopPropagation();
   const item = this.actor.items.get(event.currentTarget.dataset.skillItemName);
@@ -191,6 +210,8 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
       "select-tab": selectTabAction,
       "roll-secondary": rollSecondaryAction,
       "roll-skill": rollSkillAction,
+      "apply-status": applyStatusAction,
+      "remove-status": removeStatusAction,
       "rest": restAction,
       "choose-portrait": choosePortraitAction
     }
@@ -208,6 +229,7 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     context.config = CONFIG.HRPG;
     context.editable = this.isEditable;
     context.owner = this.actor.isOwner;
+    context.isMasterBug = this.actor.type === "gmBug";
     const selectedMilestone = Number(system.advancement.milestone) || 0;
     context.milestoneOptions = Array.from({ length: 6 }, (_, value) => ({
       value,
@@ -287,6 +309,13 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     };
     context.artRows = (context.itemsByType.art ?? []).map((item) => techniqueRow(item));
     context.spellRows = (context.itemsByType.spell ?? []).map((item) => techniqueRow(item));
+    context.statusEffectOptions = HRPG_STATUS_EFFECTS.map((status) => ({
+      ...status,
+      label: status.label,
+      stackable: status.stackable,
+      max: status.max
+    }));
+    context.activeStatusRows = activeHrpgStatuses(this.actor);
     const skillTotalsByName = new Map(skillTotals(this.actor.items).map((entry) => [entry.key, entry]));
     context.skillItemRows = (context.itemsByType.skill ?? []).map((item) => {
       const rows = skillRowsForItem(item);
@@ -407,7 +436,7 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
 
   async _onRender(context, options) {
     await super._onRender(context, options);
-    const activeTab = this.activeTab ?? "overview";
+    const activeTab = context.isMasterBug && this.activeTab === "skills" ? "overview" : this.activeTab ?? "overview";
     activateActorSheetTab(this.element, activeTab);
     const sheetBody = this.element.querySelector(".sheet-body");
     if (sheetBody) {
@@ -538,6 +567,29 @@ function techniqueRow(item) {
     ].filter(Boolean).join(", "),
     meta: [item.system?.pathName, item.system?.techniqueType, item.system?.requirementLabel].filter(Boolean).join(" · ")
   };
+}
+
+function activeHrpgStatuses(actor) {
+  return Array.from(actor?.effects ?? [])
+    .map((effect) => {
+      const key = effect.getFlag?.(HRPG_EFFECT_SCOPE, "statusKey")
+        ?? effect.flags?.[HRPG_EFFECT_SCOPE]?.statusKey;
+      const definition = statusEffectDefinition(key);
+      if (!definition) return null;
+      const value = Number(effect.getFlag?.(HRPG_EFFECT_SCOPE, "value")
+        ?? effect.flags?.[HRPG_EFFECT_SCOPE]?.value
+        ?? 1) || 1;
+      return {
+        key,
+        img: effect.img || definition.icon,
+        name: game.i18n.localize(definition.label),
+        value,
+        valueLabel: definition.stackable
+          ? game.i18n.format("HRPG.StatusEffectStack", { value, max: definition.max })
+          : game.i18n.localize("HRPG.StatusEffectActive")
+      };
+    })
+    .filter(Boolean);
 }
 
 function activateActorSheetTab(root, tab) {

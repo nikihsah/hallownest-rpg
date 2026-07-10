@@ -1,6 +1,6 @@
 {
   "Actor": {
-    "types": ["bug"],
+    "types": ["bug", "gmBug"],
     "templates": {
       "creature": {
         "biography": "",
@@ -49,6 +49,9 @@
       }
     },
     "bug": {
+      "templates": ["creature"]
+    },
+    "gmBug": {
       "templates": ["creature"]
     }
   },

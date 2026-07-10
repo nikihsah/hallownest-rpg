@@ -16,17 +16,32 @@ test("actor sheet keeps each major area in its own tab", async () => {
   for (const tab of ["overview", "traits", "charms", "techniques", "skills", "inventory", "notes"]) {
     assert.match(template, new RegExp(`data-tab="${tab}"`));
   }
+  assert.match(template, /\{\{#unless isMasterBug\}\}<a class="item" data-action="select-tab" data-tab="skills"/);
+  assert.match(template, /\{\{#unless isMasterBug\}\}<div class="tab skills"/);
 });
 
 test("actor sheet uses the Foundry V2 application framework", async () => {
   const source = await readFile(sheetUrl, "utf8");
+  const main = await readFile(new URL("../module/main.js", import.meta.url), "utf8");
+  const actor = await readFile(new URL("../module/documents/actor.js", import.meta.url), "utf8");
+  const system = JSON.parse(await readFile(new URL("../system.json", import.meta.url), "utf8"));
+  const schema = JSON.parse(await readFile(new URL("../template.json", import.meta.url), "utf8"));
+  const ru = JSON.parse(await readFile(new URL("../lang/ru.json", import.meta.url), "utf8"));
+
   assert.match(source, /HandlebarsApplicationMixin\(ActorSheetV2\)/);
   assert.doesNotMatch(source, /extends ActorSheet\s*\{/);
   assert.match(source, /"apply-size": applySizeAction/);
   assert.match(source, /window: \{ resizable: true \}/);
   assert.match(source, /this\.activeTab = tab/);
+  assert.match(source, /context\.isMasterBug = this\.actor\.type === "gmBug"/);
+  assert.match(source, /context\.isMasterBug && this\.activeTab === "skills"/);
   assert.match(source, /activateActorSheetTab\(this\.element, activeTab\)/);
   assert.match(source, /this\.sheetScrollTop = sheetBody\.scrollTop/);
+  assert.match(main, /types: \["bug", "gmBug"\]/);
+  assert.match(actor, /\["bug", "gmBug"\]\.includes\(type\)/);
+  assert.equal(system.documentTypes.Actor.gmBug !== undefined, true);
+  assert.equal(schema.Actor.types.includes("gmBug"), true);
+  assert.equal(ru["TYPES.Actor.gmBug"], "Жук мастера");
 });
 
 test("actor sheet exposes the character milestone selector", async () => {
@@ -61,7 +76,7 @@ test("header exposes heart soul and stamina with temporary hit points", async ()
   assert.match(schema, /"soul": \{ "value": 3, "max": 3, "temp": 0 \}/);
   assert.match(schema, /"stamina": \{ "value": 3, "max": 3, "temp": 0 \}/);
   assert.match(schema, /"combat": \{ "speedSpent": 0, "attackTax": 0, "imbalance": 0 \}/);
-  assert.match(header, /name="system\.combat\.imbalance"/);
+  assert.doesNotMatch(header, /name="system\.combat\.imbalance"/);
 });
 
 test("secondary panel exposes three editable custom resources", async () => {
@@ -83,6 +98,23 @@ test("secondary panel exposes three editable custom resources", async () => {
   }
   const header = template.slice(template.indexOf('<header class="sheet-header'), template.indexOf("</header>"));
   assert.doesNotMatch(header, /system\.resources\.custom1/);
+});
+
+test("overview exposes HRPG status effect controls", async () => {
+  const template = await readFile(templateUrl, "utf8");
+  const sheet = await readFile(sheetUrl, "utf8");
+  const styles = await readFile(new URL("../styles/system.css", import.meta.url), "utf8");
+
+  assert.match(template, /class="panel status-panel"/);
+  assert.match(template, /data-status-select/);
+  assert.match(template, /data-status-value/);
+  assert.match(template, /data-action="apply-status"/);
+  assert.match(template, /data-action="remove-status"/);
+  assert.match(sheet, /HRPG_STATUS_EFFECTS/);
+  assert.match(sheet, /setHrpgStatusEffect\(this\.actor, key, value\)/);
+  assert.match(sheet, /setHrpgStatusEffect\(this\.actor, target\.dataset\.statusKey, 0\)/);
+  assert.match(sheet, /activeHrpgStatuses\(this\.actor\)/);
+  assert.match(styles, /\.hrpg \.status-panel/);
 });
 
 test("quick trait attacks are exposed through the selected-token HUD", async () => {

@@ -37,7 +37,7 @@ function fakeActor() {
 test("HRPG status effect data uses Foundry ActiveEffect shape and system flags", () => {
   const data = hrpgStatusEffectData("imbalance", { value: 2 });
 
-  assert.equal(data.img, "icons/svg/daze.svg");
+  assert.equal(data.img, "systems/hallownest-rpg/assets/icons/status/imbalance.svg");
   assert.deepEqual(data.statuses, ["hrpg.imbalance"]);
   assert.equal(data.flags[HRPG_EFFECT_SCOPE].statusKey, "imbalance");
   assert.equal(data.flags[HRPG_EFFECT_SCOPE].value, 2);

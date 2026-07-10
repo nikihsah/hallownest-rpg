@@ -48,7 +48,7 @@ function selectedBugActor() {
   const controlled = canvas?.tokens?.controlled ?? [];
   if (controlled.length !== 1) return null;
   const actor = controlled[0]?.actor;
-  return actor?.type === "bug" ? actor : null;
+  return ["bug", "gmBug"].includes(actor?.type) ? actor : null;
 }
 
 function createHud() {

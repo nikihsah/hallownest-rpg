@@ -20,7 +20,7 @@ import { flaskAttackContext, flaskEffectText, flaskUses, isFlaskItem, spendFlask
 export class HallownestActor extends Actor {
   prepareDerivedData() {
     super.prepareDerivedData();
-    if (this.type !== "bug") return;
+    if (!isBugActorType(this.type)) return;
 
     const system = this.system;
     const modifierKeys = ["power", "insight", "shell", "grace", "heart", "stamina", "soul", "speed", "hunger", "appeal", "dread", "marks", "load"];
@@ -442,6 +442,10 @@ export class HallownestActor extends Actor {
   async applySizeTemplate(size) {
     return applySizeTemplate(this, size);
   }
+}
+
+function isBugActorType(type) {
+  return ["bug", "gmBug"].includes(type);
 }
 
 function cappedResourceMax(key, value) {

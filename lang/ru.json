@@ -1,5 +1,6 @@
 {
   "TYPES.Actor.bug": "Жук",
+  "TYPES.Actor.gmBug": "Жук мастера",
   "TYPES.Item.weapon": "Оружие",
   "TYPES.Item.armor": "Броня",
   "TYPES.Item.trait": "Черта",
@@ -420,5 +421,14 @@
   "HRPG.Status.SoulDamage": "Урон Душе",
   "HRPG.Status.ChargedFireflies": "Заряженные светомухи",
   "HRPG.Status.SummonedCreature": "Призванное существо",
-  "HRPG.Status.ShellPuppet": "Оболочка"
+  "HRPG.Status.ShellPuppet": "Оболочка",
+  "HRPG.StatusEffects": "Состояния",
+  "HRPG.StatusEffectsHint": "Наложение HRPG-эффектов",
+  "HRPG.ChooseStatusEffect": "Выберите состояние",
+  "HRPG.StatusEffectValue": "Значение / стаки",
+  "HRPG.ApplyStatusEffect": "Наложить",
+  "HRPG.RemoveStatusEffect": "Снять состояние",
+  "HRPG.NoStatusEffects": "Нет активных HRPG-состояний.",
+  "HRPG.StatusEffectStack": "{value}/{max}",
+  "HRPG.StatusEffectActive": "активно"
 }

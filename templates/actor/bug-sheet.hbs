@@ -34,7 +34,6 @@
             <label>{{localize "HRPG.TempHitPointsShort"}}<input name="system.resources.stamina.temp" type="number" value="{{system.resources.stamina.temp}}" title="{{localize 'HRPG.TempHitPoints'}}"></label>
           </section>
           <label>{{localize "HRPG.ResourceSatiety"}}<span><input name="system.resources.satiety.value" type="number" value="{{system.resources.satiety.value}}"><b>/</b><output>{{system.resources.satiety.max}}</output></span></label>
-          <label>{{localize "HRPG.Imbalance"}}<span><input name="system.combat.imbalance" type="number" min="0" max="3" value="{{system.combat.imbalance}}"><b>/</b><output>3</output></span></label>
         </div>
       {{/if}}
     </div>
@@ -56,7 +55,7 @@
       <a class="item" data-action="select-tab" data-tab="traits">{{localize "HRPG.Traits"}}</a>
       <a class="item" data-action="select-tab" data-tab="charms">{{localize "HRPG.Charms"}}</a>
       <a class="item" data-action="select-tab" data-tab="techniques">{{localize "HRPG.Techniques"}}</a>
-      <a class="item" data-action="select-tab" data-tab="skills">{{localize "HRPG.Skills"}}</a>
+      {{#unless isMasterBug}}<a class="item" data-action="select-tab" data-tab="skills">{{localize "HRPG.Skills"}}</a>{{/unless}}
       <a class="item" data-action="select-tab" data-tab="inventory">{{localize "HRPG.Inventory"}}</a>
       <a class="item" data-action="select-tab" data-tab="notes">{{localize "HRPG.Notes"}}</a>
     </nav>
@@ -129,6 +128,26 @@
             <h2>{{localize "HRPG.ShortDescription"}}</h2>
             <textarea name="system.profile.summary" placeholder="{{localize 'HRPG.ShortDescriptionHint'}}">{{system.profile.summary}}</textarea>
           </section>
+
+          <section class="panel status-panel">
+            <div class="panel-heading"><h2>{{localize "HRPG.StatusEffects"}}</h2><span>{{localize "HRPG.StatusEffectsHint"}}</span></div>
+            <div class="status-picker">
+              <select data-status-select aria-label="{{localize 'HRPG.ChooseStatusEffect'}}">
+                <option value="">{{localize "HRPG.ChooseStatusEffect"}}</option>
+                {{#each statusEffectOptions as |status|}}<option value="{{status.key}}" data-stackable="{{status.stackable}}" data-max="{{status.max}}">{{localize status.label}}</option>{{/each}}
+              </select>
+              <input data-status-value type="number" min="1" value="1" title="{{localize 'HRPG.StatusEffectValue'}}">
+              <button type="button" data-action="apply-status">{{localize "HRPG.ApplyStatusEffect"}}</button>
+            </div>
+            {{#each activeStatusRows as |status|}}
+              <div class="item-row line-item status-row">
+                <img src="{{status.img}}">
+                <span>{{status.name}}</span>
+                <small>{{status.valueLabel}}</small>
+                <button class="item-delete" type="button" data-action="remove-status" data-status-key="{{status.key}}" data-tooltip="{{localize 'HRPG.RemoveStatusEffect'}}">&times;</button>
+              </div>
+            {{else}}<p class="empty-state">{{localize "HRPG.NoStatusEffects"}}</p>{{/each}}
+          </section>
         </div>
       </div>
 
@@ -175,7 +194,7 @@
         </div>
       </div>
 
-      <div class="tab skills" data-group="primary" data-tab="skills">
+      {{#unless isMasterBug}}<div class="tab skills" data-group="primary" data-tab="skills">
         <section class="panel collection-panel skill-list-panel">
           <div class="panel-heading"><h2>{{localize "HRPG.Skills"}}</h2><button type="button" data-action="create-item" data-type="skill">+</button></div>
           {{#each skillItemRows as |skill|}}
@@ -212,7 +231,7 @@
             </article>
           {{else}}<p class="empty-state">{{localize "HRPG.NoSkills"}}</p>{{/each}}
         </section>
-      </div>
+      </div>{{/unless}}
 
       <div class="tab inventory" data-group="primary" data-tab="inventory">
         {{#each inventoryItemTypes as |label type|}}

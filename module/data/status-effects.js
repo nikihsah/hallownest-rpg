@@ -1,41 +1,41 @@
 export const HRPG_STATUS_EFFECTS = Object.freeze([
-  effect("imbalance", "HRPG.Status.Imbalance", "combat", "icons/svg/daze.svg", { stackable: true, max: 3 }),
-  effect("dead", "HRPG.Status.Dead", "survival", "icons/svg/skull.svg"),
-  effect("starving", "HRPG.Status.Starving", "survival", "icons/svg/downgrade.svg"),
-  effect("focused", "HRPG.Status.Focused", "combat", "icons/svg/aura.svg"),
-  effect("prepared-action", "HRPG.Status.PreparedAction", "combat", "icons/svg/clockwork.svg"),
-  effect("delayed-turn", "HRPG.Status.DelayedTurn", "combat", "icons/svg/time-trap.svg"),
-  effect("grappled", "HRPG.Status.Grappled", "combat", "icons/svg/net.svg"),
-  effect("immobilized", "HRPG.Status.Immobilized", "combat", "icons/svg/paralysis.svg"),
-  effect("hidden", "HRPG.Status.Hidden", "combat", "icons/svg/invisible.svg"),
-  effect("wet", "HRPG.Status.Wet", "environment", "icons/svg/water.svg"),
-  effect("dry", "HRPG.Status.Dry", "environment", "icons/svg/sun.svg"),
-  effect("burning", "HRPG.Status.Burning", "damage", "icons/svg/fire.svg", { stackable: true }),
-  effect("delayed-damage", "HRPG.Status.DelayedDamage", "damage", "icons/svg/explosion.svg", { stackable: true }),
-  effect("poisoned", "HRPG.Status.Poisoned", "damage", "icons/svg/poison.svg", { stackable: true }),
-  effect("acid", "HRPG.Status.Acid", "damage", "icons/svg/acid.svg", { stackable: true }),
-  effect("rust", "HRPG.Status.Rust", "damage", "icons/svg/degen.svg", { stackable: true }),
-  effect("armor-damaged", "HRPG.Status.ArmorDamaged", "gear", "icons/svg/shield.svg", { stackable: true }),
-  effect("equipment-worn", "HRPG.Status.EquipmentWorn", "gear", "icons/svg/item-bag.svg", { stackable: true }),
-  effect("attribute-damage", "HRPG.Status.AttributeDamage", "debuff", "icons/svg/decrease.svg", { stackable: true }),
-  effect("resource-damage", "HRPG.Status.ResourceDamage", "debuff", "icons/svg/blood.svg", { stackable: true }),
-  effect("speed-penalty", "HRPG.Status.SpeedPenalty", "debuff", "icons/svg/turtle.svg", { stackable: true }),
-  effect("stamina-max-penalty", "HRPG.Status.StaminaMaxPenalty", "debuff", "icons/svg/battery-pack-alt.svg", { stackable: true }),
-  effect("attack-defense-penalty", "HRPG.Status.AttackDefensePenalty", "debuff", "icons/svg/terror.svg", { stackable: true }),
-  effect("sense-blocked", "HRPG.Status.SenseBlocked", "senses", "icons/svg/blind.svg", { stackable: true }),
-  effect("smoke-cloud", "HRPG.Status.SmokeCloud", "environment", "icons/svg/fog.svg"),
-  effect("greased", "HRPG.Status.Greased", "environment", "icons/svg/slippery.svg"),
-  effect("glued", "HRPG.Status.Glued", "environment", "icons/svg/web.svg", { stackable: true }),
-  effect("pheromones", "HRPG.Status.Pheromones", "social", "icons/svg/scent.svg"),
-  effect("charmed", "HRPG.Status.Charmed", "social", "icons/svg/heart.svg"),
-  effect("panicked", "HRPG.Status.Panicked", "social", "icons/svg/screaming.svg"),
-  effect("unconscious", "HRPG.Status.Unconscious", "survival", "icons/svg/unconscious.svg"),
-  effect("enraged", "HRPG.Status.Enraged", "social", "icons/svg/angry.svg"),
-  effect("lifeblood", "HRPG.Status.Lifeblood", "resource", "icons/svg/regen.svg", { stackable: true }),
-  effect("soul-damage", "HRPG.Status.SoulDamage", "resource", "icons/svg/void.svg", { stackable: true }),
-  effect("charged-fireflies", "HRPG.Status.ChargedFireflies", "environment", "icons/svg/lightning.svg"),
-  effect("summoned-creature", "HRPG.Status.SummonedCreature", "summon", "icons/svg/mystery-man.svg"),
-  effect("shell-puppet", "HRPG.Status.ShellPuppet", "summon", "icons/svg/target.svg")
+  effect("imbalance", "HRPG.Status.Imbalance", "combat", statusIcon("imbalance"), { stackable: true, max: 3 }),
+  effect("dead", "HRPG.Status.Dead", "survival", statusIcon("dead")),
+  effect("starving", "HRPG.Status.Starving", "survival", statusIcon("starving")),
+  effect("focused", "HRPG.Status.Focused", "combat", statusIcon("focused")),
+  effect("prepared-action", "HRPG.Status.PreparedAction", "combat", statusIcon("prepared-action")),
+  effect("delayed-turn", "HRPG.Status.DelayedTurn", "combat", statusIcon("delayed-turn")),
+  effect("grappled", "HRPG.Status.Grappled", "combat", statusIcon("grappled")),
+  effect("immobilized", "HRPG.Status.Immobilized", "combat", statusIcon("immobilized")),
+  effect("hidden", "HRPG.Status.Hidden", "combat", statusIcon("hidden")),
+  effect("wet", "HRPG.Status.Wet", "environment", statusIcon("wet")),
+  effect("dry", "HRPG.Status.Dry", "environment", statusIcon("dry")),
+  effect("burning", "HRPG.Status.Burning", "damage", statusIcon("burning"), { stackable: true }),
+  effect("delayed-damage", "HRPG.Status.DelayedDamage", "damage", statusIcon("delayed-damage"), { stackable: true }),
+  effect("poisoned", "HRPG.Status.Poisoned", "damage", statusIcon("poisoned"), { stackable: true }),
+  effect("acid", "HRPG.Status.Acid", "damage", statusIcon("acid"), { stackable: true }),
+  effect("rust", "HRPG.Status.Rust", "damage", statusIcon("rust"), { stackable: true }),
+  effect("armor-damaged", "HRPG.Status.ArmorDamaged", "gear", statusIcon("armor-damaged"), { stackable: true }),
+  effect("equipment-worn", "HRPG.Status.EquipmentWorn", "gear", statusIcon("equipment-worn"), { stackable: true }),
+  effect("attribute-damage", "HRPG.Status.AttributeDamage", "debuff", statusIcon("attribute-damage"), { stackable: true }),
+  effect("resource-damage", "HRPG.Status.ResourceDamage", "debuff", statusIcon("resource-damage"), { stackable: true }),
+  effect("speed-penalty", "HRPG.Status.SpeedPenalty", "debuff", statusIcon("speed-penalty"), { stackable: true }),
+  effect("stamina-max-penalty", "HRPG.Status.StaminaMaxPenalty", "debuff", statusIcon("stamina-max-penalty"), { stackable: true }),
+  effect("attack-defense-penalty", "HRPG.Status.AttackDefensePenalty", "debuff", statusIcon("attack-defense-penalty"), { stackable: true }),
+  effect("sense-blocked", "HRPG.Status.SenseBlocked", "senses", statusIcon("sense-blocked"), { stackable: true }),
+  effect("smoke-cloud", "HRPG.Status.SmokeCloud", "environment", statusIcon("smoke-cloud")),
+  effect("greased", "HRPG.Status.Greased", "environment", statusIcon("greased")),
+  effect("glued", "HRPG.Status.Glued", "environment", statusIcon("glued"), { stackable: true }),
+  effect("pheromones", "HRPG.Status.Pheromones", "social", statusIcon("pheromones")),
+  effect("charmed", "HRPG.Status.Charmed", "social", statusIcon("charmed")),
+  effect("panicked", "HRPG.Status.Panicked", "social", statusIcon("panicked")),
+  effect("unconscious", "HRPG.Status.Unconscious", "survival", statusIcon("unconscious")),
+  effect("enraged", "HRPG.Status.Enraged", "social", statusIcon("enraged")),
+  effect("lifeblood", "HRPG.Status.Lifeblood", "resource", statusIcon("lifeblood"), { stackable: true }),
+  effect("soul-damage", "HRPG.Status.SoulDamage", "resource", statusIcon("soul-damage"), { stackable: true }),
+  effect("charged-fireflies", "HRPG.Status.ChargedFireflies", "environment", statusIcon("charged-fireflies")),
+  effect("summoned-creature", "HRPG.Status.SummonedCreature", "summon", statusIcon("summoned-creature")),
+  effect("shell-puppet", "HRPG.Status.ShellPuppet", "summon", statusIcon("shell-puppet"))
 ]);
 
 export function statusEffectDefinition(key) {
@@ -65,6 +65,10 @@ export function registerStatusEffects(config = globalThis.CONFIG) {
 
 function effect(key, label, category, icon, { stackable = false, max = 1 } = {}) {
   return Object.freeze({ key, label, category, icon, stackable, max });
+}
+
+function statusIcon(key) {
+  return `systems/hallownest-rpg/assets/icons/status/${key}.svg`;
 }
 
 function statusIds(key) {

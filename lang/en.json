@@ -1,5 +1,6 @@
 {
   "TYPES.Actor.bug": "Bug",
+  "TYPES.Actor.gmBug": "GM Bug",
   "TYPES.Item.weapon": "Weapon",
   "TYPES.Item.armor": "Armor",
   "TYPES.Item.trait": "Trait",
@@ -420,5 +421,14 @@
   "HRPG.Status.SoulDamage": "Soul damage",
   "HRPG.Status.ChargedFireflies": "Charged fireflies",
   "HRPG.Status.SummonedCreature": "Summoned creature",
-  "HRPG.Status.ShellPuppet": "Shell puppet"
+  "HRPG.Status.ShellPuppet": "Shell puppet",
+  "HRPG.StatusEffects": "Statuses",
+  "HRPG.StatusEffectsHint": "Apply HRPG effects",
+  "HRPG.ChooseStatusEffect": "Choose a status",
+  "HRPG.StatusEffectValue": "Value / stacks",
+  "HRPG.ApplyStatusEffect": "Apply",
+  "HRPG.RemoveStatusEffect": "Remove status",
+  "HRPG.NoStatusEffects": "No active HRPG statuses.",
+  "HRPG.StatusEffectStack": "{value}/{max}",
+  "HRPG.StatusEffectActive": "active"
 }

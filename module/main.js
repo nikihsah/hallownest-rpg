@@ -21,7 +21,7 @@ Hooks.once("init", () => {
   registerQuickAttacksHud();
 
   Actors.unregisterSheet("core", ActorSheet);
-  Actors.registerSheet("hallownest-rpg", HallownestActorSheet, { types: ["bug"], makeDefault: true });
+  Actors.registerSheet("hallownest-rpg", HallownestActorSheet, { types: ["bug", "gmBug"], makeDefault: true });
   Items.unregisterSheet("core", ItemSheet);
   Items.registerSheet("hallownest-rpg", HallownestItemSheet, { makeDefault: true });
 
