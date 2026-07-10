@@ -129,6 +129,35 @@ async function rollSkillAction(_event, target) {
   await this.actor.rollSkill(target.dataset.skillName);
 }
 
+async function updateSkillItemName(event) {
+  event.stopPropagation();
+  const item = this.actor.items.get(event.currentTarget.dataset.skillItemName);
+  if (!item || item.type !== "skill") return;
+  await item.update({ name: String(event.currentTarget.value || "").trim() || game.i18n.localize("HRPG.ItemSkill") });
+}
+
+async function updateSkillRank(event) {
+  event.stopPropagation();
+  const item = this.actor.items.get(event.currentTarget.dataset.skillRank);
+  if (!item || item.type !== "skill") return;
+  await item.update({ "system.rank": Math.max(1, Math.min(3, Math.floor(Number(event.currentTarget.value) || 1))) });
+}
+
+async function updateSkillMastery(event) {
+  event.stopPropagation();
+  const item = this.actor.items.get(event.currentTarget.dataset.skillMastery);
+  if (!item || item.type !== "skill") return;
+  await item.update({ "system.mastery": String(event.currentTarget.value || "") });
+}
+
+async function updateSkillSlot(event) {
+  event.stopPropagation();
+  const item = this.actor.items.get(event.currentTarget.dataset.skillSlot);
+  if (!item || item.type !== "skill") return;
+  const index = Math.max(0, Math.min(3, Math.floor(Number(event.currentTarget.dataset.skillSlotIndex) || 0)));
+  await item.update({ [`system.skills.${index}.name`]: String(event.currentTarget.value || "").trim() });
+}
+
 async function restAction() {
   const result = await restActor(this.actor);
   ui.notifications.info(game.i18n.format("HRPG.RestComplete", { satiety: result.nextSatiety }));
@@ -259,26 +288,37 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     context.artRows = (context.itemsByType.art ?? []).map((item) => techniqueRow(item));
     context.spellRows = (context.itemsByType.spell ?? []).map((item) => techniqueRow(item));
     const skillTotalsByName = new Map(skillTotals(this.actor.items).map((entry) => [entry.key, entry]));
-    context.skillItemRows = (context.itemsByType.skill ?? []).map((item) => ({
-      id: item.id,
-      img: item.img,
-      name: item.name,
-      rank: Math.max(1, Math.min(3, Math.floor(Number(item.system?.rank) || 1))),
-      mastery: item.system?.mastery ?? "",
-      rows: skillRowsForItem(item).map((row) => {
-        const total = skillTotalsByName.get(normalizeSkillName(row.name));
-        return {
-          ...row,
-          total: total?.total ?? 0,
-          breakdown: skillBreakdown(total, {
-            totalLabel: game.i18n.localize("HRPG.Total"),
-            masteryLabel: game.i18n.localize("HRPG.Mastery"),
-            cappedLabel: game.i18n.localize("HRPG.SkillRankCap")
-          }),
-          mastered: normalizeSkillName(row.name) && normalizeSkillName(row.name) === normalizeSkillName(item.system?.mastery)
-        };
-      })
-    }));
+    context.skillItemRows = (context.itemsByType.skill ?? []).map((item) => {
+      const rows = skillRowsForItem(item);
+      const rank = Math.max(1, Math.min(3, Math.floor(Number(item.system?.rank) || 1)));
+      const mastery = String(item.system?.mastery ?? "");
+      const masteryNames = rows.map((row) => String(row.name ?? "").trim()).filter(Boolean);
+      return {
+        id: item.id,
+        img: item.img,
+        name: item.name,
+        rank,
+        mastery,
+        rankOptions: [1, 2, 3].map((value) => ({ value, label: String(value), selected: value === rank })),
+        masteryOptions: [
+          { value: "", label: game.i18n.localize("HRPG.NoMastery"), selected: !mastery },
+          ...masteryNames.map((name) => ({ value: name, label: name, selected: name === mastery }))
+        ],
+        rows: rows.map((row) => {
+          const total = skillTotalsByName.get(normalizeSkillName(row.name));
+          return {
+            ...row,
+            total: total?.total ?? 0,
+            breakdown: skillBreakdown(total, {
+              totalLabel: game.i18n.localize("HRPG.Total"),
+              masteryLabel: game.i18n.localize("HRPG.Mastery"),
+              cappedLabel: game.i18n.localize("HRPG.SkillRankCap")
+            }),
+            mastered: normalizeSkillName(row.name) && normalizeSkillName(row.name) === normalizeSkillName(item.system?.mastery)
+          };
+        })
+      };
+    });
     const ownedPathIds = new Set((context.itemsByType.path ?? []).map((item) => item.system.sourceId));
     context.pathCatalog = (await loadPathCatalog()).map((path) => ({
       ...path,
@@ -437,6 +477,18 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
         }
         await item.update({ "system.prepared": event.currentTarget.checked });
       });
+    }
+    for (const input of this.element.querySelectorAll("[data-skill-item-name]")) {
+      input.addEventListener("change", updateSkillItemName.bind(this));
+    }
+    for (const input of this.element.querySelectorAll("[data-skill-rank]")) {
+      input.addEventListener("change", updateSkillRank.bind(this));
+    }
+    for (const input of this.element.querySelectorAll("[data-skill-mastery]")) {
+      input.addEventListener("change", updateSkillMastery.bind(this));
+    }
+    for (const input of this.element.querySelectorAll("[data-skill-slot]")) {
+      input.addEventListener("change", updateSkillSlot.bind(this));
     }
     for (const row of this.element.querySelectorAll("[data-action='open-item'][data-item-id]")) {
       row.addEventListener("click", (event) => {
