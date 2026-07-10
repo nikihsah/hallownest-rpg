@@ -1,3 +1,5 @@
+import { defaultItemIcon } from "./item-icons.js";
+
 let cachedTechniques;
 
 const TYPE_LABELS = {
@@ -70,6 +72,7 @@ export function techniqueItemData(technique) {
   return {
     name: technique.name,
     type: technique.type,
+    img: technique.img || defaultItemIcon(technique.type),
     system: {
       description: technique.description ?? "",
       sourceId: technique.sourceId,
@@ -107,6 +110,7 @@ export function customTechniqueData(type, name) {
   return {
     name,
     type,
+    img: defaultItemIcon(type),
     system: {
       catalogType: type,
       description: "",

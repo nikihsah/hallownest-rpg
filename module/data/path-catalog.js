@@ -1,3 +1,5 @@
+import { defaultItemIcon } from "./item-icons.js";
+
 let cachedPaths;
 
 const DESCRIPTION_CORRECTIONS = {
@@ -17,6 +19,7 @@ export function pathItemData(path) {
   return {
     name: path.name,
     type: "path",
+    img: path.img || defaultItemIcon("path"),
     system: {
       description: pathOverview(path),
       rank: 1,

@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { access } from "node:fs/promises";
 import { foundryStatusEffects, HRPG_STATUS_EFFECTS, registerStatusEffects } from "../module/data/status-effects.js";
+import { statusKeyFromEffect } from "../module/mechanics/token-status-effects.js";
 
 test("system status effect catalog covers combat damage environment and resource states", () => {
   const keys = new Set(HRPG_STATUS_EFFECTS.map((effect) => effect.key));
@@ -45,4 +46,10 @@ test("status effect icons use local svg assets", async () => {
     const relativePath = effect.icon.replace("systems/hallownest-rpg/", "../");
     await access(new URL(relativePath, import.meta.url));
   }
+});
+
+test("token HUD status ids resolve to HRPG status keys", () => {
+  assert.equal(statusKeyFromEffect({ id: "hrpg.imbalance" }), "imbalance");
+  assert.equal(statusKeyFromEffect({ statuses: ["dead", "hrpg.dead"] }), "dead");
+  assert.equal(statusKeyFromEffect({ flags: { "hallownest-rpg": { statusKey: "poisoned" } } }), "poisoned");
 });

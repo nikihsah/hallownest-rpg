@@ -1,4 +1,5 @@
 import { naturalWeaponQualityData } from "../mechanics/trait-quality.js";
+import { defaultItemIcon } from "./item-icons.js";
 import { EMPTY_VIAL_EFFECT, isFluidsSubtrait } from "./vial-effects.js";
 
 let cachedTraits;
@@ -31,6 +32,7 @@ export function traitItemData(trait, { social = "", parentItemId = "" } = {}) {
   return {
     name: trait.name,
     type: "trait",
+    img: trait.img || defaultItemIcon("trait"),
     system
   };
 }

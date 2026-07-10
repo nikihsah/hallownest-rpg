@@ -430,5 +430,18 @@
   "HRPG.RemoveStatusEffect": "Снять состояние",
   "HRPG.NoStatusEffects": "Нет активных HRPG-состояний.",
   "HRPG.StatusEffectStack": "{value}/{max}",
-  "HRPG.StatusEffectActive": "активно"
+  "HRPG.StatusEffectActive": "активно",
+  "HRPG.MilestonePopupTitle": "Веха {milestone}",
+  "HRPG.MilestonePopupChecklist": "При повышении вехи",
+  "HRPG.MilestonePopupPathRank": "Каждая чётная веха даёт Ранг Пути; если это Мистический Путь, также выберите одну Тайну из него.",
+  "HRPG.MilestonePopupSkillRank": "Каждая чётная веха даёт Ранг Умения.",
+  "HRPG.MilestonePopupOddEven": "Каждая нечётная веха даёт одно Малое Продвижение.",
+  "HRPG.MinorAdvancement": "Варианты Малого Продвижения",
+  "HRPG.MinorAdvancementAttribute": "Добавить +0.5 к любой Главной Характеристике.",
+  "HRPG.MinorAdvancementSpeed": "Добавить +1 к Скорости, но не выше 7.",
+  "HRPG.MinorAdvancementLoad": "Добавить +1 к Нагрузке.",
+  "HRPG.MinorAdvancementTechniqueSlot": "Добавить 1 Ячейку Техники.",
+  "HRPG.MinorAdvancementNaturalQuality": "Добавить +1 Качество к природному оружию, природным инструментам или блокирующим рукам, максимум 3 к каждой черте.",
+  "HRPG.MinorAdvancementWeaponModification": "Добавить модификацию к природному оружию, кроме Нитяного; Сбалансированный можно добавить только природным снарядам.",
+  "HRPG.MinorAdvancementLimitedUse": "Добавить +1 использование ограниченной Черты или Мастерства, например восстановление склянок в течение сцены."
 }

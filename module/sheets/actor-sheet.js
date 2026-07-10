@@ -10,6 +10,7 @@ import { isTechniqueType, techniqueSlotsSummary } from "../data/technique-catalo
 import { normalizeSkillName, skillBreakdown, skillRowsForItem, skillTotals } from "../mechanics/skills.js";
 import { HRPG_STATUS_EFFECTS, statusEffectDefinition } from "../data/status-effects.js";
 import { HRPG_EFFECT_SCOPE, setHrpgStatusEffect } from "../mechanics/active-effects.js";
+import { defaultItemIcon } from "../data/item-icons.js";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -57,7 +58,8 @@ async function createItemAction(_event, target) {
   }
   const [created] = await this.actor.createEmbeddedDocuments("Item", [{
     name: game.i18n.localize(CONFIG.HRPG.itemTypes[type]),
-    type
+    type,
+    img: defaultItemIcon(type)
   }]);
   renderDocumentSheet(created);
 }
@@ -170,11 +172,51 @@ async function updateSkillMastery(event) {
 }
 
 async function updateSkillSlot(event) {
+  event.preventDefault();
   event.stopPropagation();
   const item = this.actor.items.get(event.currentTarget.dataset.skillSlot);
   if (!item || item.type !== "skill") return;
   const index = Math.max(0, Math.min(3, Math.floor(Number(event.currentTarget.dataset.skillSlotIndex) || 0)));
   await item.update({ [`system.skills.${index}.name`]: String(event.currentTarget.value || "").trim() });
+}
+
+function milestoneChanged(event) {
+  const previous = Math.floor(Number(event.currentTarget.dataset.currentMilestone) || 0);
+  const next = Math.floor(Number(event.currentTarget.value) || 0);
+  if (next > previous) showMilestoneAdvanceDialog(next);
+}
+
+function showMilestoneAdvanceDialog(milestone) {
+  const DialogV2 = foundry.applications?.api?.DialogV2;
+  const milestoneText = game.i18n.localize(`HRPG.Milestone${milestone}`);
+  const content = `
+    <section class="hrpg-milestone-dialog">
+      <p>${foundry.utils.escapeHTML(milestoneText)}</p>
+      <h3>${game.i18n.localize("HRPG.MilestonePopupChecklist")}</h3>
+      <ul>
+        <li>${game.i18n.localize("HRPG.MilestonePopupPathRank")}</li>
+        <li>${game.i18n.localize("HRPG.MilestonePopupSkillRank")}</li>
+        <li>${game.i18n.localize("HRPG.MilestonePopupOddEven")}</li>
+      </ul>
+      <h3>${game.i18n.localize("HRPG.MinorAdvancement")}</h3>
+      <ul>
+        <li>${game.i18n.localize("HRPG.MinorAdvancementAttribute")}</li>
+        <li>${game.i18n.localize("HRPG.MinorAdvancementSpeed")}</li>
+        <li>${game.i18n.localize("HRPG.MinorAdvancementLoad")}</li>
+        <li>${game.i18n.localize("HRPG.MinorAdvancementTechniqueSlot")}</li>
+        <li>${game.i18n.localize("HRPG.MinorAdvancementNaturalQuality")}</li>
+        <li>${game.i18n.localize("HRPG.MinorAdvancementWeaponModification")}</li>
+        <li>${game.i18n.localize("HRPG.MinorAdvancementLimitedUse")}</li>
+      </ul>
+    </section>`;
+  if (DialogV2?.confirm) {
+    return DialogV2.confirm({
+      window: { title: game.i18n.format("HRPG.MilestonePopupTitle", { milestone }) },
+      content,
+      modal: false
+    });
+  }
+  ui.notifications.info(`${game.i18n.format("HRPG.MilestonePopupTitle", { milestone })}: ${milestoneText}`);
 }
 
 async function restAction() {
@@ -519,6 +561,7 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     for (const input of this.element.querySelectorAll("[data-skill-slot]")) {
       input.addEventListener("change", updateSkillSlot.bind(this));
     }
+    this.element.querySelector("[data-milestone-select]")?.addEventListener("change", milestoneChanged);
     for (const row of this.element.querySelectorAll("[data-action='open-item'][data-item-id]")) {
       row.addEventListener("click", (event) => {
         if (event.target.closest("[data-action='delete-item']")) return;

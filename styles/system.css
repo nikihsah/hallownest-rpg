@@ -208,7 +208,7 @@
 .hrpg-quick-hud button span { min-width: 0; overflow: hidden; color: #141718; font-weight: 800; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
 .hrpg-quick-hud button small { min-width: 0; overflow: hidden; color: #5f3d25; font-size: .72rem; font-weight: 700; line-height: 1.28; text-overflow: ellipsis; white-space: nowrap; }
 .hrpg-quick-section-title { margin: .35rem 0 .05rem; padding: .2rem .35rem; color: #17191a; font-size: .72rem; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
-.hrpg-defense-dialog { display: grid; gap: .65rem; padding: .75rem; border: 1px solid #8e7d65; border-radius: 6px; background: rgba(242,238,226,.96); color: #17191a; }
+.hrpg-defense-dialog { display: grid; gap: .65rem; max-height: 65vh; overflow-y: auto; padding: .75rem; border: 1px solid #8e7d65; border-radius: 6px; background: rgba(242,238,226,.96); color: #17191a; }
 .hrpg-defense-dialog p { margin: 0; color: #17191a; line-height: 1.35; }
 .hrpg-defense-dialog label { display: grid; gap: .25rem; color: #17191a; font-weight: 700; }
 .hrpg-defense-dialog .hrpg-inline-check { display: flex; align-items: center; gap: .4rem; }
@@ -217,7 +217,7 @@
 .hrpg-action-description { display: grid; gap: .35rem; padding: .55rem .65rem; border: 1px solid rgba(142,125,101,.65); border-radius: 6px; background: rgba(255,255,255,.38); }
 .hrpg-action-description h3 { margin: 0; color: #17191a; font-size: .8rem; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
 .hrpg-action-description p { margin: 0; color: #241f1a; line-height: 1.38; }
-.hrpg-attack-dialog { display: grid; gap: .7rem; padding: .75rem; border: 1px solid #8e7d65; border-radius: 6px; background: rgba(242,238,226,.96); color: #17191a; }
+.hrpg-attack-dialog { display: grid; gap: .7rem; max-height: 65vh; overflow-y: auto; padding: .75rem; border: 1px solid #8e7d65; border-radius: 6px; background: rgba(242,238,226,.96); color: #17191a; }
 .hrpg-attack-dialog p { margin: 0; color: #17191a; line-height: 1.35; }
 .hrpg-attack-dialog > label { display: grid; gap: .25rem; }
 .hrpg-attack-dialog input, .hrpg-attack-dialog select { color: #17191a; background: rgba(255,255,255,.72); }
@@ -267,7 +267,13 @@
 .hrpg .item-equipped input { width: auto; }
 .hrpg .item-equipped-editor { display: inline-flex; align-items: center; gap: .35rem; font-weight: 700; }
 .hrpg .empty-state { color: var(--muted); font-style: italic; }
-.hrpg .notes-panel textarea { width: 100%; height: calc(100% - 2.5rem); margin-top: .6rem; resize: none; line-height: 1.8; background-image: linear-gradient(transparent calc(1.8em - 1px), #c8c1b1 1px); background-size: 100% 1.8em; }
+.hrpg-milestone-dialog { display: grid; gap: .75rem; padding: .75rem; color: #17191a; background: rgba(242,238,226,.96); }
+.hrpg-milestone-dialog h3 { margin: .2rem 0 0; color: #17191a; }
+.hrpg-milestone-dialog p { margin: 0; color: #17191a; font-weight: 800; }
+.hrpg-milestone-dialog ul { margin: 0; padding-left: 1.25rem; }
+.hrpg-milestone-dialog li { margin: .15rem 0; color: #17191a; line-height: 1.35; }
+.hrpg .notes-panel { min-height: 34rem; }
+.hrpg .notes-panel textarea { width: 100%; min-height: 28rem; height: calc(100% - 2.5rem); margin-top: .6rem; resize: vertical; line-height: 1.8; background-image: linear-gradient(transparent calc(1.8em - 1px), #c8c1b1 1px); background-size: 100% 1.8em; }
 
 .hrpg .modifier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin: .75rem 0; }
 .hrpg .modifier-grid label { display: grid; gap: .2rem; color: var(--muted); }

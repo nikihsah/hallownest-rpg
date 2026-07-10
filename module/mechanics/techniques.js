@@ -109,8 +109,10 @@ function techniqueApplies(actor, technique, trigger = "", context = {}) {
   if (!trigger) return true;
   if (trigger === "attack" && technique.type === "art" && !techniqueMatchesAttackContext(actor, technique, context)) return false;
   const explicitTriggers = techniqueTriggers(technique);
-  if (explicitTriggers.length && (explicitTriggers.includes(trigger) || trigger === "defense" && explicitTriggers.some((item) => ["parry", "dodge", "absorption"].includes(item)))) return true;
-  if (explicitTriggers.length && !explicitTriggers.includes("attack") && trigger === "attack") return false;
+  if (explicitTriggers.length) {
+    if (trigger === "defense") return explicitTriggers.some((item) => ["defense", "parry", "dodge", "absorption"].includes(item));
+    return explicitTriggers.includes(trigger);
+  }
   const text = techniqueSearchText(technique);
   if (trigger === "attack") return technique.type === "spell" ? SPELL_COMBAT_TEXT.test(text) : TRIGGER_TEXT.attack.test(text);
   if (trigger === "parry") return TRIGGER_TEXT.parry.test(text) || (TRIGGER_TEXT.defense.test(text) && /щит|парир/u.test(text));

@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { catalogItemData, customItemData, groupCatalogItems } from "../module/data/item-catalog.js";
+import { defaultItemIcon } from "../module/data/item-icons.js";
 
 const catalogUrl = new URL("../data/items.json", import.meta.url);
 
@@ -25,6 +26,8 @@ test("catalog item data preserves equipment fields for Foundry Items", async () 
   const charm = items.find((item) => item.type === "charm");
 
   assert.equal(catalogItemData(needle).type, "weapon");
+  assert.equal(catalogItemData(needle).img, "systems/hallownest-rpg/assets/icons/items/weapon.svg");
+  assert.equal(catalogItemData(armor).img, "systems/hallownest-rpg/assets/icons/items/armor.svg");
   assert.equal(catalogItemData(needle).system.modification, "");
   assert.equal(catalogItemData(needle).system.quality.value, 1);
   assert.equal(catalogItemData(needle).system.itemType, "игла");
@@ -68,9 +71,18 @@ test("custom item data creates editable blank items of the requested type", () =
 
   assert.equal(item.type, "weapon");
   assert.equal(item.name, "Custom Needle");
+  assert.equal(item.img, "systems/hallownest-rpg/assets/icons/items/weapon.svg");
   assert.equal(item.system.catalogType, "weapon");
   assert.equal(item.system.modification, "");
   assert.equal(item.system.equipped, false);
+});
+
+test("default item icons distinguish common item types and subtypes", () => {
+  assert.equal(defaultItemIcon("weapon"), "systems/hallownest-rpg/assets/icons/items/weapon.svg");
+  assert.equal(defaultItemIcon("armor", { subtype: "shield" }), "systems/hallownest-rpg/assets/icons/items/shield.svg");
+  assert.equal(defaultItemIcon("consumable", { subtype: "flask" }), "systems/hallownest-rpg/assets/icons/items/flask.svg");
+  assert.equal(defaultItemIcon("trait"), "systems/hallownest-rpg/assets/icons/items/trait.svg");
+  assert.equal(defaultItemIcon("unknown"), "systems/hallownest-rpg/assets/icons/items/gear.svg");
 });
 
 test("custom charm data creates an editable charm with notches and rarity", () => {

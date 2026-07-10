@@ -46,7 +46,15 @@ test("actor sheet uses the Foundry V2 application framework", async () => {
 
 test("actor sheet exposes the character milestone selector", async () => {
   const template = await readFile(templateUrl, "utf8");
+  const sheet = await readFile(sheetUrl, "utf8");
+  const styles = await readFile(new URL("../styles/system.css", import.meta.url), "utf8");
   assert.match(template, /name="system\.advancement\.milestone"/);
+  assert.match(template, /data-milestone-select/);
+  assert.match(template, /data-current-milestone="\{\{system\.advancement\.milestone\}\}"/);
+  assert.match(sheet, /function milestoneChanged/);
+  assert.match(sheet, /showMilestoneAdvanceDialog\(next\)/);
+  assert.match(sheet, /HRPG\.MinorAdvancementWeaponModification/);
+  assert.match(styles, /\.hrpg-milestone-dialog/);
 });
 
 test("actor sheet portrait opens an image picker", async () => {
@@ -126,6 +134,7 @@ test("quick trait attacks are exposed through the selected-token HUD", async () 
   assert.doesNotMatch(template, /class="quick-attacks"/);
   assert.doesNotMatch(sheet, /roll-trait-attack/);
   assert.match(main, /registerQuickAttacksHud\(\)/);
+  assert.match(main, /registerTokenStatusEffectAutomation\(\)/);
   assert.match(hud, /Hooks\.on\("controlToken", refreshQuickAttacksHud\)/);
   assert.match(hud, /quickAttacksFromItems\(actor\.items\)/);
   assert.match(hud, /preparedTechniques\(actor\.items\)/);
@@ -462,7 +471,7 @@ test("skill items expose four skill names and aggregate roll buttons", async () 
   assert.match(template, /data-skill-item-name="\{\{skill\.id\}\}"/);
   assert.match(template, /data-skill-rank="\{\{skill\.id\}\}"/);
   assert.match(template, /data-skill-mastery="\{\{skill\.id\}\}"/);
-  assert.match(template, /data-skill-slot="\{\{skill\.id\}\}"/);
+  assert.match(template, /data-skill-slot="\{\{\.\.\/skill\.id\}\}"/);
   assert.match(template, /data-skill-slot-index="\{\{row\.key\}\}"/);
   assert.match(template, /data-action="roll-skill"/);
   assert.match(template, /data-skill-name="\{\{row\.name\}\}"/);
@@ -501,4 +510,9 @@ test("long item and catalog descriptions scroll inside their panels", async () =
   assert.match(styles, /\.trait-choice details, \.item-choice details \{[^}]*overflow-y: auto/s);
   assert.match(styles, /\.hrpg \.path-ranks \{[^}]*max-height: 22rem/s);
   assert.match(styles, /\.hrpg \.path-ranks \{[^}]*overflow-y: auto/s);
+  assert.match(styles, /\.hrpg-attack-dialog \{[^}]*max-height: 65vh/s);
+  assert.match(styles, /\.hrpg-attack-dialog \{[^}]*overflow-y: auto/s);
+  assert.match(styles, /\.hrpg-defense-dialog \{[^}]*max-height: 65vh/s);
+  assert.match(styles, /\.hrpg \.notes-panel \{[^}]*min-height: 34rem/s);
+  assert.match(styles, /\.hrpg \.notes-panel textarea \{[^}]*min-height: 28rem/s);
 });

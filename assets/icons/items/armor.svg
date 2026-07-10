@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Armor">
+  <rect width="64" height="64" rx="12" fill="#efe6d0"/>
+  <path d="M32 7l22 8v14c0 14-8 23-22 28C18 52 10 43 10 29V15l22-8z" fill="#5f6d73"/>
+  <path d="M32 13l15 5v11c0 10-5 17-15 21-10-4-15-11-15-21V18l15-5z" fill="#b9c0b9"/>
+  <path d="M32 13v37M18 28h28" stroke="#315f68" stroke-width="3" stroke-linecap="round"/>
+</svg>

@@ -430,5 +430,18 @@
   "HRPG.RemoveStatusEffect": "Remove status",
   "HRPG.NoStatusEffects": "No active HRPG statuses.",
   "HRPG.StatusEffectStack": "{value}/{max}",
-  "HRPG.StatusEffectActive": "active"
+  "HRPG.StatusEffectActive": "active",
+  "HRPG.MilestonePopupTitle": "Milestone {milestone}",
+  "HRPG.MilestonePopupChecklist": "When the milestone increases",
+  "HRPG.MilestonePopupPathRank": "Every even milestone grants a Path Rank; if it is a Mystic Path, also choose one Secret from it.",
+  "HRPG.MilestonePopupSkillRank": "Every even milestone grants a Skill Rank.",
+  "HRPG.MilestonePopupOddEven": "Every odd milestone grants one Minor Advancement instead.",
+  "HRPG.MinorAdvancement": "Minor Advancement options",
+  "HRPG.MinorAdvancementAttribute": "Add +0.5 to any main Attribute.",
+  "HRPG.MinorAdvancementSpeed": "Add +1 Speed, up to 7.",
+  "HRPG.MinorAdvancementLoad": "Add +1 Load.",
+  "HRPG.MinorAdvancementTechniqueSlot": "Add 1 Technique Slot.",
+  "HRPG.MinorAdvancementNaturalQuality": "Add +1 Quality to natural weapons, natural tools, or blocking hands, maximum 3 per trait.",
+  "HRPG.MinorAdvancementWeaponModification": "Add a modification to a natural weapon, except Thread weapons; Balanced can only be added to natural projectiles.",
+  "HRPG.MinorAdvancementLimitedUse": "Add +1 use to a limited Trait or Mastery, such as flask recovery during a scene."
 }

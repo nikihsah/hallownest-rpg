@@ -21,13 +21,14 @@ import { hasTechniqueRule, techniqueRuleTags, techniqueRuleTriggers } from "../m
 
 const catalogUrl = new URL("../data/techniques.json", import.meta.url);
 
-function technique({ id = "art1", type = "art", prepared = true, cost = {}, text = "Атака наносит урон.", pathId = "" } = {}) {
+function technique({ id = "art1", type = "art", prepared = true, cost = {}, text = "Атака наносит урон.", pathId = "", sourceId = "" } = {}) {
   return {
     id,
     name: id,
     type,
     system: {
       prepared,
+      sourceId,
       pathId,
       pathName: type === "spell" ? "Шпиль" : "Воинский путь",
       requirementLabel: type === "spell" ? "Шпиль" : "Martial Path",
@@ -64,9 +65,11 @@ test("technique catalog creates Foundry art and spell items", async () => {
   const spell = techniques.find((item) => item.type === "spell");
 
   assert.equal(techniqueItemData(art).type, "art");
+  assert.equal(techniqueItemData(art).img, "systems/hallownest-rpg/assets/icons/items/art.svg");
   assert.equal(techniqueItemData(art).system.prepared, false);
   assert.equal(techniqueItemData(art).system.cost.stamina >= 0, true);
   assert.equal(techniqueItemData(spell).type, "spell");
+  assert.equal(techniqueItemData(spell).img, "systems/hallownest-rpg/assets/icons/items/spell.svg");
   assert.equal(techniqueItemData(spell).system.pathId.startsWith("paths."), true);
   assert.equal(techniqueItemData(spell).system.cost.soul, techniqueItemData(spell).system.cost.difficulty);
 });
@@ -248,10 +251,33 @@ test("catalog spell trigger rules separate combat mysteries from utility mysteri
   assert.match(techniqueSummary(actor.items[1]), /Тип применения: атака/);
 });
 
+test("explicit technique triggers do not bleed into defensive prompts by description text", () => {
+  const actor = {
+    items: [
+      technique({
+        id: "precise",
+        sourceId: "combat-arts.tochnyy-udar",
+        text: "Жук выбирает цель; его следующая атака получает бонус."
+      }),
+      technique({
+        id: "charge",
+        sourceId: "combat-arts.velikiy-zaryad",
+        text: "Жук перемещается, прыгает и затем атакует."
+      })
+    ]
+  };
+
+  assert.deepEqual(techniquePromptOptions(actor, "dodge").map((option) => option.key), []);
+  assert.deepEqual(techniquePromptOptions(actor, "defense").map((option) => option.key), []);
+  assert.deepEqual(techniquePromptOptions(actor, "attack").map((option) => option.key), ["precise", "charge"]);
+  assert.deepEqual(techniquePromptOptions(actor, "movement").map((option) => option.key), ["charge"]);
+});
+
 test("custom technique data keeps editable description attachments and costs", () => {
   const item = customTechniqueData("spell", "Контракт");
 
   assert.equal(item.type, "spell");
+  assert.equal(item.img, "systems/hallownest-rpg/assets/icons/items/spell.svg");
   assert.equal(item.system.description, "");
   assert.deepEqual(item.system.attachments, { one: "", two: "", three: "" });
   assert.equal(item.system.cost.soul, 0);

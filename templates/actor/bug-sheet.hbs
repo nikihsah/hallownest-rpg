@@ -6,7 +6,7 @@
         <input class="name" name="name" type="text" value="{{actor.name}}" placeholder="{{localize 'HRPG.Name'}}">
         {{#if system.creation.templateApplied}}
           <label class="milestone-field">{{localize "HRPG.Milestone"}}
-            <select name="system.advancement.milestone" data-tooltip="{{milestoneTooltip}}" data-tooltip-direction="DOWN">
+            <select name="system.advancement.milestone" data-milestone-select data-current-milestone="{{system.advancement.milestone}}" data-tooltip="{{milestoneTooltip}}" data-tooltip-direction="DOWN">
               {{#each milestoneOptions as |milestone|}}<option value="{{milestone.value}}" title="{{milestone.hint}}" {{#if milestone.selected}}selected{{/if}}>{{milestone.value}}</option>{{/each}}
             </select>
           </label>
@@ -219,7 +219,7 @@
               <div class="skill-card-rows">
                 {{#each skill.rows as |row|}}
                   <div class="skill-edit-row">
-                    <input type="text" data-skill-slot="{{skill.id}}" data-skill-slot-index="{{row.key}}" value="{{row.name}}" placeholder="{{localize 'HRPG.SkillNameHint'}}">
+                    <input type="text" data-skill-slot="{{../skill.id}}" data-skill-slot-index="{{row.key}}" value="{{row.name}}" placeholder="{{localize 'HRPG.SkillNameHint'}}">
                     <button type="button" data-action="roll-skill" data-skill-name="{{row.name}}" data-tooltip="{{row.breakdown}}" data-tooltip-direction="UP" {{#unless row.name}}disabled{{/unless}}>
                       {{localize "HRPG.Roll"}}
                     </button>

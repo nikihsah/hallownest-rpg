@@ -1,4 +1,5 @@
 import { customTechniqueData, groupTechniques, isTechniqueType, loadTechniqueCatalog, techniqueItemData } from "./technique-catalog.js";
+import { defaultItemIcon } from "./item-icons.js";
 
 let cachedItems;
 
@@ -51,6 +52,7 @@ export function catalogItemData(item) {
   const base = {
     name: item.name,
     type: item.type,
+    img: item.img || defaultItemIcon(item.type, { subtype: item.subtype }),
     system: {
       description: item.description ?? "",
       sourceId: item.sourceId,
@@ -105,6 +107,7 @@ export function customItemData(type, name) {
   const item = {
     name,
     type,
+    img: defaultItemIcon(type),
     system: {
       catalogType: type,
       subtype: "",
