@@ -63,9 +63,28 @@ test("bugs recover combat stamina and speed at the start of their turn", () => {
   assert.deepEqual(combatTurnRecoveryUpdate(actor), {
     "system.combat.speedSpent": 0,
     "system.combat.attackTax": 0,
+    "system.combat.imbalance": 0,
     "system.resources.stamina.value": 5
   });
   assert.equal(combatTurnRecoveryUpdate({ type: "npc" }), null);
+});
+
+test("imbalance lowers recovered stamina and then drops by one", () => {
+  const actor = {
+    type: "bug",
+    system: {
+      combat: { speedSpent: 1, imbalance: 2 },
+      resources: { stamina: { max: 3 } },
+      effective: { resources: { stamina: { max: 5 } } }
+    }
+  };
+
+  assert.deepEqual(combatTurnRecoveryUpdate(actor), {
+    "system.combat.speedSpent": 0,
+    "system.combat.attackTax": 0,
+    "system.combat.imbalance": 1,
+    "system.resources.stamina.value": 3
+  });
 });
 
 test("attack tax resets at end of turn and Fang second wind restores one stamina", () => {

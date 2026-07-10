@@ -11,6 +11,7 @@ import { selectedItemModificationEffects } from "../data/item-modifications.js";
 import { isTechniqueType } from "../data/technique-catalog.js";
 import { selectedTechniqueCost, techniqueNotesFromIds, techniqueSummary, techniqueSynergyNotes } from "../mechanics/techniques.js";
 import { classifyWeaponLike, weaponHasType } from "../mechanics/weapon-classifier.js";
+import { expectedDamage } from "../mechanics/damage.js";
 
 export class HallownestActor extends Actor {
   prepareDerivedData() {
@@ -110,6 +111,39 @@ export class HallownestActor extends Actor {
     return current >= spent;
   }
 
+  async spendSpeed(cost = 0) {
+    const spent = Math.max(0, Math.floor(Number(cost) || 0));
+    if (spent <= 0) return true;
+    const currentSpent = Number(this.system.combat?.speedSpent) || 0;
+    const available = Math.max(0,
+      (Number(this.system.effective?.secondary?.speed) || 0)
+      + (Number(this.system.adjustments?.speed) || 0)
+      - currentSpent
+    );
+    await this.update({ "system.combat.speedSpent": currentSpent + spent });
+    if (available < spent) ui.notifications.warn(game.i18n.localize("HRPG.SpeedExceeded"));
+    return available >= spent;
+  }
+
+  async spendSoul(cost = 0) {
+    const spent = Math.max(0, Math.floor(Number(cost) || 0));
+    if (spent <= 0) return true;
+    const current = Number(this.system.resources?.soul?.value) || 0;
+    await this.update({ "system.resources.soul.value": Math.max(0, current - spent) });
+    if (current < spent) ui.notifications.warn(game.i18n.format("HRPG.ResourceExceeded", {
+      resource: game.i18n.localize("HRPG.ResourceSoul"),
+      cost: spent
+    }));
+    return current >= spent;
+  }
+
+  async addImbalance(amount = 1) {
+    const current = Number(this.system.combat?.imbalance) || 0;
+    const next = Math.min(3, Math.max(0, current + Math.floor(Number(amount) || 0)));
+    await this.update({ "system.combat.imbalance": next });
+    return next;
+  }
+
   async spendAttackStamina({ invested = 0, taxAsDice = false } = {}) {
     const inCombat = Boolean(game.combat?.started);
     const rawTax = inCombat ? Math.max(0, Math.floor(Number(this.system.combat?.attackTax) || 0)) : 0;
@@ -157,7 +191,78 @@ export class HallownestActor extends Actor {
     });
   }
 
-  async rollDefenseAction(actionKey, { bonusDice = 0, staminaCost = 0, attribute = "", traitOptions = [], techniqueOptions = [] } = {}) {
+  async useCombatAction(actionKey, options = {}) {
+    if (actionKey === "damage-calculator") return this.postDamageCalculation(options);
+    if (actionKey === "focus-soul") return this.focusSoul(options);
+
+    const action = combatActionConfig(actionKey);
+    if (!action) return null;
+    const staminaCost = Math.max(0, Math.floor(Number(options.staminaCost ?? action.staminaCost ?? 0) || 0));
+    const speedCost = Math.max(0, Math.floor(Number(options.speedCost ?? action.speedCost ?? 0) || 0));
+    await this.spendCombatStamina(staminaCost);
+    await this.spendSpeed(speedCost);
+    if (action.imbalance) await this.addImbalance(action.imbalance);
+
+    const notes = [
+      game.i18n.localize(action.hint),
+      staminaCost ? game.i18n.format("HRPG.CombatActionStaminaCost", { cost: staminaCost }) : "",
+      speedCost ? game.i18n.format("HRPG.CombatActionSpeedCost", { cost: speedCost }) : "",
+      action.imbalance ? game.i18n.format("HRPG.ImbalanceAdded", { value: action.imbalance }) : "",
+      options.note ? String(options.note) : ""
+    ].filter(Boolean);
+
+    if (action.attribute) {
+      return this.rollAttributeCheck(options.attribute || action.attribute, {
+        label: game.i18n.localize(action.label),
+        bonusDice: Number(options.bonusDice) || 0,
+        notes
+      });
+    }
+
+    return ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor: this }),
+      flavor: `<strong>${foundry.utils.escapeHTML(game.i18n.localize(action.label))}</strong>`,
+      content: `<div class="hrpg-chat-notes">${notes.map((note) => `<p>${foundry.utils.escapeHTML(note)}</p>`).join("")}</div>`
+    });
+  }
+
+  async focusSoul({ soulCost = 1, note = "" } = {}) {
+    const spentSoul = Math.max(0, Math.floor(Number(soulCost) || 0));
+    if (spentSoul <= 0) return null;
+    await this.spendSoul(spentSoul);
+    const insight = Number(this.system.effective?.attributes?.insight?.value) || 0;
+    return rollDicePool({
+      actor: this,
+      dice: spentSoul,
+      rerolls: Math.floor(insight / 2),
+      automaticSuccesses: Math.floor(spentSoul / 3),
+      label: game.i18n.localize("HRPG.FocusSoul"),
+      notes: [
+        game.i18n.localize("HRPG.FocusActionHint"),
+        game.i18n.format("HRPG.FocusSoulSpent", { cost: spentSoul }),
+        game.i18n.format("HRPG.FocusSoulRerolls", { rerolls: Math.floor(insight / 2) }),
+        note ? String(note) : ""
+      ].filter(Boolean)
+    });
+  }
+
+  postDamageCalculation(options = {}) {
+    const result = expectedDamage(options);
+    const lines = result.hit ? [
+      game.i18n.format("HRPG.DamageCalcProbable", { value: result.probableDamage }),
+      game.i18n.format("HRPG.DamageCalcAfterReduction", { value: result.afterReduction }),
+      game.i18n.format("HRPG.DamageCalcAfterAbsorption", { value: result.afterAbsorptionRoll }),
+      game.i18n.format("HRPG.DamageCalcAbsorptionPool", { value: result.absorbedByPool }),
+      game.i18n.format("HRPG.DamageCalcFinal", { value: result.finalDamage })
+    ] : [game.i18n.localize("HRPG.DamageCalcMiss")];
+    return ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor: this }),
+      flavor: `<strong>${foundry.utils.escapeHTML(game.i18n.localize("HRPG.DamageCalculator"))}</strong>`,
+      content: `<div class="hrpg-chat-notes">${lines.map((line) => `<p>${foundry.utils.escapeHTML(line)}</p>`).join("")}</div>`
+    });
+  }
+
+  async rollDefenseAction(actionKey, { bonusDice = 0, staminaCost = 0, attribute = "", traitOptions = [], techniqueOptions = [], dodgeMove = false } = {}) {
     const actions = {
       protection: { label: "HRPG.DefenseAction", attribute: "" },
       dodge: { label: "HRPG.Dodge", attribute: "grace" },
@@ -178,6 +283,7 @@ export class HallownestActor extends Actor {
     }
     const itemBonus = itemDefenseBonus(this, actionKey);
     const traitAdjustment = applyTraitConditionalOptions(traitConditionalOptions(this, actionKey), traitOptions);
+    if (actionKey === "dodge" && dodgeMove) await this.addImbalance(1);
     return this.rollAttributeDefense(attributeKey, {
       label: game.i18n.localize(action.label),
       bonusDice: (Number(bonusDice) || 0)
@@ -191,7 +297,8 @@ export class HallownestActor extends Actor {
         ...techniqueNotesFromIds(this, techniqueOptions, actionKey),
         ...traitPromptNotes(this.items, [actionKey]),
         ...traitAdjustment.notes,
-        ...(actionKey === "absorption" ? itemEffectNotes(this.system.effective?.itemEffects, ["absorptionBonus", "absorptionRerolls"]) : [])
+        ...(actionKey === "absorption" ? itemEffectNotes(this.system.effective?.itemEffects, ["absorptionBonus", "absorptionRerolls"]) : []),
+        ...(actionKey === "dodge" && dodgeMove ? [game.i18n.localize("HRPG.DodgeMoveImbalance")] : [])
       ]
     });
   }
@@ -213,6 +320,24 @@ export class HallownestActor extends Actor {
       }),
       notes: [
         game.i18n.format("HRPG.DefenseAttributeUsed", { attribute: attributeLabel, dice }),
+        ...notes
+      ]
+    });
+  }
+
+  rollAttributeCheck(attributeKey, { label, bonusDice = 0, notes = [] } = {}) {
+    const isSecondary = ["speed", "appeal", "dread"].includes(attributeKey);
+    const value = isSecondary
+      ? Math.max(0, (Number(this.system.effective?.secondary?.[attributeKey]) || 0) + (Number(this.system.adjustments?.[attributeKey]) || 0) - (attributeKey === "speed" ? Number(this.system.combat?.speedSpent) || 0 : 0))
+      : Number(this.system.effective?.attributes?.[attributeKey]?.value) || 0;
+    const attributeLabel = game.i18n.localize(CONFIG.HRPG.attributes?.[attributeKey] ?? secondaryDefenseLabels[attributeKey] ?? attributeKey);
+    return rollDicePool({
+      actor: this,
+      dice: Math.floor(value) + Math.floor(Number(bonusDice) || 0),
+      reroll: value % 1 >= 0.5,
+      label: label ?? attributeLabel,
+      notes: [
+        game.i18n.format("HRPG.ActionAttributeUsed", { attribute: attributeLabel }),
         ...notes
       ]
     });
@@ -365,6 +490,62 @@ function addTechniqueCosts(left = {}, right = {}) {
     soul: (Number(left.soul) || 0) + (Number(right.soul) || 0),
     essence: (Number(left.essence) || 0) + (Number(right.essence) || 0)
   };
+}
+
+function combatActionConfig(actionKey) {
+  return {
+    "opportunity-attack": {
+      label: "HRPG.OpportunityAttack",
+      hint: "HRPG.OpportunityAttackHint",
+      staminaCost: 1
+    },
+    retreat: {
+      label: "HRPG.Retreat",
+      hint: "HRPG.RetreatHint",
+      staminaCost: 1,
+      speedCost: 2,
+      imbalance: 1
+    },
+    "dash-jump": {
+      label: "HRPG.DashJump",
+      hint: "HRPG.DashJumpHint",
+      staminaCost: 1,
+      speedCost: 0
+    },
+    grapple: {
+      label: "HRPG.Grapple",
+      hint: "HRPG.GrappleHint",
+      staminaCost: 1,
+      attribute: "power"
+    },
+    "escape-grapple": {
+      label: "HRPG.EscapeGrapple",
+      hint: "HRPG.EscapeGrappleHint",
+      staminaCost: 1,
+      attribute: "power"
+    },
+    "skill-action": {
+      label: "HRPG.SkillAction",
+      hint: "HRPG.SkillActionHint",
+      staminaCost: 1,
+      attribute: "insight"
+    },
+    "minor-action": {
+      label: "HRPG.MinorAction",
+      hint: "HRPG.MinorActionHint",
+      staminaCost: 0
+    },
+    "ready-action": {
+      label: "HRPG.ReadyAction",
+      hint: "HRPG.ReadyActionHint",
+      staminaCost: 1
+    },
+    "delay-turn": {
+      label: "HRPG.DelayTurn",
+      hint: "HRPG.DelayTurnHint",
+      staminaCost: 0
+    }
+  }[actionKey];
 }
 
 function techniqueDefaultTrigger(item) {

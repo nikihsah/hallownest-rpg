@@ -202,6 +202,7 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
       };
     });
     context.itemsByType = Object.groupBy(this.actor.items, (item) => item.type);
+    const adjustments = system.adjustments ?? {};
     const ordinaryTraits = (context.itemsByType.trait ?? []).filter((item) => item.system?.kind !== "subtrait");
     context.traitCounter = {
       current: ordinaryTraits.length,
@@ -216,6 +217,29 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
       qualityValue: naturalWeaponQualityValue(trait),
       qualityMax: naturalWeaponQualityMax(trait)
     }));
+    context.charmRows = (context.itemsByType.charm ?? []).map((item) => ({
+      id: item.id,
+      img: item.img,
+      name: item.name,
+      system: item.system,
+      notches: Math.max(0, Number(item.system?.notches) || 0),
+      equipped: item.system?.equipped === true
+    }));
+    const equippedCharmRows = context.charmRows.filter((item) => item.equipped);
+    const usedCharmMarks = equippedCharmRows.reduce((total, item) => total + item.notches, 0);
+    const maximumCharmMarks = Math.max(0, currentStatValue(system.effective.secondary.marks, Number(adjustments.marks) || 0));
+    context.charmSlots = {
+      used: usedCharmMarks,
+      maximum: maximumCharmMarks,
+      remaining: maximumCharmMarks - usedCharmMarks,
+      overage: Math.max(0, usedCharmMarks - maximumCharmMarks),
+      over: usedCharmMarks > maximumCharmMarks,
+      tooltip: [
+        `${game.i18n.localize("HRPG.CharmMarksUsed")}: ${usedCharmMarks}`,
+        `${game.i18n.localize("HRPG.Marks")}: ${maximumCharmMarks}`,
+        ...equippedCharmRows.map((item) => `• ${item.name}: ${item.notches}`)
+      ].join("\n")
+    };
     const techniqueSlots = techniqueSlotsSummary(this.actor);
     context.techniqueSlots = {
       ...techniqueSlots,
@@ -236,7 +260,6 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     context.inventoryItemTypes = Object.fromEntries(
       Object.entries(CONFIG.HRPG.itemTypes).filter(([type]) => !["trait", "path", "skill", "charm", "art", "spell"].includes(type))
     );
-    const adjustments = system.adjustments ?? {};
     const speedSpent = Number(system.combat?.speedSpent) || 0;
     const secondaryValues = {
       speed: system.effective.secondary.speed,

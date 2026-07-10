@@ -32,7 +32,7 @@ export function refreshQuickAttacksHud() {
       : [emptyState("HRPG.NoInteractionSkills")]
   ));
   hud.querySelector("[data-hrpg-stat-list]").replaceChildren(...attributeButtons(actor), ...secondaryButtons(actor));
-  hud.querySelector("[data-hrpg-action-list]").replaceChildren(...defenseActionButtons(actor));
+  hud.querySelector("[data-hrpg-action-list]").replaceChildren(...defenseActionButtons(actor), ...combatUtilityActionButtons(actor));
   hud.hidden = false;
 }
 
@@ -246,6 +246,22 @@ function defenseActionButtons(actor) {
   ];
 }
 
+function combatUtilityActionButtons(actor) {
+  return [
+    utilityActionButton(actor, { key: "opportunity-attack", label: "HRPG.OpportunityAttack", hint: "HRPG.OpportunityAttackHint", staminaCost: 1 }),
+    utilityActionButton(actor, { key: "retreat", label: "HRPG.Retreat", hint: "HRPG.RetreatHint", staminaCost: 1, speedCost: 2 }),
+    utilityActionButton(actor, { key: "dash-jump", label: "HRPG.DashJump", hint: "HRPG.DashJumpHint", staminaCost: 1, speedCost: 0, speedEditable: true }),
+    utilityActionButton(actor, { key: "grapple", label: "HRPG.Grapple", hint: "HRPG.GrappleHint", staminaCost: 1, roll: true, attributes: [{ key: "power", label: "HRPG.AttributePower" }] }),
+    utilityActionButton(actor, { key: "escape-grapple", label: "HRPG.EscapeGrapple", hint: "HRPG.EscapeGrappleHint", staminaCost: 1, roll: true, attributes: [{ key: "power", label: "HRPG.AttributePower" }, { key: "grace", label: "HRPG.AttributeGrace" }] }),
+    utilityActionButton(actor, { key: "skill-action", label: "HRPG.SkillAction", hint: "HRPG.SkillActionHint", staminaCost: 1, roll: true, attributes: attributeOptions() }),
+    utilityActionButton(actor, { key: "minor-action", label: "HRPG.MinorAction", hint: "HRPG.MinorActionHint", staminaCost: 0, speedEditable: true }),
+    utilityActionButton(actor, { key: "ready-action", label: "HRPG.ReadyAction", hint: "HRPG.ReadyActionHint", staminaCost: 1, note: true }),
+    utilityActionButton(actor, { key: "delay-turn", label: "HRPG.DelayTurn", hint: "HRPG.DelayTurnHint", staminaCost: 0, note: true }),
+    utilityActionButton(actor, { key: "focus-soul", label: "HRPG.FocusSoul", hint: "HRPG.FocusSoulHint", soul: true }),
+    utilityActionButton(actor, { key: "damage-calculator", label: "HRPG.DamageCalculator", hint: "HRPG.DamageCalculatorHint", damage: true })
+  ];
+}
+
 function actionButton(actor, action) {
   const button = document.createElement("button");
   button.type = "button";
@@ -262,6 +278,70 @@ function actionButton(actor, action) {
     await actor.rollDefenseAction(action.key, options);
   });
   return button;
+}
+
+function utilityActionButton(actor, action) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.title = game.i18n.localize(action.hint);
+  const name = document.createElement("span");
+  name.textContent = game.i18n.localize(action.label);
+  const details = document.createElement("small");
+  details.textContent = game.i18n.localize(action.hint);
+  button.append(name);
+  button.append(details);
+  button.addEventListener("click", async () => {
+    const options = await promptCombatActionOptions(action);
+    if (!options) return;
+    await actor.useCombatAction(action.key, options);
+  });
+  return button;
+}
+
+async function promptCombatActionOptions(action) {
+  const id = `hrpg-action-${action.key}-${foundry.utils.randomID()}`;
+  const DialogV2 = foundry.applications?.api?.DialogV2;
+  if (!DialogV2?.prompt) return {
+    staminaCost: action.staminaCost ?? 0,
+    speedCost: action.speedCost ?? 0,
+    soulCost: action.soul ? Number(window.prompt(game.i18n.localize("HRPG.ResourceSoul"), "1")) || 1 : 0
+  };
+  return DialogV2.prompt({
+    window: { title: game.i18n.localize(action.label) },
+    content: `
+      <form id="${id}" class="hrpg-defense-dialog">
+        <p>${foundry.utils.escapeHTML(game.i18n.localize(action.hint))}</p>
+        ${action.damage ? damageCalculatorFields() : action.soul ? focusSoulFields() : combatActionFields(action)}
+      </form>`,
+    ok: {
+      label: action.damage ? game.i18n.localize("HRPG.Calculate") : game.i18n.localize("HRPG.Use"),
+      callback: (_event, button) => {
+        const form = button?.form ?? document.getElementById(id);
+        const data = new FormData(form);
+        if (action.damage) return {
+          successes: Number(data.get("successes")) || 0,
+          baseDamage: Number(data.get("baseDamage")) || 0,
+          investedStamina: Number(data.get("investedStamina")) || 0,
+          damageReduction: Number(data.get("damageReduction")) || 0,
+          absorptionSuccesses: Number(data.get("absorptionSuccesses")) || 0,
+          absorption: Number(data.get("absorption")) || 0,
+          absorbable: data.get("absorbable") === "on"
+        };
+        if (action.soul) return {
+          soulCost: Number(data.get("soulCost")) || 0,
+          note: String(data.get("note") || "")
+        };
+        return {
+          staminaCost: Number(data.get("staminaCost")) || 0,
+          speedCost: Number(data.get("speedCost")) || 0,
+          bonusDice: Number(data.get("bonusDice")) || 0,
+          attribute: String(data.get("attribute") || ""),
+          note: String(data.get("note") || "")
+        };
+      }
+    },
+    rejectClose: false
+  });
 }
 
 async function promptDefenseActionOptions(actor, action) {
@@ -288,6 +368,7 @@ async function promptDefenseActionOptions(actor, action) {
         <label>${game.i18n.localize("HRPG.StaminaCost")}
           <input type="number" name="staminaCost" value="${action.staminaCost ?? 0}" min="0" step="1">
         </label>
+        ${action.key === "dodge" ? `<label class="hrpg-inline-check"><input type="checkbox" name="dodgeMove"> ${game.i18n.localize("HRPG.DodgeMove")}</label>` : ""}
         ${effects.length ? `<section><h3>${game.i18n.localize("HRPG.ItemEffects")}</h3>${effectNotes(effects)}</section>` : ""}
         ${techniqueOptions.length ? `<section><h3>${game.i18n.localize("HRPG.Techniques")}</h3>${techniqueOptionInputs(techniqueOptions)}</section>` : ""}
         ${traitEffects.length ? `<section><h3>${game.i18n.localize("HRPG.TraitEffects")}</h3>${effectNotes(traitEffects)}</section>` : ""}
@@ -302,6 +383,7 @@ async function promptDefenseActionOptions(actor, action) {
           bonusDice: Number(data.get("bonusDice")) || 0,
           staminaCost: Number(data.get("staminaCost")) || 0,
           attribute: String(data.get("attribute") || ""),
+          dodgeMove: data.get("dodgeMove") === "on",
           traitOptions: data.getAll("traitOption").map(String),
           techniqueOptions: data.getAll("techniqueOption").map(String)
         };
@@ -309,6 +391,70 @@ async function promptDefenseActionOptions(actor, action) {
     },
     rejectClose: false
   });
+}
+
+function combatActionFields(action) {
+  return `
+    <label>${game.i18n.localize("HRPG.StaminaCost")}
+      <input type="number" name="staminaCost" value="${action.staminaCost ?? 0}" min="0" step="1">
+    </label>
+    ${(action.speedEditable || Number(action.speedCost)) ? `<label>${game.i18n.localize("HRPG.SpeedCost")}
+      <input type="number" name="speedCost" value="${action.speedCost ?? 0}" min="0" step="1">
+    </label>` : `<input type="hidden" name="speedCost" value="${action.speedCost ?? 0}">`}
+    ${action.roll ? `<label>${game.i18n.localize("HRPG.ActionAttribute")}
+      <select name="attribute">${(action.attributes ?? attributeOptions()).map((option) => `<option value="${option.key}">${foundry.utils.escapeHTML(game.i18n.localize(option.label))}</option>`).join("")}</select>
+    </label>
+    <label>${game.i18n.localize("HRPG.BonusDice")}
+      <input type="number" name="bonusDice" value="0" step="1">
+    </label>` : `<input type="hidden" name="attribute" value="">`}
+    ${action.note ? `<label>${game.i18n.localize("HRPG.Note")}
+      <textarea name="note" rows="3"></textarea>
+    </label>` : `<input type="hidden" name="note" value="">`}`;
+}
+
+function focusSoulFields() {
+  return `
+    <label>${game.i18n.localize("HRPG.ResourceSoul")}
+      <input type="number" name="soulCost" value="1" min="1" step="1">
+    </label>
+    <label>${game.i18n.localize("HRPG.Note")}
+      <textarea name="note" rows="3"></textarea>
+    </label>`;
+}
+
+function damageCalculatorFields() {
+  return `
+    <label>${game.i18n.localize("HRPG.AttackSuccesses")}
+      <input type="number" name="successes" value="1" min="0" step="1">
+    </label>
+    <label>${game.i18n.localize("HRPG.BaseDamage")}
+      <input type="number" name="baseDamage" value="1" min="0" step="1">
+    </label>
+    <label>${game.i18n.localize("HRPG.InvestedStamina")}
+      <input type="number" name="investedStamina" value="0" min="0" step="1">
+    </label>
+    <label>${game.i18n.localize("HRPG.DamageReductionShort")}
+      <input type="number" name="damageReduction" value="0" min="0" step="1">
+    </label>
+    <label>${game.i18n.localize("HRPG.AbsorptionSuccesses")}
+      <input type="number" name="absorptionSuccesses" value="0" min="0" step="1">
+    </label>
+    <label>${game.i18n.localize("HRPG.AbsorptionPool")}
+      <input type="number" name="absorption" value="0" min="0" step="1">
+    </label>
+    <label class="hrpg-inline-check"><input type="checkbox" name="absorbable" checked> ${game.i18n.localize("HRPG.AbsorbableDamage")}</label>`;
+}
+
+function attributeOptions() {
+  return [
+    { key: "power", label: "HRPG.AttributePower" },
+    { key: "insight", label: "HRPG.AttributeInsight" },
+    { key: "shell", label: "HRPG.AttributeShell" },
+    { key: "grace", label: "HRPG.AttributeGrace" },
+    { key: "speed", label: "HRPG.Speed" },
+    { key: "appeal", label: "HRPG.Appeal" },
+    { key: "dread", label: "HRPG.Dread" }
+  ];
 }
 
 function dodgeAttributeOptions(actor) {

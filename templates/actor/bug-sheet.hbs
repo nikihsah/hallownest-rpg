@@ -34,6 +34,7 @@
             <label>{{localize "HRPG.TempHitPointsShort"}}<input name="system.resources.stamina.temp" type="number" value="{{system.resources.stamina.temp}}" title="{{localize 'HRPG.TempHitPoints'}}"></label>
           </section>
           <label>{{localize "HRPG.ResourceSatiety"}}<span><input name="system.resources.satiety.value" type="number" value="{{system.resources.satiety.value}}"><b>/</b><output>{{system.resources.satiety.max}}</output></span></label>
+          <label>{{localize "HRPG.Imbalance"}}<span><input name="system.combat.imbalance" type="number" min="0" max="3" value="{{system.combat.imbalance}}"><b>/</b><output>3</output></span></label>
         </div>
       {{/if}}
     </div>
@@ -141,9 +142,14 @@
       </div>
 
       <div class="tab charms" data-group="primary" data-tab="charms">
+        <section class="panel charm-slots-panel {{#if charmSlots.over}}overloaded{{/if}}" data-tooltip="{{charmSlots.tooltip}}" data-tooltip-direction="UP">
+          <h2>{{localize "HRPG.CharmMarks"}}</h2>
+          <strong>{{charmSlots.used}} / {{charmSlots.maximum}}</strong>
+          <small>{{#if charmSlots.over}}{{localize "HRPG.CharmMarksOver"}} {{charmSlots.overage}}{{else}}{{localize "HRPG.CharmMarksRemaining"}} {{charmSlots.remaining}}{{/if}}</small>
+        </section>
         <section class="panel collection-panel">
           <div class="panel-heading"><h2>{{localize "HRPG.Charms"}}</h2><button type="button" data-action="create-item" data-type="charm">+</button></div>
-          {{#each itemsByType.charm as |item|}}<div class="item-row card-item" data-open-item-id="{{item.id}}" role="button" tabindex="0"><img src="{{item.img}}"><div><strong>{{item.name}}</strong><small>{{#if item.system.notches}}{{localize "HRPG.Notches"}} {{item.system.notches}}{{/if}}</small></div><label class="item-equipped"><input data-item-equipped="{{item.id}}" type="checkbox" {{#if item.system.equipped}}checked{{/if}}> {{localize "HRPG.Equipped"}}</label><button class="item-delete" type="button" data-action="delete-item" data-item-id="{{item.id}}" data-tooltip="{{localize 'HRPG.DeleteItem'}}">&times;</button></div>{{else}}<p class="empty-state">{{localize "HRPG.NoCharms"}}</p>{{/each}}
+          {{#each charmRows as |item|}}<div class="item-row card-item" data-open-item-id="{{item.id}}" role="button" tabindex="0"><img src="{{item.img}}"><div><strong>{{item.name}}</strong><small>{{#if item.notches}}{{localize "HRPG.Notches"}} {{item.notches}}{{else}}{{localize "HRPG.Notches"}} 0{{/if}}</small></div><label class="item-equipped"><input data-item-equipped="{{item.id}}" type="checkbox" {{#if item.equipped}}checked{{/if}}> {{localize "HRPG.Equipped"}}</label><button class="item-delete" type="button" data-action="delete-item" data-item-id="{{item.id}}" data-tooltip="{{localize 'HRPG.DeleteItem'}}">&times;</button></div>{{else}}<p class="empty-state">{{localize "HRPG.NoCharms"}}</p>{{/each}}
         </section>
       </div>
 

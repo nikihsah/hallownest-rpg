@@ -7,11 +7,16 @@ const PASSIVE_EFFECTS = {
   "charms.general.lovkach": { modifiers: { speed: 2 }, initiativeRerolls: 1, note: "Скорость +2; +1 повторный бросок инициативы." },
   "charms.general.zapasnoe-snaryazhenie": { customResources: { supplies: 1 }, note: "Максимум Припасов +1." },
   "charms.general.serdtse-zhivokrovi": { tempResources: { heart: 2 }, note: "После Отдыха даёт 2 Сердца Живокрови." },
+  "charms.general.yadro-zhivokrovi": { tempResources: { heart: 4 }, note: "После Отдыха даёт 4 Сердца Живокрови." },
   "charms.general.blestyashchaya-dusha": { gloryResources: { soul: 1 }, note: "После Отдыха даёт 1 Душу Славы." },
   "charms.general.siyayushchaya-dusha": { gloryResources: { soul: 3 }, note: "После Отдыха даёт 3 Души Славы." },
   "charms.general.serdtse-slavy": { gloryResources: { stamina: 2 }, note: "После Отдыха даёт 2 Выносливости Славы." },
   "charms.general.yadro-slavy": { gloryResources: { stamina: 4 }, note: "После Отдыха даёт 4 Выносливости Славы." },
   "charms.general.vooruzhenie-dukha": { spiritArmament: true, note: "Вес оружия и брони носителя уменьшается на 1." },
+  "charms.death.bezmolvnoe-bremya": { modifiers: { load: 2 }, note: "Нагрузка +2." },
+  "charms.path.nositel-dushi": { customResources: { essence: 1 }, note: "Максимум Эссенции +1." },
+  "charms.social.dubovyy-lotos": { modifiers: { appeal: 1 }, note: "Привлекательность +1." },
+  "charms.social.mark-khishchnika": { modifiers: { dread: 1 }, note: "Жуть +1." },
   "equipment.treasure.patrontash-rasshiryaet-kolichestvo-yacheek-poyasa-na-1-za-kazhdye-50-geo-potrachennykh-na-patrontash-naryadnaya-odezhda": {
     modifiers: { appeal: 0.5 },
     note: "Привлекательность +0.5."
@@ -61,6 +66,11 @@ const PROMPT_EFFECTS = {
     label: "Длинный Гвоздь",
     note: "Любое оружие носителя получает Досягаемость."
   },
+  "charms.combat.doblest-dikarya": {
+    trigger: "attack",
+    label: "Доблесть Дикаря",
+    note: "Импровизированное оружие не имеет штрафов, получает +1 кость к атаке и может быть разрушено для +2 урона."
+  },
   "charms.combat.doblest-ulana-mark-gordosti": {
     trigger: "attack",
     label: "Доблесть Улана",
@@ -76,10 +86,30 @@ const PROMPT_EFFECTS = {
     label: "Крадущийся Паук",
     note: "Парирование можно делать Грацией. Успешное парирование Грацией может усилить первую атаку в ходу."
   },
+  "charms.combat.otdacha": {
+    trigger: "movement",
+    label: "Отдача",
+    note: "После принудительного перемещения цели носитель может переместиться на 1 клетку без провокации атаки."
+  },
   "charms.combat.prygayushchiy-kon": {
     trigger: "defense",
     label: "Прыгающий Конь",
     note: "Уклонение можно делать Мощью; после такого уклонения доступен бесплатный рывок или прыжок."
+  },
+  "charms.combat.radost-myasnika": {
+    trigger: "attack",
+    label: "Радость Мясника",
+    note: "Убив опасного врага или отправив его к Вратам Смерти, носитель восполняет 1 Выносливость."
+  },
+  "charms.combat.slava-okhotnika": {
+    trigger: "attack",
+    label: "Слава Охотника",
+    note: "Против выбранного вида жуков атаки носителя получают +1 кость."
+  },
+  "charms.combat.tenevoy-gvozd": {
+    trigger: "attack",
+    label: "Теневой Гвоздь",
+    note: "Позволяет создать теневую руку, которая мгновенно совершает рукопашную атаку Мощью или Грацией носителя."
   },
   "charms.combat.heavy-vypad": {
     trigger: "attack",
@@ -95,6 +125,11 @@ const PROMPT_EFFECTS = {
     trigger: "attack",
     label: "Храбрый Гвоздь",
     note: "При полном запасе Сердец рукопашное оружие может выпускать снаряды на 4 клетки с уроном на 1 меньше."
+  },
+  "charms.combat.shkval-dikarya": {
+    trigger: "attack",
+    label: "Шквал Дикаря",
+    note: "Если носитель заканчивает ход без Выносливости, он может мгновенно совершить одну бесплатную атаку."
   },
   "charms.combat.yarost-pavshego": {
     trigger: "attack",
@@ -125,6 +160,31 @@ const PROMPT_EFFECTS = {
     trigger: "absorption",
     label: "Крепкий Панцирь",
     note: "После получения урона последующие Впитывания до начала следующего хода получают +1 кость."
+  },
+  "charms.general.blood-ulya": {
+    trigger: "defense",
+    label: "Кровь Улья",
+    note: "Если у носителя есть хотя бы 1 Сердце и он получает урон, в конце следующего хода восстанавливает 1 Сердце."
+  },
+  "charms.general.mark-soyuznika": {
+    trigger: "parry",
+    label: "Метка Союзника",
+    note: "Когда соседний союзник становится целью атаки, носитель может парировать эту атаку за него."
+  },
+  "charms.general.pavshiy-zashchitnik": {
+    trigger: "defense",
+    label: "Павший Защитник",
+    note: "После парирования или уклонения от ненулевой атаки число её успехов снижается на 1, но не ниже 1."
+  },
+  "charms.general.shell-baldra": {
+    trigger: "defense",
+    label: "Панцирь Бальдра",
+    note: "Во время Фокусировки носитель получает на 4 урона меньше от первой атаки."
+  },
+  "charms.social.gratsiya-lepestka": {
+    trigger: "defense",
+    label: "Грация Лепестка",
+    note: "При перемещении после уклонения можно использовать Привлекательность вместо Грации."
   },
   "equipment.shield.shchity-shchit-knopka": {
     trigger: "parry",

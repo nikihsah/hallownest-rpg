@@ -58,6 +58,7 @@ export class ItemCatalogApplication extends foundry.applications.api.HandlebarsA
       actor: this.actor,
       catalogType: this.catalogType,
       catalogTypeLabel: itemCatalogTypes()[this.catalogType] ?? "HRPG.ItemCatalogTitle",
+      createCustomLabel: this.catalogType === "charm" ? "HRPG.CreateCustomCharm" : "HRPG.CreateCustomItem",
       groups: groupCatalogItems(items, { type: this.catalogType, ownedSourceIds, actor: this.actor })
     };
   }

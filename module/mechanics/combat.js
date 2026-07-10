@@ -104,10 +104,13 @@ async function onUpdateToken(token, _change, options, userId) {
 
 export function combatTurnRecoveryUpdate(actor) {
   if (actor?.type !== "bug") return null;
+  const imbalance = Math.max(0, Math.min(3, Math.floor(Number(actor.system.combat?.imbalance) || 0)));
+  const staminaMax = Number(actor.system.effective?.resources?.stamina?.max) || Number(actor.system.resources?.stamina?.max) || 0;
   return {
     "system.combat.speedSpent": 0,
     "system.combat.attackTax": 0,
-    "system.resources.stamina.value": Number(actor.system.effective?.resources?.stamina?.max) || Number(actor.system.resources?.stamina?.max) || 0
+    "system.combat.imbalance": Math.max(0, imbalance - 1),
+    "system.resources.stamina.value": Math.max(0, staminaMax - imbalance)
   };
 }
 

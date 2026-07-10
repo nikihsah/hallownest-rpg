@@ -60,6 +60,8 @@ test("header exposes heart soul and stamina with temporary hit points", async ()
   assert.match(schema, /"heart": \{ "value": 7, "max": 7, "temp": 0 \}/);
   assert.match(schema, /"soul": \{ "value": 3, "max": 3, "temp": 0 \}/);
   assert.match(schema, /"stamina": \{ "value": 3, "max": 3, "temp": 0 \}/);
+  assert.match(schema, /"combat": \{ "speedSpent": 0, "attackTax": 0, "imbalance": 0 \}/);
+  assert.match(header, /name="system\.combat\.imbalance"/);
 });
 
 test("secondary panel exposes three editable custom resources", async () => {
@@ -121,6 +123,7 @@ test("quick trait attacks are exposed through the selected-token HUD", async () 
   assert.match(hud, /dread: "HRPG\.Dread"/);
   assert.match(hud, /actor\.rollSecondary\(key\)/);
   assert.match(hud, /defenseActionButtons\(actor\)/);
+  assert.match(hud, /combatUtilityActionButtons\(actor\)/);
   assert.match(hud, /HRPG\.DefenseAction/);
   assert.match(hud, /HRPG\.Dodge/);
   assert.match(hud, /HRPG\.Parry/);
@@ -128,6 +131,22 @@ test("quick trait attacks are exposed through the selected-token HUD", async () 
   assert.match(hud, /promptDefenseActionOptions\(actor, action\)/);
   assert.match(hud, /actor\.rollDefenseAction\(action\.key, options\)/);
   assert.match(hud, /HRPG\.StaminaCost/);
+  assert.match(hud, /HRPG\.OpportunityAttack/);
+  assert.match(hud, /HRPG\.Retreat/);
+  assert.match(hud, /HRPG\.DashJump/);
+  assert.match(hud, /HRPG\.Grapple/);
+  assert.match(hud, /HRPG\.EscapeGrapple/);
+  assert.match(hud, /HRPG\.SkillAction/);
+  assert.match(hud, /HRPG\.MinorAction/);
+  assert.match(hud, /HRPG\.ReadyAction/);
+  assert.match(hud, /HRPG\.DelayTurn/);
+  assert.match(hud, /HRPG\.FocusSoul/);
+  assert.match(hud, /HRPG\.DamageCalculator/);
+  assert.match(hud, /promptCombatActionOptions\(action\)/);
+  assert.match(hud, /actor\.useCombatAction\(action\.key, options\)/);
+  assert.match(hud, /damageCalculatorFields\(\)/);
+  assert.match(hud, /focusSoulFields\(\)/);
+  assert.match(hud, /name="dodgeMove"/);
   assert.match(hud, /dodgeAttributeOptions\(actor\)/);
   assert.match(hud, /parryAttributeOptions\(actor\)/);
   assert.match(hud, /traits\.prygayushchiy/);
@@ -152,6 +171,7 @@ test("quick trait attacks are exposed through the selected-token HUD", async () 
   assert.match(styles, /\.hrpg-quick-hud-tabs button \{[^}]*display: block/s);
   assert.match(styles, /\[data-hrpg-attack-list\] button, \.hrpg-quick-hud \[data-hrpg-action-list\] button \{[^}]*gap: \.48rem/s);
   assert.match(styles, /\.hrpg-defense-dialog \{[^}]*background: rgba\(242,238,226,\.96\)/s);
+  assert.match(styles, /\.hrpg-defense-dialog \.hrpg-inline-check/);
 });
 
 test("path sheet hides inventory metadata and selects ranks from one to three", async () => {
@@ -206,6 +226,27 @@ test("actor traits tab tracks trait limit and natural weapon quality", async () 
   assert.match(schema, /"quality": \{ "value": 0, "max": 0 \}/);
 });
 
+test("actor charms tab tracks equipped charm mark usage", async () => {
+  const template = await readFile(templateUrl, "utf8");
+  const sheet = await readFile(sheetUrl, "utf8");
+  const styles = await readFile(new URL("../styles/system.css", import.meta.url), "utf8");
+
+  assert.match(template, /class="panel charm-slots-panel \{\{#if charmSlots\.over\}\}overloaded\{\{\/if\}\}"/);
+  assert.match(template, /HRPG\.CharmMarks/);
+  assert.match(template, /charmSlots\.used/);
+  assert.match(template, /charmSlots\.maximum/);
+  assert.match(template, /charmSlots\.remaining/);
+  assert.match(template, /charmSlots\.overage/);
+  assert.match(template, /\{\{#each charmRows as \|item\|\}\}/);
+  assert.match(sheet, /context\.charmRows/);
+  assert.match(sheet, /equippedCharmRows/);
+  assert.match(sheet, /usedCharmMarks/);
+  assert.match(sheet, /maximumCharmMarks/);
+  assert.match(sheet, /HRPG\.CharmMarksUsed/);
+  assert.match(styles, /\.hrpg \.charm-slots-panel \{/);
+  assert.match(styles, /\.hrpg \.charm-slots-panel\.overloaded/);
+});
+
 test("actor sheet opens item catalogs and toggles equipment", async () => {
   const template = await readFile(templateUrl, "utf8");
   const sheet = await readFile(sheetUrl, "utf8");
@@ -227,9 +268,11 @@ test("actor sheet opens item catalogs and toggles equipment", async () => {
   assert.match(itemTemplate, /selectedItemModification/);
   assert.match(itemTemplate, /item-raw-text/);
   assert.match(itemTemplate, /item-description-editor/);
+  assert.match(itemTemplate, /HRPG\.ItemDescription/);
   assert.match(itemTemplate, /name="system\.description"/);
   assert.match(itemTemplate, /HRPG\.ItemDescriptionHint/);
   assert.doesNotMatch(itemTemplate, /\{\{editor system\.description/);
+  assert.ok(itemTemplate.indexOf("item-description-editor") < itemTemplate.indexOf('class="item-properties"'));
 });
 
 test("paths and traits can be removed from the actor sheet", async () => {
@@ -268,10 +311,20 @@ test("secondary tooltips omit visible values and hunger shows the template limit
 test("actor document exposes defensive action rolls", async () => {
   const actor = await readFile(new URL("../module/documents/actor.js", import.meta.url), "utf8");
   assert.match(actor, /spendCombatStamina\(cost = 0\)/);
+  assert.match(actor, /spendSpeed\(cost = 0\)/);
+  assert.match(actor, /spendSoul\(cost = 0\)/);
+  assert.match(actor, /addImbalance\(amount = 1\)/);
+  assert.match(actor, /useCombatAction\(actionKey, options = \{\}\)/);
+  assert.match(actor, /focusSoul\(\{ soulCost = 1, note = "" \} = \{\}\)/);
+  assert.match(actor, /postDamageCalculation\(options = \{\}\)/);
+  assert.match(actor, /expectedDamage\(options\)/);
+  assert.match(actor, /rollAttributeCheck\(attributeKey/);
   assert.match(actor, /"system\.resources\.stamina\.value": next/);
   assert.match(actor, /HRPG\.StaminaExceeded/);
-  assert.match(actor, /rollDefenseAction\(actionKey, \{ bonusDice = 0, staminaCost = 0, attribute = "", traitOptions = \[\], techniqueOptions = \[\] \} = \{\}\)/);
+  assert.match(actor, /rollDefenseAction\(actionKey, \{ bonusDice = 0, staminaCost = 0, attribute = "", traitOptions = \[\], techniqueOptions = \[\], dodgeMove = false \} = \{\}\)/);
   assert.match(actor, /await this\.spendCombatStamina\(staminaCost \+ techniqueCost\.stamina\)/);
+  assert.match(actor, /actionKey === "dodge" && dodgeMove/);
+  assert.match(actor, /HRPG\.DodgeMoveImbalance/);
   assert.match(actor, /dodge: \{ label: "HRPG\.Dodge", attribute: "grace" \}/);
   assert.match(actor, /parry: \{ label: "HRPG\.Parry", attribute: "power" \}/);
   assert.match(actor, /absorption: \{ label: "HRPG\.DamageAbsorption", attribute: "shell" \}/);

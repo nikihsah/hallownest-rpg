@@ -10,14 +10,29 @@ test("equipped passive item effects become actor modifiers", () => {
   const effects = itemPassiveEffects([
     item("charms.general.velikoe-serdtse"),
     item("charms.general.lovkach"),
+    item("charms.death.bezmolvnoe-bremya"),
+    item("charms.social.dubovyy-lotos"),
+    item("charms.social.mark-khishchnika"),
     item("equipment.treasure.patrontash-rasshiryaet-kolichestvo-yacheek-poyasa-na-1-za-kazhdye-50-geo-potrachennykh-na-patrontash-naryadnaya-odezhda", { type: "gear" }),
     item("charms.general.velikaya-sila", { equipped: false })
   ]);
 
   assert.equal(effects.modifiers.heart, 1);
   assert.equal(effects.modifiers.speed, 2);
-  assert.equal(effects.modifiers.appeal, 0.5);
+  assert.equal(effects.modifiers.appeal, 1.5);
+  assert.equal(effects.modifiers.dread, 1);
+  assert.equal(effects.modifiers.load, 2);
   assert.equal(effects.initiativeRerolls, 1);
+});
+
+test("charm resource passives expose temporary and custom resource bonuses", () => {
+  const effects = itemPassiveEffects([
+    item("charms.general.yadro-zhivokrovi"),
+    item("charms.path.nositel-dushi")
+  ]);
+
+  assert.equal(effects.tempResources.heart, 4);
+  assert.equal(effects.customResources.essence, 1);
 });
 
 test("armor effects expose absorption and defense penalties", () => {
@@ -51,10 +66,24 @@ test("prompt item effects are filtered by trigger", () => {
   const effects = itemPromptEffects([
     item("charms.general.velikaya-sila"),
     item("charms.general.lovkiy-instinkt"),
+    item("charms.combat.doblest-dikarya"),
     item("equipment.shield.shchit-krylo", { type: "armor" })
   ], "attack");
 
-  assert.deepEqual(effects.map((effect) => effect.label), ["Великая Сила"]);
+  assert.deepEqual(effects.map((effect) => effect.label), ["Великая Сила", "Доблесть Дикаря"]);
+});
+
+test("audited charms expose combat reminder notes for common triggers", () => {
+  assert.deepEqual(itemPromptEffects([
+    item("charms.combat.otdacha"),
+    item("charms.combat.radost-myasnika")
+  ], "movement").map((effect) => effect.label), ["Отдача"]);
+
+  assert.deepEqual(itemPromptEffects([
+    item("charms.general.mark-soyuznika"),
+    item("charms.general.pavshiy-zashchitnik"),
+    item("charms.social.gratsiya-lepestka")
+  ], "defense").map((effect) => effect.label), ["Павший Защитник", "Грация Лепестка"]);
 });
 
 test("weapon prompt effects can be scoped to the selected weapon", () => {

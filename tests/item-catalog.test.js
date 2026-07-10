@@ -44,6 +44,25 @@ test("item catalog grouping filters by type and marks owned source ids", async (
   assert.equal(groups[0].items[0].typeLabel, "HRPG.ItemWeapon");
 });
 
+test("charm catalog is grouped by charm family from source ids", async () => {
+  const items = JSON.parse(await readFile(catalogUrl, "utf8"));
+  const groups = groupCatalogItems(items, { type: "charm" });
+  const keys = groups.map((group) => group.key);
+
+  assert.deepEqual(keys, [
+    "charm-combat",
+    "charm-death",
+    "charm-general",
+    "charm-magic",
+    "charm-path",
+    "charm-social",
+    "charm-tool-mastery"
+  ]);
+  assert.equal(groups.find((group) => group.key === "charm-combat").items.length, 19);
+  assert.equal(groups.find((group) => group.key === "charm-general").items.length, 49);
+  assert.equal(groups[0].label, "HRPG.ItemSubtype.charm-combat");
+});
+
 test("custom item data creates editable blank items of the requested type", () => {
   const item = customItemData("weapon", "Custom Needle");
 
@@ -54,6 +73,18 @@ test("custom item data creates editable blank items of the requested type", () =
   assert.equal(item.system.equipped, false);
 });
 
+test("custom charm data creates an editable charm with notches and rarity", () => {
+  const item = customItemData("charm", "Custom Charm");
+
+  assert.equal(item.type, "charm");
+  assert.equal(item.name, "Custom Charm");
+  assert.equal(item.system.catalogType, "charm");
+  assert.equal(item.system.notches, 1);
+  assert.equal(item.system.rarity, "");
+  assert.equal(item.system.description, "");
+  assert.equal(item.system.equipped, false);
+});
+
 test("item catalog application template has a single root element", async () => {
   const template = await readFile(new URL("../templates/applications/item-catalog.hbs", import.meta.url), "utf8");
   const source = await readFile(new URL("../module/applications/item-catalog.js", import.meta.url), "utf8");
@@ -61,6 +92,8 @@ test("item catalog application template has a single root element", async () => 
   assert.match(template.trimStart(), /^<div class="item-catalog-root">/);
   assert.match(template, /data-action="add-catalog-item"/);
   assert.match(template, /data-action="create-custom-item"/);
+  assert.match(template, /\{\{localize createCustomLabel\}\}/);
   assert.match(source, /class ItemCatalogApplication/);
   assert.match(source, /window: \{ title: "HRPG\.ItemCatalogTitle", resizable: true \}/);
+  assert.match(source, /createCustomLabel: this\.catalogType === "charm" \? "HRPG\.CreateCustomCharm" : "HRPG\.CreateCustomItem"/);
 });

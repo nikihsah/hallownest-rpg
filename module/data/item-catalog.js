@@ -34,7 +34,7 @@ export function groupCatalogItems(items, { type = "", ownedSourceIds = new Set()
   const filtered = type ? items.filter((item) => item.type === type) : items;
   const groups = new Map();
   for (const item of filtered) {
-    const key = item.subtype || item.type;
+    const key = itemCatalogGroupKey(item);
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push({
       ...item,
@@ -102,7 +102,7 @@ export function catalogItemData(item) {
 
 export function customItemData(type, name) {
   if (isTechniqueType(type)) return customTechniqueData(type, name);
-  return {
+  const item = {
     name,
     type,
     system: {
@@ -117,6 +117,13 @@ export function customItemData(type, name) {
       equipped: false
     }
   };
+  if (type === "charm") {
+    Object.assign(item.system, {
+      notches: 1,
+      rarity: ""
+    });
+  }
+  return item;
 }
 
 function itemMeta(item) {
@@ -139,4 +146,12 @@ function itemMeta(item) {
 
 function itemSubtypeLabel(key) {
   return `HRPG.ItemSubtype.${key}`;
+}
+
+function itemCatalogGroupKey(item) {
+  if (item.type === "charm") {
+    const family = item.sourceId?.split(".")?.[1];
+    if (family) return `charm-${family}`;
+  }
+  return item.subtype || item.type;
 }

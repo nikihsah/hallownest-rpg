@@ -34,7 +34,7 @@
         "traits": { "max": 7 },
         "advancement": { "milestone": 0, "pathRank": 0 },
         "creation": { "templateApplied": false },
-        "combat": { "speedSpent": 0, "attackTax": 0 },
+        "combat": { "speedSpent": 0, "attackTax": 0, "imbalance": 0 },
         "adjustments": {
           "speed": 0,
           "hunger": 0,

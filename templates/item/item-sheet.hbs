@@ -55,6 +55,12 @@
     <img class="profile-img" src="{{item.img}}" data-edit="img" title="{{item.name}}">
     <div class="header-fields"><input class="name" name="name" type="text" value="{{item.name}}"></div>
   </header>
+  {{#unless (eq item.type "path")}}
+    <section class="item-description-editor">
+      <h2>{{localize "HRPG.ItemDescription"}}</h2>
+      <textarea name="system.description" placeholder="{{localize 'HRPG.ItemDescriptionHint'}}">{{system.description}}</textarea>
+    </section>
+  {{/unless}}
   <section class="item-properties">
     {{#unless (eq item.type "path")}}<label>{{localize "HRPG.Quantity"}} <input name="system.quantity" type="number" value="{{system.quantity}}"></label>{{/unless}}
     {{#unless (eq item.type "path")}}<label>{{localize "HRPG.Weight"}} <input name="system.weight" type="number" step="0.1" value="{{system.weight}}"></label>{{/unless}}
@@ -147,12 +153,6 @@
       {{/each}}
     </section>
   {{/if}}
-  {{#unless (eq item.type "path")}}
-    <section class="item-description-editor">
-      <h2>{{localize "HRPG.Biography"}}</h2>
-      <textarea name="system.description" placeholder="{{localize 'HRPG.ItemDescriptionHint'}}">{{system.description}}</textarea>
-    </section>
-  {{/unless}}
   {{#if isTechniqueItem}}
     <section class="technique-effect-text">
       <h2>{{localize "HRPG.TechniqueEffect"}}</h2>
