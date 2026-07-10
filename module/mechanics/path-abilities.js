@@ -1,3 +1,5 @@
+import { classifyWeaponLike, weaponHasType } from "./weapon-classifier.js";
+
 const ATTACK_EFFECTS = {
   "paths.nail": {
     1: [
@@ -105,16 +107,19 @@ function pathAttackOptionApplies(option, attack) {
 
 function isNeedleGraceAttack(attack) {
   if (attack?.sourceType !== "weapon") return false;
-  const text = [attack.name, attack.itemType].filter(Boolean).join(" ").toLocaleLowerCase("ru");
-  if (/игл|needle/u.test(text)) return true;
+  const classification = attackClassification(attack);
+  if (weaponHasType(classification, "needle")) return true;
   return isLightEquippedWeapon(attack) && isMeleeAttack(attack);
 }
 
 function isLightEquippedWeapon(attack) {
-  return attack?.sourceType === "weapon" && (Number(attack.weight) || 0) <= 2;
+  return attack?.sourceType === "weapon" && (Number(attackClassification(attack).weight ?? attack.weight) || 0) <= 2;
 }
 
 function isMeleeAttack(attack) {
-  const range = String(attack?.range ?? "").toLocaleLowerCase("ru");
-  return !range || /ближ|melee/u.test(range);
+  return attackClassification(attack).melee;
+}
+
+function attackClassification(attack) {
+  return attack?.classification ?? classifyWeaponLike(attack);
 }

@@ -131,6 +131,7 @@
   "HRPG.TechniqueEffect": "Эффект техники",
   "HRPG.TechniqueEffectHint": "Что техника делает, что усиливает и какие условия требует",
   "HRPG.TechniqueUsed": "Техника: {name}",
+  "HRPG.VariableStamina": "Переменная Выносливость",
   "HRPG.TechniqueWrongMartialPath": "Вы взяли неподходящее искусство — проверьте выбранные воинские Пути.",
   "HRPG.TechniqueWrongMysticPath": "Вы взяли неподходящую тайну — проверьте выбранные мистические Пути и ранг.",
   "HRPG.ResourceExceeded": "Недостаточно ресурса «{resource}» для стоимости {cost}.",

@@ -10,6 +10,7 @@ import { applyTraitConditionalOptions, traitConditionalOptions, traitPromptEffec
 import { selectedItemModificationEffects } from "../data/item-modifications.js";
 import { isTechniqueType } from "../data/technique-catalog.js";
 import { selectedTechniqueCost, techniqueNotesFromIds, techniqueSummary, techniqueSynergyNotes } from "../mechanics/techniques.js";
+import { classifyWeaponLike, weaponHasType } from "../mechanics/weapon-classifier.js";
 
 export class HallownestActor extends Actor {
   prepareDerivedData() {
@@ -140,10 +141,10 @@ export class HallownestActor extends Actor {
     if (Object.keys(update).length) await this.update(update);
   }
 
-  async useTechnique(itemId, { trigger = "" } = {}) {
+  async useTechnique(itemId, { trigger = "", extraCost = {} } = {}) {
     const item = this.items.get(itemId);
     if (!item || !isTechniqueType(item.type)) return null;
-    const cost = techniqueCostFromItem(item);
+    const cost = addTechniqueCosts(techniqueCostFromItem(item), extraCost);
     await this.spendTechniqueResources(cost);
     const notes = [
       techniqueSummary(item),
@@ -288,22 +289,15 @@ const resourceLabels = { stamina: "HRPG.ResourceStamina", soul: "HRPG.ResourceSo
 
 function baseAttackConfig(actor, item) {
   if (item.type !== "weapon") return { attribute: "power", notes: [] };
-  const weight = (Number(item.system?.weight) || 0) + (Number(selectedItemModificationEffects(item).weightBonus) || 0);
-  const weaponText = [item.name, item.system?.itemType, item.system?.subtype, item.system?.description, item.system?.rawText]
-    .filter(Boolean)
-    .join(" ")
-    .toLocaleLowerCase("ru");
-  const range = String(item.system?.range ?? "").toLocaleLowerCase("ru");
+  const modificationEffects = selectedItemModificationEffects(item);
+  const classification = classifyWeaponLike(item, { modificationEffects });
   if (item.system?.sourceId === "equipment.magic-focus.palochka") {
     return { attribute: "insight", notes: [game.i18n.localize("HRPG.MagicFocusInsightAttack")] };
   }
-  const isNeedle = weaponText.includes("игл") || weaponText.includes("needle");
-  const isMelee = !range || range.includes("ближ") || range.includes("melee");
-  if (hasPath(actor, "paths.needle", 1) && (isNeedle || (weight <= 2 && isMelee))) {
+  if (hasPath(actor, "paths.needle", 1) && (weaponHasType(classification, "needle") || (classification.weight <= 2 && classification.melee))) {
     return { attribute: "grace", notes: [game.i18n.localize("HRPG.NeedlePathWeaponGrace")] };
   }
-  if (hasPath(actor, "paths.hook", 1) && weight <= 2
-    && (weaponText.includes("крюк") || weaponText.includes("hook") || weaponText.includes("серп") || weaponText.includes("sickle"))) {
+  if (hasPath(actor, "paths.hook", 1) && classification.weight <= 2 && weaponHasType(classification, "hook")) {
     return { attribute: "grace", notes: [game.i18n.localize("HRPG.HookPathWeaponGrace")] };
   }
   return { attribute: "power", notes: [] };
@@ -362,6 +356,14 @@ function techniqueCostFromItem(item) {
     stamina: Math.max(0, Math.floor(Number(item.system?.cost?.stamina) || 0)),
     soul: Math.max(0, Math.floor(Number(item.system?.cost?.soul) || 0)),
     essence: Math.max(0, Math.floor(Number(item.system?.cost?.essence) || 0))
+  };
+}
+
+function addTechniqueCosts(left = {}, right = {}) {
+  return {
+    stamina: (Number(left.stamina) || 0) + (Number(right.stamina) || 0),
+    soul: (Number(left.soul) || 0) + (Number(right.soul) || 0),
+    essence: (Number(left.essence) || 0) + (Number(right.essence) || 0)
   };
 }
 

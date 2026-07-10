@@ -1,6 +1,8 @@
 import { isTechniqueType } from "../data/technique-catalog.js";
 import { traitPromptEffects } from "./trait-effects.js";
 import { itemPromptEffects } from "./item-effects.js";
+import { classifyWeaponLike, weaponRequirementsMatch } from "./weapon-classifier.js";
+import { techniqueRuleTriggers } from "./technique-rules.js";
 
 const TRIGGER_TEXT = {
   attack: /атак|удар|урон|оруж|снаряд|цель|попад/u,
@@ -11,9 +13,11 @@ const TRIGGER_TEXT = {
   movement: /скорост|рывок|прыж|перемещ|клет/u
 };
 
+const SPELL_COMBAT_TEXT = /атак|урон|снаряд|пораж|взрыв|шар|шип|яд|стирани|аннигил|бур|визг|бах|рой|волна|запут/u;
+
 export function techniquePromptOptions(actor, trigger = "", context = {}) {
   return preparedTechniques(actor?.items)
-    .filter((technique) => techniqueApplies(technique, trigger, context))
+    .filter((technique) => techniqueApplies(actor, technique, trigger, context))
     .map((technique) => ({
       key: technique.id,
       itemId: technique.id,
@@ -54,14 +58,28 @@ export function techniqueCost(technique) {
 
 export function techniqueSummary(technique) {
   const system = technique.system ?? {};
+  const triggers = techniqueRuleTriggers(technique);
   const parts = [
     system.cost?.raw ? `Стоимость: ${system.cost.raw}` : "",
     system.requirementLabel ? `Требования: ${system.requirementLabel}` : "",
+    triggers.length ? `Тип применения: ${triggers.map(techniqueTriggerLabel).join(", ")}` : "",
     system.range ? `Дальность: ${system.range}` : "",
     system.duration ? `Длительность: ${system.duration}` : "",
     system.effectText || system.description || system.rawText || ""
   ].filter(Boolean);
   return parts.join("\n");
+}
+
+function techniqueTriggerLabel(trigger) {
+  return {
+    attack: "атака",
+    defense: "защита",
+    parry: "парирование",
+    dodge: "уклонение",
+    absorption: "впитывание",
+    movement: "движение",
+    utility: "утилити"
+  }[trigger] ?? trigger;
 }
 
 export function preparedTechniques(items) {
@@ -87,10 +105,14 @@ export function techniqueSynergyNotes(actor, technique, trigger = "", context = 
   return notes;
 }
 
-function techniqueApplies(technique, trigger = "", context = {}) {
+function techniqueApplies(actor, technique, trigger = "", context = {}) {
   if (!trigger) return true;
+  if (trigger === "attack" && technique.type === "art" && !techniqueMatchesAttackContext(actor, technique, context)) return false;
+  const explicitTriggers = techniqueTriggers(technique);
+  if (explicitTriggers.length && (explicitTriggers.includes(trigger) || trigger === "defense" && explicitTriggers.some((item) => ["parry", "dodge", "absorption"].includes(item)))) return true;
+  if (explicitTriggers.length && !explicitTriggers.includes("attack") && trigger === "attack") return false;
   const text = techniqueSearchText(technique);
-  if (trigger === "attack") return TRIGGER_TEXT.attack.test(text) || technique.type === "spell";
+  if (trigger === "attack") return technique.type === "spell" ? SPELL_COMBAT_TEXT.test(text) : TRIGGER_TEXT.attack.test(text);
   if (trigger === "parry") return TRIGGER_TEXT.parry.test(text) || (TRIGGER_TEXT.defense.test(text) && /щит|парир/u.test(text));
   if (trigger === "dodge") return TRIGGER_TEXT.dodge.test(text) || (TRIGGER_TEXT.defense.test(text) && /уклон/u.test(text));
   if (trigger === "absorption") return TRIGGER_TEXT.absorption.test(text);
@@ -107,8 +129,37 @@ function techniqueSearchText(technique) {
     technique.system?.requirementLabel,
     technique.system?.description,
     technique.system?.effectText,
-    technique.system?.rawText
+    technique.system?.rawText,
+    ...(technique.system?.effects ?? []).map((effect) => effect?.text)
   ].filter(Boolean).join(" ").toLocaleLowerCase("ru");
+}
+
+function techniqueTriggers(technique) {
+  const ruleTriggers = techniqueRuleTriggers(technique);
+  if (ruleTriggers.length) return ruleTriggers;
+  if (technique.type === "spell") return [];
+  const firstType = String(technique.system?.techniqueType ?? technique.techniqueType ?? technique.system?.subtype ?? technique.subtype ?? "")
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean)[0];
+  if (["boost", "normal", "special"].includes(firstType)) return ["attack"];
+  if (firstType === "reaction") return ["defense"];
+  return [];
+}
+
+function techniqueMatchesAttackContext(actor, technique, context = {}) {
+  const requirements = technique.system?.requirements ?? technique.requirements ?? [];
+  const attack = context.attack ?? attackForContext(actor, context.itemId);
+  if (!attack) return true;
+  const classification = attack.classification ?? classifyWeaponLike(attack);
+  return weaponRequirementsMatch(classification, requirements);
+}
+
+function attackForContext(actor, itemId = "") {
+  if (!actor || !itemId) return null;
+  const item = actor.items?.get?.(itemId) ?? Array.from(actor.items ?? []).find((entry) => entry.id === itemId);
+  if (!item) return null;
+  return item;
 }
 
 function addCosts(left, right) {

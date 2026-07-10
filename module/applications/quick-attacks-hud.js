@@ -125,9 +125,40 @@ function techniqueButton(actor, technique) {
   button.append(details);
 
   button.addEventListener("click", async () => {
-    await actor.useTechnique(technique.id);
+    const options = await promptTechniqueUseOptions(technique);
+    if (!options) return;
+    await actor.useTechnique(technique.id, options);
   });
   return button;
+}
+
+async function promptTechniqueUseOptions(technique) {
+  const rawCost = String(technique.system?.cost?.raw ?? "");
+  if (!/x\s*вынослив/i.test(rawCost)) return {};
+  const DialogV2 = foundry.applications?.api?.DialogV2;
+  if (!DialogV2?.prompt) {
+    return { extraCost: { stamina: Number(window.prompt(game.i18n.localize("HRPG.VariableStamina"), "0")) || 0 } };
+  }
+  const id = `hrpg-technique-${technique.id}-${foundry.utils.randomID()}`;
+  return DialogV2.prompt({
+    window: { title: technique.name },
+    content: `
+      <form id="${id}" class="hrpg-attack-dialog">
+        <p>${foundry.utils.escapeHTML(rawCost)}</p>
+        <label>${game.i18n.localize("HRPG.VariableStamina")}
+          <input type="number" name="stamina" value="0" min="0" step="1">
+        </label>
+      </form>`,
+    ok: {
+      label: game.i18n.localize("HRPG.Use"),
+      callback: (_event, button) => {
+        const form = button?.form ?? document.getElementById(id);
+        const data = new FormData(form);
+        return { extraCost: { stamina: Math.max(0, Math.floor(Number(data.get("stamina")) || 0)) } };
+      }
+    },
+    rejectClose: false
+  });
 }
 
 async function promptAttackOptions(actor, attack) {

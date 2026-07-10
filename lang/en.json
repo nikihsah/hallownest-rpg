@@ -131,6 +131,7 @@
   "HRPG.TechniqueEffect": "Technique effect",
   "HRPG.TechniqueEffectHint": "What the technique does, what it improves, and what conditions it requires",
   "HRPG.TechniqueUsed": "Technique: {name}",
+  "HRPG.VariableStamina": "Variable Stamina",
   "HRPG.TechniqueWrongMartialPath": "You picked an art that does not match the character's martial Paths.",
   "HRPG.TechniqueWrongMysticPath": "You picked a mystery that does not match the character's mystic Paths or rank.",
   "HRPG.ResourceExceeded": "Not enough {resource} for cost {cost}.",

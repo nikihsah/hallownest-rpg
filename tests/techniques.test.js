@@ -17,6 +17,7 @@ import {
   techniquePromptOptions,
   techniqueSummary
 } from "../module/mechanics/techniques.js";
+import { hasTechniqueRule, techniqueRuleTags, techniqueRuleTriggers } from "../module/mechanics/technique-rules.js";
 
 const catalogUrl = new URL("../data/techniques.json", import.meta.url);
 
@@ -47,6 +48,14 @@ test("HK-Kit technique catalog contains combat arts and mysteries", async () => 
   assert.equal(counts.spell.length, 51);
   assert.equal(new Set(techniques.map((item) => item.sourceId)).size, techniques.length);
   assert.ok(techniques.every((item) => item.description && item.rawText && item.effectText));
+});
+
+test("every catalog technique has an explicit structured combat rule", async () => {
+  const techniques = JSON.parse(await readFile(catalogUrl, "utf8"));
+
+  assert.deepEqual(techniques.filter((item) => !hasTechniqueRule(item.sourceId)).map((item) => item.sourceId), []);
+  assert.ok(techniques.every((item) => techniqueRuleTriggers(item).length > 0));
+  assert.ok(techniques.every((item) => techniqueRuleTags(item).length > 0));
 });
 
 test("technique catalog creates Foundry art and spell items", async () => {
@@ -150,6 +159,93 @@ test("prepared techniques expose combat options and resource costs", () => {
   assert.deepEqual(selectedTechniqueCost(actor, ["art", "spell"], "attack"), { stamina: 2, soul: 1, essence: 0, raw: "2 Выносливости" });
   assert.match(techniqueNotesFromIds(actor, ["art"], "attack")[0], /Атака оружием/);
   assert.match(techniqueSummary(actor.items[0]), /Стоимость/);
+});
+
+test("attack technique options respect selected weapon requirements", () => {
+  const actor = {
+    items: [
+      {
+        id: "needle-art",
+        name: "Игла-искусство",
+        type: "art",
+        system: {
+          prepared: true,
+          sourceId: "combat-arts.needle",
+          techniqueType: "normal",
+          cost: { raw: "1 Выносливость", stamina: 1 },
+          requirementLabel: "Игла",
+          requirements: [{ type: "weapon_or_condition", value: "Игла" }],
+          effectText: "Следующая атака получает преимущество."
+        }
+      },
+      {
+        id: "fang-art",
+        name: "Клык-искусство",
+        type: "art",
+        system: {
+          prepared: true,
+          sourceId: "combat-arts.fang",
+          techniqueType: "normal",
+          cost: { raw: "1 Выносливость", stamina: 1 },
+          requirementLabel: "Клык",
+          requirements: [{ type: "weapon_or_condition", value: "Клык" }],
+          effectText: "Следующая атака получает преимущество."
+        }
+      },
+      {
+        id: "needle-weapon",
+        name: "Штопальная игла",
+        type: "weapon",
+        system: { itemType: "Игла", range: "Ближний", weight: 3 }
+      }
+    ]
+  };
+
+  assert.deepEqual(techniquePromptOptions(actor, "attack", { itemId: "needle-weapon" }).map((option) => option.key), ["needle-art"]);
+});
+
+test("utility mysteries stay out of attack options but combat mysteries remain", () => {
+  const actor = {
+    items: [
+      technique({ id: "utility", type: "spell", text: "Заклинание позволяет переместиться домой вне боя.", cost: { soul: 1 } }),
+      technique({ id: "blast", type: "spell", text: "Огненный шар наносит урон цели.", cost: { soul: 2 } })
+    ]
+  };
+
+  assert.deepEqual(techniquePromptOptions(actor, "attack").map((option) => option.key), ["blast"]);
+});
+
+test("catalog spell trigger rules separate combat mysteries from utility mysteries", () => {
+  const actor = {
+    items: [
+      {
+        id: "teleport",
+        name: "Телепорт",
+        type: "spell",
+        system: {
+          sourceId: "magic.cloak.teleport",
+          prepared: true,
+          cost: { raw: "2 Душа", soul: 2 },
+          effectText: "Перемещение в выбранное место."
+        }
+      },
+      {
+        id: "fireball",
+        name: "Огненный шар",
+        type: "spell",
+        system: {
+          sourceId: "magic.nightmares.ognennyy-shar",
+          prepared: true,
+          cost: { raw: "2 Душа", soul: 2 },
+          effectText: "Снаряд наносит урон цели."
+        }
+      }
+    ]
+  };
+
+  assert.deepEqual(techniquePromptOptions(actor, "attack").map((option) => option.key), ["fireball"]);
+  assert.deepEqual(techniquePromptOptions(actor, "movement").map((option) => option.key), ["teleport"]);
+  assert.match(techniqueSummary(actor.items[1]), /Тип применения: атака/);
 });
 
 test("custom technique data keeps editable description attachments and costs", () => {

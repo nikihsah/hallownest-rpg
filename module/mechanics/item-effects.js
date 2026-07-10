@@ -147,6 +147,18 @@ const PROMPT_EFFECTS = {
     label: "Палочка",
     note: "Атака палочкой использует Проницательность. Палочку парируют как дальнобойную атаку."
   },
+  "equipment.magic-focus.posokh": {
+    trigger: "attack",
+    scope: "self",
+    label: "Посох",
+    note: "Орнамент посоха может бесплатно покрыть 1 сложность модификации заклинания того же Мистического Пути."
+  },
+  "equipment.magic-focus.skipetr": {
+    trigger: "attack",
+    scope: "self",
+    label: "Скипетр",
+    note: "Заклинания касанием в пределах досягаемости добавляют Качество скипетра к броску атаки заклинанием; при встречных бросках сопротивления даёт повторные броски."
+  },
   "equipment.weapon.bolt": {
     trigger: "attack",
     scope: "self",
@@ -176,6 +188,12 @@ const PROMPT_EFFECTS = {
     scope: "self",
     label: "Великий крюк",
     note: "При попадании можно потратить 1 Выносливость, чтобы снизить Панцирь цели на 2."
+  },
+  "equipment.weapon.velikiy-kolokol-klyk": {
+    trigger: "attack",
+    scope: "self",
+    label: "Великий колокол",
+    note: "Атака может считаться как ближней, так и дальнобойной."
   },
   "equipment.weapon.vilka-igla": {
     trigger: "attack",
@@ -207,6 +225,18 @@ const PROMPT_EFFECTS = {
     label: "Кнопка",
     note: "Броски Впитывания против кнопки совершаются со штрафом -1."
   },
+  "equipment.weapon.kol-gvozd": {
+    trigger: "attack",
+    scope: "self",
+    label: "Кол",
+    note: "Может образовать пару с любым оружием; предел повторного броска равен пятикратному базовому урону."
+  },
+  "equipment.weapon.kolokolchik-klyk": {
+    trigger: "attack",
+    scope: "self",
+    label: "Колокольчик",
+    note: "Атака может считаться как ближней, так и дальнобойной."
+  },
   "equipment.weapon.kryuk": {
     trigger: "attack",
     scope: "self",
@@ -219,6 +249,12 @@ const PROMPT_EFFECTS = {
     label: "Метательный болт",
     note: "Игнорирует Понижение Урона 1 и Впитывание от брони."
   },
+  "equipment.weapon.nozhnitsy-igla": {
+    trigger: "attack",
+    scope: "self",
+    label: "Ножницы",
+    note: "Качество равно сумме Качеств частей; модификации берутся с частей и одинаковые модификации не суммируются."
+  },
   "equipment.weapon.paryashchiy-prutik-igla": {
     trigger: "attack",
     scope: "self",
@@ -230,6 +266,18 @@ const PROMPT_EFFECTS = {
     scope: "self",
     label: "Посох",
     note: "Создаёт 1 Дисбаланс за удар для одной цели один раз за ход."
+  },
+  "equipment.weapon.perchatka-s-kogtyami": {
+    trigger: "attack",
+    scope: "self",
+    label: "Перчатка с когтями",
+    note: "Качество перчаток может использоваться вместо Качества безоружной атаки во время захвата; рукой в перчатке можно держать объекты."
+  },
+  "equipment.weapon.polunozhnitsy-gvozd": {
+    trigger: "attack",
+    scope: "self",
+    label: "Полуножницы",
+    note: "Можно бесплатно соединить или разъединить половины один раз за ход; последующие изменения стоят 1 Выносливость."
   },
   "equipment.weapon.prashcha": {
     trigger: "attack",

@@ -1,5 +1,6 @@
 import { naturalWeaponQualityValue } from "./trait-quality.js";
 import { selectedItemModification, selectedItemModificationEffects } from "../data/item-modifications.js";
+import { classifyWeaponLike } from "./weapon-classifier.js";
 
 const DAMAGE_PATTERNS = [
   /нанос(?:ит|ящее|ящий|ящие|ить)[^.]{0,80}?(\d+(?:[,.]\d+)?)\s*(?:единиц[а-яё]*\s+)?урон[а-яё]*/iu,
@@ -19,6 +20,7 @@ export function quickAttackFromWeapon(weapon) {
   const text = [weapon.system.description, weapon.system.rawText].filter(Boolean).join("\n");
   const modification = selectedItemModification(weapon);
   const modificationEffects = selectedItemModificationEffects(weapon);
+  const classification = classifyWeaponLike(weapon, { modificationEffects });
   return {
     itemId: weapon.id,
     name: weapon.name,
@@ -32,6 +34,7 @@ export function quickAttackFromWeapon(weapon) {
     weight: Math.max(0, (Number(weapon.system.weight) || 0) + (Number(modificationEffects.weightBonus) || 0)),
     modification: modification?.name ?? "",
     modificationEffects,
+    classification,
     sourceType: "weapon"
   };
 }
@@ -53,7 +56,15 @@ export function quickAttackFromTraitWithSubtraits(trait, subtraits = []) {
     damage,
     quality,
     tooltip: attackTooltip([text, ...activeSubtraits.map((subtrait) => `${subtrait.name}: ${subtrait.system?.description ?? ""}`)].join("\n")),
-    subtraits: activeSubtraits.map((subtrait) => subtrait.name)
+    subtraits: activeSubtraits.map((subtrait) => subtrait.name),
+    classification: classifyWeaponLike({
+      name: trait.name,
+      itemType: "Природное",
+      range: "",
+      weight: 0,
+      description: text
+    }),
+    sourceType: "trait"
   };
 }
 

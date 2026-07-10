@@ -97,7 +97,9 @@ test("quick trait attacks are exposed through the selected-token HUD", async () 
   assert.match(hud, /preparedTechniques\(actor\.items\)/);
   assert.match(hud, /techniques\.map\(\(technique\) => techniqueButton\(actor, technique\)\)/);
   assert.match(hud, /techniqueSummary\(technique\)/);
-  assert.match(hud, /actor\.useTechnique\(technique\.id\)/);
+  assert.match(hud, /promptTechniqueUseOptions\(technique\)/);
+  assert.match(hud, /actor\.useTechnique\(technique\.id, options\)/);
+  assert.match(hud, /HRPG\.VariableStamina/);
   assert.match(hud, /attack\.itemType/);
   assert.match(hud, /attack\.range/);
   assert.match(hud, /availablePathAttackOptions\(actor, attack\)/);
@@ -287,6 +289,8 @@ test("actor document exposes defensive action rolls", async () => {
   assert.match(actor, /selectedTechniqueCost\(this, techniqueOptions, actionKey\)/);
   assert.match(actor, /techniqueNotesFromIds\(this, techniqueOptions, "attack"/);
   assert.match(actor, /useTechnique\(itemId/);
+  assert.match(actor, /extraCost = \{\}/);
+  assert.match(actor, /addTechniqueCosts\(techniqueCostFromItem\(item\), extraCost\)/);
   assert.match(actor, /attackTaxReduction/);
   assert.match(actor, /itemEffects\.modifiers/);
   assert.match(actor, /pathSupplyBonus\(path\.system\?\.sourceId, rank\)/);

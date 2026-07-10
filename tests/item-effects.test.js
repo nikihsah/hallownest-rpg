@@ -66,6 +66,26 @@ test("weapon prompt effects can be scoped to the selected weapon", () => {
   assert.deepEqual(effects.map((effect) => effect.label), ["Крюк"]);
 });
 
+test("magic foci expose spellcasting prompt notes when selected", () => {
+  const effects = itemPromptEffects([
+    item("equipment.magic-focus.posokh", { type: "weapon", id: "staff" }),
+    item("equipment.magic-focus.skipetr", { type: "weapon", id: "scepter" })
+  ], "attack", { itemId: "scepter" });
+
+  assert.deepEqual(effects.map((effect) => effect.label), ["Скипетр"]);
+  assert.match(effects[0].note, /Качество скипетра/);
+});
+
+test("special weapons that were text-only expose prompt notes", () => {
+  const effects = itemPromptEffects([
+    item("equipment.weapon.velikiy-kolokol-klyk", { type: "weapon", id: "bell" }),
+    item("equipment.weapon.polunozhnitsy-gvozd", { type: "weapon", id: "scissors-half" })
+  ], "attack", { itemId: "bell" });
+
+  assert.deepEqual(effects.map((effect) => effect.label), ["Великий колокол"]);
+  assert.match(effects[0].note, /ближней, так и дальнобойной/);
+});
+
 test("shield button parry bonus requires grace at least equal to power", () => {
   const actor = {
     items: [item("equipment.shield.shchity-shchit-knopka", { type: "armor" })],
