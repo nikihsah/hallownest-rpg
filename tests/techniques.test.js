@@ -79,20 +79,34 @@ test("technique grouping marks path availability", () => {
 
 test("martial arts tied to selected paths are listed before mismatched arts", () => {
   const groups = groupTechniques([
-    { sourceId: "combat-arts.fang", type: "art", name: "Клык", pathFamily: "martial", pathName: "Воинский путь", cost: {}, requirements: [{ value: "Клык" }] },
-    { sourceId: "combat-arts.needle", type: "art", name: "Игла", pathFamily: "martial", pathName: "Воинский путь", cost: {}, requirements: [{ value: "Игла" }] }
+    { sourceId: "combat-arts.fang", type: "art", name: "Клык", subtype: "boost", techniqueType: "boost", pathFamily: "martial", pathName: "Воинский путь", cost: {}, requirements: [{ value: "Клык" }] },
+    { sourceId: "combat-arts.needle", type: "art", name: "Игла", subtype: "boost", techniqueType: "boost", pathFamily: "martial", pathName: "Воинский путь", cost: {}, requirements: [{ value: "Игла" }] }
   ], {
     type: "art",
     actor: { items: [{ type: "path", system: { sourceId: "paths.needle", category: "martial", rank: 1 } }] }
   });
 
+  assert.equal(groups.length, 1);
   assert.equal(techniquePathIds(groups[0].items[0])[0], "paths.needle");
   assert.equal(groups[0].preferred, true);
   assert.equal(groups[0].items[0].available, true);
   assert.equal(groups[0].items[0].warning, "");
-  assert.equal(groups[1].items[0].available, false);
-  assert.equal(groups[1].items[0].warning, "HRPG.TechniqueWrongMartialPath");
-  assert.equal(groups[0].label, "HRPG.TechniquePath.needle");
+  assert.equal(groups[0].items[1].available, false);
+  assert.equal(groups[0].items[1].warning, "HRPG.TechniqueWrongMartialPath");
+  assert.equal(groups[0].label, "HRPG.TechniqueType.boost");
+});
+
+test("martial arts are grouped by their art category instead of weapon requirement", () => {
+  const groups = groupTechniques([
+    { sourceId: "combat-arts.boost", type: "art", name: "Усиление", subtype: "boost", techniqueType: "boost", pathFamily: "martial", pathName: "Воинский путь", cost: {}, requirements: [{ value: "Гвоздь" }] },
+    { sourceId: "combat-arts.reaction", type: "art", name: "Реакция", subtype: "reaction", techniqueType: "reaction", pathFamily: "martial", pathName: "Воинский путь", cost: {}, requirements: [{ value: "Гвоздь" }] }
+  ], {
+    type: "art",
+    actor: { items: [{ type: "path", system: { sourceId: "paths.nail", category: "martial", rank: 1 } }] }
+  });
+
+  assert.deepEqual(groups.map((group) => group.key).sort(), ["boost", "reaction"]);
+  assert.deepEqual(groups.map((group) => group.label).sort(), ["HRPG.TechniqueType.boost", "HRPG.TechniqueType.reaction"]);
 });
 
 test("mismatched mysteries keep warning text when path or rank is missing", () => {

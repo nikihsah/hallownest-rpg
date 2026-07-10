@@ -44,7 +44,7 @@ export function groupTechniques(techniques, { type = "", ownedSourceIds = new Se
   const groups = new Map();
   for (const technique of filtered) {
     const pathIds = techniquePathIds(technique);
-    const key = technique.pathId || pathIds[0] || technique.pathFamily || technique.subtype || technique.type;
+    const key = techniqueGroupKey(technique);
     if (!groups.has(key)) groups.set(key, []);
     const available = techniqueAvailable(actor, technique);
     groups.get(key).push({
@@ -198,6 +198,7 @@ export function techniquePathIds(technique) {
 }
 
 function groupLabel(technique) {
+  if (technique.type === "art") return techniqueTypeName(technique);
   const pathId = technique.pathIds?.[0];
   if (technique.pathFamily === "martial" && pathId) return `HRPG.TechniquePath.${pathId.replace("paths.", "")}`;
   if (technique.pathName) return technique.pathName;
@@ -205,6 +206,16 @@ function groupLabel(technique) {
   if (technique.pathFamily === "martial") return "HRPG.PathMartial";
   if (technique.pathFamily === "mystic") return "HRPG.PathMystic";
   return TYPE_LABELS[technique.type] ?? technique.type;
+}
+
+function techniqueGroupKey(technique) {
+  if (technique.type === "art") {
+    return String(technique.techniqueType ?? technique.subtype ?? "art")
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean)[0] ?? "art";
+  }
+  return technique.pathId || technique.pathFamily || technique.subtype || technique.type;
 }
 
 function localLabel(key) {
