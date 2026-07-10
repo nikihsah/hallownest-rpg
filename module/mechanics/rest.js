@@ -1,4 +1,5 @@
 import { naturalWeaponQualityRecoveryUpdates } from "./trait-quality.js";
+import { setHrpgStatusEffect } from "./active-effects.js";
 
 export const SATIETY_BANDS = Object.freeze({
   FED: "fed",
@@ -33,31 +34,16 @@ export function restRecovery({ satiety, heart, heartMax, soulMax, attributes }) 
   return { band, update };
 }
 
-const EFFECT_FLAG = "restState";
-
 async function setStarvingEffect(actor, active) {
-  const existing = actor.effects.find((effect) => effect.getFlag("hallownest-rpg", EFFECT_FLAG) === "starving");
-  if (!active) return existing?.delete();
-  if (existing) return existing;
-  return actor.createEmbeddedDocuments("ActiveEffect", [{
-    name: game.i18n.localize("HRPG.StarvingEffect"),
-    img: "icons/svg/downgrade.svg",
+  return setHrpgStatusEffect(actor, "starving", active ? 1 : 0, {
     changes: ["power", "insight", "shell", "grace"].map((key) => ({
       key: `system.attributes.${key}.value`, mode: CONST.ACTIVE_EFFECT_MODES.ADD, value: -1, priority: 20
-    })),
-    flags: { "hallownest-rpg": { [EFFECT_FLAG]: "starving" } }
-  }]);
+    }))
+  });
 }
 
 async function setDeadEffect(actor) {
-  const existing = actor.effects.find((effect) => effect.getFlag("hallownest-rpg", EFFECT_FLAG) === "dead");
-  if (existing) return existing;
-  return actor.createEmbeddedDocuments("ActiveEffect", [{
-    name: game.i18n.localize("HRPG.DeadEffect"),
-    img: "icons/svg/skull.svg",
-    statuses: ["dead"],
-    flags: { "hallownest-rpg": { [EFFECT_FLAG]: "dead" } }
-  }]);
+  return setHrpgStatusEffect(actor, "dead", 1);
 }
 
 export async function restActor(actor) {

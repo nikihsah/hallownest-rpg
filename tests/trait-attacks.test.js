@@ -95,6 +95,43 @@ test("quick attacks only include active attack-like weapon traits", () => {
   assert.deepEqual(attacks.map((attack) => attack.quality), [1]);
 });
 
+test("natural weapon modifications affect quick attack damage quality and weight", () => {
+  const heavy = quickAttackFromTrait({
+    id: "horn",
+    name: "Рог",
+    type: "trait",
+    system: {
+      active: true,
+      kind: "trait",
+      category: "weapons",
+      description: "Это природное оружие, которое наносит 2 единицы урона.",
+      modification: "heavy",
+      quality: { value: 1, max: 1 }
+    }
+  });
+  const lightened = quickAttackFromTrait({
+    id: "sting",
+    name: "Жало",
+    type: "trait",
+    system: {
+      active: true,
+      kind: "trait",
+      category: "weapons",
+      description: "Это природное оружие, которое наносит 2 единицы урона.",
+      modification: "lightened",
+      quality: { value: 1, max: 1 }
+    }
+  });
+
+  assert.equal(heavy.damage, "3");
+  assert.equal(heavy.weight, 1);
+  assert.equal(heavy.modification, "Тяжёлое");
+  assert.equal(heavy.modificationEffects.attackBonusDice, -1);
+  assert.equal(lightened.damage, "1");
+  assert.equal(lightened.weight, 0);
+  assert.equal(lightened.modificationEffects.attackBonusDice, 1);
+});
+
 test("equipped weapons become quick attacks and unequipped weapons stay hidden", () => {
   const equipped = {
     id: "needle",

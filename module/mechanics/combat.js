@@ -1,5 +1,6 @@
 
 import { itemPassiveEffects } from "./item-effects.js";
+import { setHrpgStatusEffect } from "./active-effects.js";
 
 export function gridMovementCost(origin, destination, gridSize) {
   const size = Math.max(1, Number(gridSize) || 1);
@@ -102,6 +103,12 @@ async function onUpdateToken(token, _change, options, userId) {
   highlightSpeedOverage(options.hrpgMovementOverageCells);
 }
 
+export async function syncImbalanceStatus(actor, value = actor?.system?.combat?.imbalance) {
+  if (actor?.type !== "bug") return null;
+  const imbalance = Math.max(0, Math.min(3, Math.floor(Number(value) || 0)));
+  return setHrpgStatusEffect(actor, "imbalance", imbalance);
+}
+
 export function combatTurnRecoveryUpdate(actor) {
   if (actor?.type !== "bug") return null;
   const imbalance = Math.max(0, Math.min(3, Math.floor(Number(actor.system.combat?.imbalance) || 0)));
@@ -133,8 +140,18 @@ async function onCombatTurnChange(combat) {
   if (previousUpdate) await previousActor.update(previousUpdate);
   const actor = combat.combatant?.actor;
   const update = combatTurnRecoveryUpdate(actor);
-  if (update) await actor.update(update);
+  if (update) {
+    await actor.update(update);
+    await syncImbalanceStatus(actor, update["system.combat.imbalance"]);
+  }
   clearSpeedOverageHighlight();
+}
+
+async function onUpdateActor(actor, change, options = {}) {
+  if (options.hrpgSkipImbalanceSync) return;
+  const value = change?.system?.combat?.imbalance;
+  if (value === undefined) return;
+  await syncImbalanceStatus(actor, value);
 }
 
 export function registerCombatAutomation() {
@@ -142,6 +159,7 @@ export function registerCombatAutomation() {
   Hooks.once("ready", patchBugInitiativeRolls);
   Hooks.on("preUpdateToken", onPreUpdateToken);
   Hooks.on("updateToken", onUpdateToken);
+  Hooks.on("updateActor", onUpdateActor);
   Hooks.on("combatTurnChange", onCombatTurnChange);
 }
 

@@ -1,3 +1,5 @@
+import { isNaturalWeaponTrait } from "../mechanics/trait-quality.js";
+
 const WEAPON_MODIFICATIONS = [
   { key: "worn", name: "Изношенное", description: "Штраф -1 к Качеству. Может быть улучшено до стандартного Качества за половину стоимости оружия, тогда эта модификация снимается." },
   { key: "threaded", name: "Нитяное", description: "К оружию прикреплена нить или леска. Атакующий может притянуть оружие к себе за 1 Скорость. Может комбинироваться с другими модификациями." },
@@ -53,6 +55,7 @@ const MODIFICATION_EFFECTS = {
 
 export function itemModificationOptions(item) {
   if (item?.type === "weapon") return WEAPON_MODIFICATIONS;
+  if (isNaturalWeaponTrait(item)) return WEAPON_MODIFICATIONS.filter((modification) => modification.key !== "worn");
   if (item?.type === "armor" && item.system?.subtype === "shield") return SHIELD_MODIFICATIONS;
   return [];
 }

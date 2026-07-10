@@ -9,12 +9,14 @@ import { migrateActorTraits } from "./migrations/actor-traits.js";
 import { migrateAttributeMaximums } from "./migrations/attribute-maximums.js";
 import { registerCombatAutomation } from "./mechanics/combat.js";
 import { registerQuickAttacksHud } from "./applications/quick-attacks-hud.js";
+import { registerStatusEffects } from "./data/status-effects.js";
 
 Hooks.once("init", () => {
   console.info("Hallownest RPG | Initializing");
   CONFIG.HRPG = HRPG;
   CONFIG.Actor.documentClass = HallownestActor;
   CONFIG.Item.documentClass = HallownestItem;
+  registerStatusEffects(CONFIG);
   registerCombatAutomation();
   registerQuickAttacksHud();
 

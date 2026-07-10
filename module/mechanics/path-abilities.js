@@ -106,14 +106,19 @@ function pathAttackOptionApplies(option, attack) {
 }
 
 function isNeedleGraceAttack(attack) {
-  if (attack?.sourceType !== "weapon") return false;
+  if (!attack) return false;
   const classification = attackClassification(attack);
+  if (!isMeleeAttack(attack)) return false;
   if (weaponHasType(classification, "needle")) return true;
-  return isLightEquippedWeapon(attack) && isMeleeAttack(attack);
+  return isLightWeaponLikeAttack(attack);
 }
 
 function isLightEquippedWeapon(attack) {
   return attack?.sourceType === "weapon" && (Number(attackClassification(attack).weight ?? attack.weight) || 0) <= 2;
+}
+
+function isLightWeaponLikeAttack(attack) {
+  return (Number(attackClassification(attack).weight ?? attack.weight) || 0) <= 2;
 }
 
 function isMeleeAttack(attack) {

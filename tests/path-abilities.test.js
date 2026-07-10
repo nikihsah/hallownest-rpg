@@ -34,11 +34,15 @@ test("selected path attack choices modify attack math", () => {
 
 test("needle fast strikes are offered only for eligible weapons", () => {
   const actor = { items: [{ type: "path", name: "Игла", system: { sourceId: "paths.needle", rank: 1 } }] };
-  const heavyRanged = { sourceType: "weapon", name: "Тяжёлая праща", itemType: "праща", weight: 3, range: "Дальний (5)" };
+  const heavyRangedNeedle = { sourceType: "weapon", name: "Тяжёлая игла-снаряд", itemType: "игла", weight: 3, range: "Дальний (5)" };
   const lightMelee = { sourceType: "weapon", name: "Лёгкий клинок", itemType: "гвоздь", weight: 1, range: "Ближний" };
-  const needle = { sourceType: "weapon", name: "Штопальная игла", itemType: "игла", weight: 3, range: "Ближний" };
+  const heavyMeleeNeedle = { sourceType: "weapon", name: "Штопальная игла", itemType: "игла", weight: 3, range: "Ближний" };
+  const heavyMeleeFang = { sourceType: "weapon", name: "Тяжёлый клык", itemType: "клык", weight: 3, range: "Ближний" };
+  const naturalMelee = { sourceType: "trait", name: "Острые когти", itemType: "природное", weight: 0, range: "Ближний" };
 
-  assert.equal(availablePathAttackOptions(actor, heavyRanged).some((option) => option.key === "needle-grace"), false);
+  assert.equal(availablePathAttackOptions(actor, heavyRangedNeedle).some((option) => option.key === "needle-grace"), false);
   assert.equal(availablePathAttackOptions(actor, lightMelee).some((option) => option.key === "needle-grace"), true);
-  assert.equal(availablePathAttackOptions(actor, needle).some((option) => option.key === "needle-grace"), true);
+  assert.equal(availablePathAttackOptions(actor, heavyMeleeNeedle).some((option) => option.key === "needle-grace"), true);
+  assert.equal(availablePathAttackOptions(actor, heavyMeleeFang).some((option) => option.key === "needle-grace"), false);
+  assert.equal(availablePathAttackOptions(actor, naturalMelee).some((option) => option.key === "needle-grace"), true);
 });

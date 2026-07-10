@@ -1,4 +1,5 @@
 import { naturalWeaponQualityData } from "../mechanics/trait-quality.js";
+import { EMPTY_VIAL_EFFECT, isFluidsSubtrait } from "./vial-effects.js";
 
 let cachedTraits;
 
@@ -13,22 +14,24 @@ export async function loadTraitCatalog() {
 export function traitItemData(trait, { social = "", parentItemId = "" } = {}) {
   const modifiers = { ...trait.modifiers };
   if (trait.socialChoice?.includes(social)) modifiers[social] = Number(trait.socialValue) || 0;
+  const system = {
+    description: trait.description,
+    kind: trait.kind,
+    category: trait.category ?? "",
+    parentTrait: trait.parentTrait ?? "",
+    parentItemId,
+    sourceId: trait.sourceId,
+    active: true,
+    modifiers,
+    quality: naturalWeaponQualityData(trait),
+    rules: trait.rules ?? [],
+    costLabel: trait.costLabel ?? ""
+  };
+  if (isFluidsSubtrait(trait)) system.vialEffect = { ...EMPTY_VIAL_EFFECT };
   return {
     name: trait.name,
     type: "trait",
-    system: {
-      description: trait.description,
-      kind: trait.kind,
-      category: trait.category ?? "",
-      parentTrait: trait.parentTrait ?? "",
-      parentItemId,
-      sourceId: trait.sourceId,
-      active: true,
-      modifiers,
-      quality: naturalWeaponQualityData(trait),
-      rules: trait.rules ?? [],
-      costLabel: trait.costLabel ?? ""
-    }
+    system
   };
 }
 

@@ -97,10 +97,17 @@ test("quick trait attacks are exposed through the selected-token HUD", async () 
   assert.match(hud, /Hooks\.on\("controlToken", refreshQuickAttacksHud\)/);
   assert.match(hud, /quickAttacksFromItems\(actor\.items\)/);
   assert.match(hud, /preparedTechniques\(actor\.items\)/);
+  assert.match(hud, /equippedFlasks\(actor\.items\)/);
   assert.match(hud, /techniques\.map\(\(technique\) => techniqueButton\(actor, technique\)\)/);
+  assert.match(hud, /flasks\.map\(\(flask\) => flaskButton\(actor, flask\)\)/);
   assert.match(hud, /techniqueSummary\(technique\)/);
   assert.match(hud, /promptTechniqueUseOptions\(technique\)/);
   assert.match(hud, /actor\.useTechnique\(technique\.id, options\)/);
+  assert.match(hud, /promptFlaskThrowOptions\(actor, flask\)/);
+  assert.match(hud, /actor\.rollFlask\(flask\.id, options\)/);
+  assert.match(hud, /flaskAttackContext\(flask\.item\)/);
+  assert.match(hud, /hasPath\(actor, "paths\.vial", 1\)/);
+  assert.match(hud, /HRPG\.ThrowFlask/);
   assert.match(hud, /HRPG\.VariableStamina/);
   assert.match(hud, /attack\.itemType/);
   assert.match(hud, /attack\.range/);
@@ -122,6 +129,9 @@ test("quick trait attacks are exposed through the selected-token HUD", async () 
   assert.match(hud, /appeal: "HRPG\.Appeal"/);
   assert.match(hud, /dread: "HRPG\.Dread"/);
   assert.match(hud, /actor\.rollSecondary\(key\)/);
+  assert.match(hud, /skillTotals\(actor\.items\)/);
+  assert.match(hud, /skillButtons\(actor\)/);
+  assert.match(hud, /actor\.rollSkill\(entry\.name\)/);
   assert.match(hud, /defenseActionButtons\(actor\)/);
   assert.match(hud, /combatUtilityActionButtons\(actor\)/);
   assert.match(hud, /HRPG\.DefenseAction/);
@@ -144,6 +154,9 @@ test("quick trait attacks are exposed through the selected-token HUD", async () 
   assert.match(hud, /HRPG\.DamageCalculator/);
   assert.match(hud, /promptCombatActionOptions\(action\)/);
   assert.match(hud, /actor\.useCombatAction\(action\.key, options\)/);
+  assert.match(hud, /description: "HRPG\.FocusSoulDescription"/);
+  assert.match(hud, /actionDescriptionMarkup\(action\)/);
+  assert.match(hud, /HRPG\.ActionDescription/);
   assert.match(hud, /damageCalculatorFields\(\)/);
   assert.match(hud, /focusSoulFields\(\)/);
   assert.match(hud, /name="dodgeMove"/);
@@ -199,13 +212,18 @@ test("trait item sheet is a readable reference page instead of editable fields",
   assert.match(traitBranch, /trait-readonly/);
   assert.match(traitBranch, /trait-description/);
   assert.match(traitBranch, /trait-modifier-pills/);
-  assert.doesNotMatch(traitBranch, /<select/);
+  assert.match(traitBranch, /<select name="system\.modification">/);
   assert.match(traitBranch, /traitQualityEditable/);
   assert.match(traitBranch, /name="system\.quality\.value"/);
   assert.match(traitBranch, /name="system\.quality\.max"/);
-  assert.doesNotMatch(traitBranch, /name="system\.(?!quality\.)/);
+  assert.match(traitBranch, /name="system\.modification"/);
+  assert.match(traitBranch, /trait-modification-description/);
+  assert.match(traitBranch, /fluidVialEffectEditable/);
+  assert.match(traitBranch, /name="system\.vialEffect\.sourceId"/);
+  assert.doesNotMatch(traitBranch, /name="system\.(?!quality\.|modification"|vialEffect\.sourceId")/);
   assert.match(itemSheet, /traitModifierRows/);
   assert.match(itemSheet, /isNaturalWeaponTrait\(context\.item\)/);
+  assert.match(itemSheet, /isFluidsSubtrait\(context\.item\)/);
   assert.match(itemSheet, /context\.system = context\.item\.system \?\? \{\}/);
 });
 
@@ -278,7 +296,7 @@ test("actor sheet opens item catalogs and toggles equipment", async () => {
 test("paths and traits can be removed from the actor sheet", async () => {
   const template = await readFile(templateUrl, "utf8");
   const sheet = await readFile(sheetUrl, "utf8");
-  assert.equal((template.match(/data-action="delete-item"/g) ?? []).length, 6);
+  assert.equal((template.match(/data-action="delete-item"/g) ?? []).length, 7);
   assert.match(template, /&times;/);
   assert.doesNotMatch(template, /Г—/);
   assert.match(sheet, /"delete-item": deleteItemAction/);
@@ -314,11 +332,23 @@ test("actor document exposes defensive action rolls", async () => {
   assert.match(actor, /spendSpeed\(cost = 0\)/);
   assert.match(actor, /spendSoul\(cost = 0\)/);
   assert.match(actor, /addImbalance\(amount = 1\)/);
+  assert.match(actor, /setHrpgStatusEffect\(this, "imbalance", next\)/);
+  assert.match(actor, /activeEffectDiceModifier\(this, "attribute"\)/);
+  assert.doesNotMatch(actor, /item\.type === "condition"/);
   assert.match(actor, /useCombatAction\(actionKey, options = \{\}\)/);
   assert.match(actor, /focusSoul\(\{ soulCost = 1, note = "" \} = \{\}\)/);
   assert.match(actor, /postDamageCalculation\(options = \{\}\)/);
   assert.match(actor, /expectedDamage\(options\)/);
   assert.match(actor, /rollAttributeCheck\(attributeKey/);
+  assert.match(actor, /rollSkill\(skillName\)/);
+  assert.match(actor, /skillTotal\(this\.items, skillName\)/);
+  assert.match(actor, /HRPG\.SkillRoll/);
+  assert.match(actor, /rollFlask\(itemId/);
+  assert.match(actor, /isFlaskItem\(item\)/);
+  assert.match(actor, /flaskUses\(item\)/);
+  assert.match(actor, /item\.update\(spendFlaskUseUpdate\(item\)\)/);
+  assert.match(actor, /HRPG\.FlaskThrowRoll/);
+  assert.match(actor, /HRPG\.FlaskUseSpent/);
   assert.match(actor, /"system\.resources\.stamina\.value": next/);
   assert.match(actor, /HRPG\.StaminaExceeded/);
   assert.match(actor, /rollDefenseAction\(actionKey, \{ bonusDice = 0, staminaCost = 0, attribute = "", traitOptions = \[\], techniqueOptions = \[\], dodgeMove = false \} = \{\}\)/);
@@ -353,6 +383,8 @@ test("actor document exposes defensive action rolls", async () => {
   assert.match(actor, /HRPG\.DefenseRoll/);
   assert.match(actor, /reroll: value % 1 >= 0\.5/);
   assert.match(actor, /naturalWeaponQualityValue\(item\)/);
+  assert.match(actor, /naturalWeaponAttackQualityValue\(item, modificationEffects\)/);
+  assert.match(actor, /selectedItemModificationEffects\(item\)/);
   assert.match(actor, /spendAttackStamina\(\{ invested = 0, taxAsDice = false \} = \{\}\)/);
   assert.match(actor, /const base = 1/);
   assert.match(actor, /"system\.combat\.attackTax": rawTax \+ 1/);
@@ -365,6 +397,49 @@ test("actor document exposes defensive action rolls", async () => {
   assert.match(actor, /HRPG\.NeedlePathWeaponGrace/);
   assert.match(actor, /dice: Math\.floor\(value\) \+ quality \+ stamina\.dice \+ attackOptions\.bonusDice \+ traitAdjustment\.bonusDice \+ \(Number\(modificationEffects\?\.attackBonusDice\) \|\| 0\)/);
   assert.match(actor, /successThreshold: attackOptions\.successThreshold/);
+});
+
+test("states are not exposed as an Item document type", async () => {
+  const system = JSON.parse(await readFile(new URL("../system.json", import.meta.url), "utf8"));
+  const schema = JSON.parse(await readFile(new URL("../template.json", import.meta.url), "utf8"));
+  const config = await readFile(new URL("../module/config.js", import.meta.url), "utf8");
+  const ru = JSON.parse(await readFile(new URL("../lang/ru.json", import.meta.url), "utf8"));
+  const en = JSON.parse(await readFile(new URL("../lang/en.json", import.meta.url), "utf8"));
+
+  assert.equal(system.documentTypes.Item.condition, undefined);
+  assert.equal(schema.Item.types.includes("condition"), false);
+  assert.equal(schema.Item.condition, undefined);
+  assert.doesNotMatch(config, /ItemCondition|condition:\s*"HRPG\.ItemCondition"/);
+  assert.equal(ru["TYPES.Item.condition"], undefined);
+  assert.equal(en["TYPES.Item.condition"], undefined);
+  assert.equal(ru["HRPG.ItemCondition"], undefined);
+  assert.equal(en["HRPG.ItemCondition"], undefined);
+});
+
+test("skill items expose four skill names and aggregate roll buttons", async () => {
+  const template = await readFile(templateUrl, "utf8");
+  const itemTemplate = await readFile(new URL("../templates/item/item-sheet.hbs", import.meta.url), "utf8");
+  const sheet = await readFile(sheetUrl, "utf8");
+  const itemSheet = await readFile(new URL("../module/sheets/item-sheet.js", import.meta.url), "utf8");
+  const schema = await readFile(new URL("../template.json", import.meta.url), "utf8");
+  const styles = await readFile(new URL("../styles/system.css", import.meta.url), "utf8");
+
+  assert.match(schema, /"skill": \{[\s\S]*"skills": \[/);
+  assert.equal((schema.match(/\{ "name": "" \}/g) ?? []).length >= 4, true);
+  assert.match(template, /skillItemRows/);
+  assert.match(template, /data-action="roll-skill"/);
+  assert.match(template, /data-skill-name="\{\{row\.name\}\}"/);
+  assert.match(template, /row\.total/);
+  assert.match(template, /HRPG\.MasteryShort/);
+  assert.match(sheet, /skillTotals\(this\.actor\.items\)/);
+  assert.match(sheet, /skillRowsForItem\(item\)/);
+  assert.match(sheet, /"roll-skill": rollSkillAction/);
+  assert.match(itemTemplate, /class="skill-editor"/);
+  assert.match(itemTemplate, /name="system\.skills\.\{\{row\.key\}\}\.name"/);
+  assert.match(itemTemplate, /name="system\.mastery"/);
+  assert.match(itemSheet, /context\.skillRows = skillRowsForItem\(context\.item\)/);
+  assert.match(styles, /\.hrpg \.skill-card/);
+  assert.match(styles, /\.hrpg \.skill-editor/);
 });
 
 test("combat movement highlights Speed overage instead of warning", async () => {

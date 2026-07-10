@@ -98,3 +98,23 @@ test("actor derived data tracks carried weight against load", () => {
   assert.equal(actor.system.derived.load, 3);
   assert.equal(actor.system.derived.carriedWeight, 3.5);
 });
+
+test("uncommon fluid vial effects add their hunger cost to the actor", () => {
+  const actor = bugActor({
+    items: [
+      {
+        type: "trait",
+        system: {
+          active: true,
+          sourceId: "traits.natural-projectile.fluids",
+          modifiers: {},
+          vialEffect: { sourceId: "equipment.flask.kislotnaya", name: "Кислотная", rarity: "Необычная", hungerCost: 2 }
+        }
+      }
+    ]
+  });
+
+  actor.prepareDerivedData();
+
+  assert.equal(actor.system.effective.secondary.hunger, 2);
+});

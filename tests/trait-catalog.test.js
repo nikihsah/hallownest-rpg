@@ -95,6 +95,28 @@ test("trait item data can bind subtraits to one parent item", async () => {
   assert.equal(item.system.parentItemId, "projectile-a");
 });
 
+test("fluids subtrait item stores an editable vial effect selection", async () => {
+  const traits = JSON.parse(await readFile(catalogUrl, "utf8"));
+  const fluids = traits.find((trait) => trait.sourceId === "traits.natural-projectile.fluids");
+  const item = traitItemData(fluids, { parentItemId: "projectile-a" });
+
+  assert.equal(item.system.parentTrait, "traits.natural-projectile");
+  assert.equal(item.system.parentItemId, "projectile-a");
+  assert.deepEqual(item.system.vialEffect, { sourceId: "", name: "", rarity: "", hungerCost: 0, description: "" });
+});
+
+test("trait item sheet exposes the fluids vial effect selector", async () => {
+  const template = await readFile(new URL("../templates/item/item-sheet.hbs", import.meta.url), "utf8");
+  const itemSheet = await readFile(new URL("../module/sheets/item-sheet.js", import.meta.url), "utf8");
+
+  assert.match(template, /fluidVialEffectEditable/);
+  assert.match(template, /data-vial-effect-select/);
+  assert.match(template, /name="system\.vialEffect\.sourceId"/);
+  assert.match(template, /selectedFluidVialEffect/);
+  assert.match(itemSheet, /vialEffectOptionsFromItems\(await loadItemCatalog\(\)\)/);
+  assert.match(itemSheet, /normalizeVialEffectSelection\(option\)/);
+});
+
 test("trait catalog template renders as one V2 application root element", async () => {
   const template = await readFile(new URL("../templates/applications/trait-catalog.hbs", import.meta.url), "utf8");
   assert.match(template.trimStart(), /^<div class="trait-catalog-root">/);

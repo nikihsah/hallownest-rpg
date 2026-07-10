@@ -7,6 +7,7 @@ import { TraitCatalogApplication } from "../applications/trait-catalog.js";
 import { ItemCatalogApplication } from "../applications/item-catalog.js";
 import { isNaturalWeaponTrait, naturalWeaponQualityMax, naturalWeaponQualityValue } from "../mechanics/trait-quality.js";
 import { isTechniqueType, techniqueSlotsSummary } from "../data/technique-catalog.js";
+import { normalizeSkillName, skillBreakdown, skillRowsForItem, skillTotals } from "../mechanics/skills.js";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -124,6 +125,10 @@ async function rollSecondaryAction(_event, target) {
   await this.actor.rollSecondary(target.dataset.secondary);
 }
 
+async function rollSkillAction(_event, target) {
+  await this.actor.rollSkill(target.dataset.skillName);
+}
+
 async function restAction() {
   const result = await restActor(this.actor);
   ui.notifications.info(game.i18n.format("HRPG.RestComplete", { satiety: result.nextSatiety }));
@@ -156,6 +161,7 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
       "delete-item": deleteItemAction,
       "select-tab": selectTabAction,
       "roll-secondary": rollSecondaryAction,
+      "roll-skill": rollSkillAction,
       "rest": restAction,
       "choose-portrait": choosePortraitAction
     }
@@ -252,6 +258,27 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     };
     context.artRows = (context.itemsByType.art ?? []).map((item) => techniqueRow(item));
     context.spellRows = (context.itemsByType.spell ?? []).map((item) => techniqueRow(item));
+    const skillTotalsByName = new Map(skillTotals(this.actor.items).map((entry) => [entry.key, entry]));
+    context.skillItemRows = (context.itemsByType.skill ?? []).map((item) => ({
+      id: item.id,
+      img: item.img,
+      name: item.name,
+      rank: Math.max(1, Math.min(3, Math.floor(Number(item.system?.rank) || 1))),
+      mastery: item.system?.mastery ?? "",
+      rows: skillRowsForItem(item).map((row) => {
+        const total = skillTotalsByName.get(normalizeSkillName(row.name));
+        return {
+          ...row,
+          total: total?.total ?? 0,
+          breakdown: skillBreakdown(total, {
+            totalLabel: game.i18n.localize("HRPG.Total"),
+            masteryLabel: game.i18n.localize("HRPG.Mastery"),
+            cappedLabel: game.i18n.localize("HRPG.SkillRankCap")
+          }),
+          mastered: normalizeSkillName(row.name) && normalizeSkillName(row.name) === normalizeSkillName(item.system?.mastery)
+        };
+      })
+    }));
     const ownedPathIds = new Set((context.itemsByType.path ?? []).map((item) => item.system.sourceId));
     context.pathCatalog = (await loadPathCatalog()).map((path) => ({
       ...path,

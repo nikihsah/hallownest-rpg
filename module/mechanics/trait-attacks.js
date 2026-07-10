@@ -48,8 +48,11 @@ export function quickAttackFromTraitWithSubtraits(trait, subtraits = []) {
   if (!looksLikeAttack(text)) return null;
 
   const activeSubtraits = subtraits.filter((subtrait) => subtrait?.system?.active !== false);
-  const damage = applySubtraitDamage(extractDamage(text), activeSubtraits);
-  const quality = naturalWeaponQualityValue(trait);
+  const modification = selectedItemModification(trait);
+  const modificationEffects = selectedItemModificationEffects(trait);
+  const damage = modifiedDamage(applySubtraitDamage(extractDamage(text), activeSubtraits), modificationEffects.damageBonus);
+  const quality = Math.max(0, Math.floor(naturalWeaponQualityValue(trait) + (Number(modificationEffects.qualityBonus) || 0)));
+  const weight = Math.max(0, Number(modificationEffects.weightBonus) || 0);
   return {
     itemId: trait.id,
     name: trait.name,
@@ -61,9 +64,12 @@ export function quickAttackFromTraitWithSubtraits(trait, subtraits = []) {
       name: trait.name,
       itemType: "Природное",
       range: "",
-      weight: 0,
+      weight,
       description: text
-    }),
+    }, { modificationEffects }),
+    weight,
+    modification: modification?.name ?? "",
+    modificationEffects,
     sourceType: "trait"
   };
 }

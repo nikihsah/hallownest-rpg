@@ -1,3 +1,5 @@
+import { HRPG_STATUS_EFFECTS } from "./data/status-effects.js";
+
 export const HRPG = Object.freeze({
   attributes: {
     power: "HRPG.AttributePower",
@@ -20,7 +22,7 @@ export const HRPG = Object.freeze({
     spell: "HRPG.ItemSpell",
     charm: "HRPG.ItemCharm",
     gear: "HRPG.ItemGear",
-    consumable: "HRPG.ItemConsumable",
-    condition: "HRPG.ItemCondition"
-  }
+    consumable: "HRPG.ItemConsumable"
+  },
+  statusEffects: HRPG_STATUS_EFFECTS
 });

@@ -1,5 +1,8 @@
 import { isNaturalWeaponTrait, naturalWeaponQualityMax, naturalWeaponQualityValue } from "../mechanics/trait-quality.js";
 import { itemModificationOptions, selectedItemModification } from "../data/item-modifications.js";
+import { loadItemCatalog } from "../data/item-catalog.js";
+import { isFluidsSubtrait, normalizeVialEffectSelection, vialEffectOptionsFromItems } from "../data/vial-effects.js";
+import { skillRowsForItem } from "../mechanics/skills.js";
 
 export class HallownestItemSheet extends ItemSheet {
   static get defaultOptions() {
@@ -16,6 +19,7 @@ export class HallownestItemSheet extends ItemSheet {
     const context = await super.getData(options);
     context.system = context.item.system ?? {};
     context.pathRankOptions = { 1: "1", 2: "2", 3: "3" };
+    context.skillRankOptions = { 1: "1", 2: "2", 3: "3" };
     context.itemModificationOptions = itemModificationOptions(context.item)
       .map((modification) => ({ ...modification, selected: modification.key === context.system.modification }));
     context.selectedItemModification = selectedItemModification(context.item);
@@ -31,6 +35,15 @@ export class HallownestItemSheet extends ItemSheet {
         unique: "HRPG.TechniqueType.unique",
         secret: "HRPG.TechniqueType.secret"
       };
+    }
+    if (context.item.type === "skill") {
+      context.skillRows = skillRowsForItem(context.item);
+      context.skillMasteryOptions = Object.fromEntries(
+        context.skillRows
+          .map((row) => String(row.name ?? "").trim())
+          .filter(Boolean)
+          .map((name) => [name, name])
+      );
     }
     if (context.item.type === "trait") {
       const modifierLabels = {
@@ -56,6 +69,17 @@ export class HallownestItemSheet extends ItemSheet {
       context.traitQualityEditable = isNaturalWeaponTrait(context.item);
       context.traitQualityValue = naturalWeaponQualityValue(context.item);
       context.traitQualityMax = naturalWeaponQualityMax(context.item);
+      context.fluidVialEffectEditable = isFluidsSubtrait(context.item);
+      if (context.fluidVialEffectEditable) {
+        const options = vialEffectOptionsFromItems(await loadItemCatalog());
+        this.fluidVialEffectOptions = options;
+        context.fluidVialEffectOptions = options.map((option) => ({
+          ...option,
+          selected: option.sourceId === context.system.vialEffect?.sourceId
+        }));
+        context.selectedFluidVialEffect = options.find((option) => option.sourceId === context.system.vialEffect?.sourceId)
+          ?? (context.system.vialEffect?.sourceId ? context.system.vialEffect : null);
+      }
     }
     return context;
   }
@@ -83,6 +107,11 @@ export class HallownestItemSheet extends ItemSheet {
         }).render(true);
       });
     }
+    element.querySelector("[data-vial-effect-select]")?.addEventListener("change", async (event) => {
+      const sourceId = event.currentTarget.value;
+      const option = (this.fluidVialEffectOptions ?? []).find((entry) => entry.sourceId === sourceId);
+      await this.item.update({ "system.vialEffect": normalizeVialEffectSelection(option) });
+    });
   }
 }
 

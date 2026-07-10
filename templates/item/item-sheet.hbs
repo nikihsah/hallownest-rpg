@@ -40,6 +40,40 @@
           <label>{{localize "HRPG.Quality"}}
             <span><input name="system.quality.value" type="number" min="-1" value="{{traitQualityValue}}"><b>/</b><input name="system.quality.max" type="number" min="0" value="{{traitQualityMax}}"></span>
           </label>
+          {{#if itemModificationOptions.length}}
+            <label>{{localize "HRPG.ItemModification"}}
+              <select name="system.modification">
+                <option value="">{{localize "HRPG.NoModification"}}</option>
+                {{#each itemModificationOptions as |modification|}}<option value="{{modification.key}}" {{#if modification.selected}}selected{{/if}}>{{modification.name}}</option>{{/each}}
+              </select>
+            </label>
+          {{/if}}
+          {{#if selectedItemModification}}
+            <div class="trait-modification-description">
+              <strong>{{selectedItemModification.name}}</strong>
+              <p>{{selectedItemModification.description}}</p>
+            </div>
+          {{/if}}
+        </section>
+      {{/if}}
+
+      {{#if fluidVialEffectEditable}}
+        <section class="trait-effect-panel trait-fluid-panel">
+          <h2>{{localize "HRPG.FluidVialEffect"}}</h2>
+          <p>{{localize "HRPG.FluidVialEffectHint"}}</p>
+          <label>{{localize "HRPG.FluidVialEffect"}}
+            <select name="system.vialEffect.sourceId" data-vial-effect-select>
+              <option value="">{{localize "HRPG.ChooseVialEffect"}}</option>
+              {{#each fluidVialEffectOptions as |effect|}}<option value="{{effect.sourceId}}" {{#if effect.selected}}selected{{/if}}>{{effect.label}}</option>{{/each}}
+            </select>
+          </label>
+          {{#if selectedFluidVialEffect}}
+            <div class="trait-fluid-description">
+              <strong>{{selectedFluidVialEffect.name}}</strong>
+              <small>{{selectedFluidVialEffect.rarity}}{{#if selectedFluidVialEffect.hungerCost}} · +{{selectedFluidVialEffect.hungerCost}} {{localize "HRPG.Hunger"}}{{/if}}</small>
+              <p>{{selectedFluidVialEffect.description}}</p>
+            </div>
+          {{/if}}
         </section>
       {{/if}}
 
@@ -84,8 +118,15 @@
       </label>
     {{/if}}
     {{#if (eq item.type "skill")}}
-      <label>{{localize "HRPG.Rank"}} <input name="system.rank" type="number" min="0" value="{{system.rank}}"></label>
-      <label>{{localize "HRPG.Mastery"}} <input name="system.mastery" type="text" value="{{system.mastery}}"></label>
+      <label>{{localize "HRPG.Rank"}}
+        <select name="system.rank">{{selectOptions skillRankOptions selected=system.rank}}</select>
+      </label>
+      <label>{{localize "HRPG.Mastery"}}
+        <select name="system.mastery">
+          <option value="">{{localize "HRPG.NoMastery"}}</option>
+          {{#each skillMasteryOptions as |label value|}}<option value="{{value}}" {{#if (eq ../system.mastery value)}}selected{{/if}}>{{label}}</option>{{/each}}
+        </select>
+      </label>
     {{/if}}
     {{#if (eq item.type "art")}}
       <label class="item-equipped-editor">{{localize "HRPG.Prepared"}} <input name="system.prepared" type="checkbox" {{#if system.prepared}}checked{{/if}}></label>
@@ -150,6 +191,17 @@
           <div class="path-abilities">{{#each rank.abilities as |ability|}}<strong>{{ability}}</strong>{{/each}}</div>
           <p>{{rank.text}}</p>
         </article>
+      {{/each}}
+    </section>
+  {{/if}}
+  {{#if (eq item.type "skill")}}
+    <section class="skill-editor">
+      <h2>{{localize "HRPG.SkillList"}}</h2>
+      <p>{{localize "HRPG.SkillListHint"}}</p>
+      {{#each skillRows as |row|}}
+        <label>{{localize "HRPG.SkillName"}}
+          <input name="system.skills.{{row.key}}.name" type="text" value="{{row.name}}" placeholder="{{localize 'HRPG.SkillNameHint'}}">
+        </label>
       {{/each}}
     </section>
   {{/if}}

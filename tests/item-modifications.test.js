@@ -10,6 +10,22 @@ test("weapons expose weapon modifications", () => {
   assert.ok(options.some((option) => option.key === "threaded"));
 });
 
+test("natural weapon traits expose weapon modifications except worn", () => {
+  const options = itemModificationOptions({
+    type: "trait",
+    system: {
+      kind: "trait",
+      category: "weapons",
+      description: "Это природное оружие, которое наносит 2 урона."
+    }
+  });
+
+  assert.ok(options.some((option) => option.key === "heavy"));
+  assert.ok(options.some((option) => option.key === "lightened"));
+  assert.ok(options.some((option) => option.key === "extended"));
+  assert.equal(options.some((option) => option.key === "worn"), false);
+});
+
 test("shields expose shield modifications", () => {
   const options = itemModificationOptions({ type: "armor", system: { subtype: "shield" } });
 
@@ -36,6 +52,22 @@ test("selected weapon modification exposes mechanical effects", () => {
   assert.equal(effects.attackBonusDice, -1);
   assert.equal(effects.damageBonus, 1);
   assert.equal(effects.weightBonus, 1);
+});
+
+test("selected natural weapon trait modification uses weapon effects", () => {
+  const effects = selectedItemModificationEffects({
+    type: "trait",
+    system: {
+      kind: "trait",
+      category: "weapons",
+      description: "Это природное оружие, которое наносит 2 урона.",
+      modification: "lightened"
+    }
+  });
+
+  assert.equal(effects.attackBonusDice, 1);
+  assert.equal(effects.damageBonus, -1);
+  assert.equal(effects.weightBonus, -1);
 });
 
 test("shield lightened modification uses shield-specific effects", () => {

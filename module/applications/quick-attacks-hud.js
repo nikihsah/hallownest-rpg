@@ -3,6 +3,8 @@ import { availablePathAttackOptions } from "../mechanics/path-abilities.js";
 import { hasEquippedItem, itemPassiveEffects, itemPromptEffects } from "../mechanics/item-effects.js";
 import { traitConditionalOptions, traitPromptEffects } from "../mechanics/trait-effects.js";
 import { preparedTechniques, techniquePromptOptions, techniqueSummary } from "../mechanics/techniques.js";
+import { skillBreakdown, skillTotals } from "../mechanics/skills.js";
+import { equippedFlasks, flaskAttackContext } from "../mechanics/flasks.js";
 
 const HUD_ID = "hrpg-quick-attacks-hud";
 
@@ -19,6 +21,7 @@ export function refreshQuickAttacksHud() {
   const actor = selectedBugActor();
   const attacks = actor ? quickAttacksFromItems(actor.items) : [];
   const techniques = actor ? preparedTechniques(actor.items) : [];
+  const flasks = actor ? equippedFlasks(actor.items) : [];
   const existing = document.getElementById(HUD_ID);
   if (!actor) {
     existing?.remove();
@@ -26,12 +29,17 @@ export function refreshQuickAttacksHud() {
   }
 
   const hud = existing ?? createHud();
+  const skillActions = [
+    ...attacks.map((attack) => attackButton(actor, attack)),
+    ...techniques.map((technique) => techniqueButton(actor, technique)),
+    ...flasks.map((flask) => flaskButton(actor, flask))
+  ];
   hud.querySelector("[data-hrpg-attack-list]").replaceChildren(...(
-    attacks.length || techniques.length
-      ? [...attacks.map((attack) => attackButton(actor, attack)), ...techniques.map((technique) => techniqueButton(actor, technique))]
+    skillActions.length
+      ? skillActions
       : [emptyState("HRPG.NoInteractionSkills")]
   ));
-  hud.querySelector("[data-hrpg-stat-list]").replaceChildren(...attributeButtons(actor), ...secondaryButtons(actor));
+  hud.querySelector("[data-hrpg-stat-list]").replaceChildren(...attributeButtons(actor), ...secondaryButtons(actor), ...skillButtons(actor));
   hud.querySelector("[data-hrpg-action-list]").replaceChildren(...defenseActionButtons(actor), ...combatUtilityActionButtons(actor));
   hud.hidden = false;
 }
@@ -130,6 +138,86 @@ function techniqueButton(actor, technique) {
     await actor.useTechnique(technique.id, options);
   });
   return button;
+}
+
+function flaskButton(actor, flask) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.dataset.itemId = flask.id;
+  button.title = [game.i18n.localize("HRPG.ThrowFlask"), flask.effect].filter(Boolean).join("\n");
+  button.disabled = !flask.canUse;
+
+  const name = document.createElement("span");
+  name.textContent = flask.name;
+  button.append(name);
+
+  const details = document.createElement("small");
+  details.textContent = [
+    game.i18n.localize("HRPG.ItemSubtype.flask"),
+    game.i18n.format("HRPG.FlaskUsesValue", { value: flask.uses.value, max: flask.uses.max }),
+    flask.rarity
+  ].filter(Boolean).join(" · ");
+  button.append(details);
+
+  button.addEventListener("click", async () => {
+    const options = await promptFlaskThrowOptions(actor, flask);
+    if (!options) return;
+    await actor.rollFlask(flask.id, options);
+  });
+  return button;
+}
+
+async function promptFlaskThrowOptions(actor, flask) {
+  const attack = flaskAttackContext(flask.item);
+  const pathOptions = availablePathAttackOptions(actor, attack);
+  const attributes = flaskAttributeOptions(actor);
+  const id = `hrpg-flask-${flask.id}-${foundry.utils.randomID()}`;
+  const DialogV2 = foundry.applications?.api?.DialogV2;
+  if (!DialogV2?.prompt) {
+    return {
+      attribute: window.prompt(game.i18n.localize("HRPG.ActionAttribute"), "grace") || "grace",
+      investedStamina: Number(window.prompt(game.i18n.localize("HRPG.InvestedStamina"), "0")) || 0,
+      pathOptions: []
+    };
+  }
+  const buttons = pathOptions.map((option, index) => `
+    <label class="hrpg-path-option">
+      <input type="checkbox" name="pathOption" value="${index}">
+      <span>${foundry.utils.escapeHTML(option.pathName)}: ${foundry.utils.escapeHTML(option.label)}</span>
+      <small>${foundry.utils.escapeHTML(option.note)}</small>
+    </label>`).join("");
+  return DialogV2.prompt({
+    window: { title: game.i18n.format("HRPG.FlaskThrowDialogTitle", { name: flask.name }) },
+    content: `
+      <form id="${id}" class="hrpg-attack-dialog">
+        <p>${foundry.utils.escapeHTML(flask.effect || game.i18n.localize("HRPG.NoDescription"))}</p>
+        <label>${game.i18n.localize("HRPG.ActionAttribute")}
+          <select name="attribute">${attributes.map((option) => `<option value="${option.key}">${foundry.utils.escapeHTML(game.i18n.localize(option.label))}</option>`).join("")}</select>
+        </label>
+        <label>${game.i18n.localize("HRPG.InvestedStamina")}
+          <input type="number" name="investedStamina" value="0" min="0" step="1">
+        </label>
+        <p>${game.i18n.format("HRPG.AttackTaxHint", { tax: Number(actor.system.combat?.attackTax) || 0 })}</p>
+        ${buttons ? `<section><h3>${game.i18n.localize("HRPG.PathAbilities")}</h3>${buttons}</section>` : ""}
+        <label>${game.i18n.localize("HRPG.Note")}
+          <textarea name="note" rows="3"></textarea>
+        </label>
+      </form>`,
+    ok: {
+      label: game.i18n.localize("HRPG.ThrowFlask"),
+      callback: (_event, button) => {
+        const form = button?.form ?? document.getElementById(id);
+        const data = new FormData(form);
+        return {
+          attribute: String(data.get("attribute") || "grace"),
+          investedStamina: Number(data.get("investedStamina")) || 0,
+          pathOptions: data.getAll("pathOption").map((value) => pathOptions[Number(value)]).filter(Boolean),
+          note: String(data.get("note") || "")
+        };
+      }
+    },
+    rejectClose: false
+  });
 }
 
 async function promptTechniqueUseOptions(technique) {
@@ -236,36 +324,61 @@ function secondaryButtons(actor) {
   });
 }
 
+function skillButtons(actor) {
+  const totals = skillTotals(actor.items);
+  if (!totals.length) return [];
+  const heading = document.createElement("h3");
+  heading.className = "hrpg-quick-section-title";
+  heading.textContent = game.i18n.localize("HRPG.Skills");
+  return [heading, ...totals.map((entry) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.title = skillBreakdown(entry, {
+      totalLabel: game.i18n.localize("HRPG.Total"),
+      masteryLabel: game.i18n.localize("HRPG.Mastery"),
+      cappedLabel: game.i18n.localize("HRPG.SkillRankCap")
+    });
+    const name = document.createElement("span");
+    name.textContent = entry.name;
+    button.append(name);
+    const details = document.createElement("small");
+    details.textContent = entry.masteryBonus ? game.i18n.localize("HRPG.Mastery") : game.i18n.localize("HRPG.Skill");
+    button.append(details);
+    button.addEventListener("click", async () => actor.rollSkill(entry.name));
+    return button;
+  })];
+}
+
 function defenseActionButtons(actor) {
   const armorPenalty = Number(actor.system.effective?.itemEffects?.defenseStaminaPenalty) || itemPassiveEffects(actor.items).defenseStaminaPenalty;
   return [
-    actionButton(actor, { key: "protection", label: "HRPG.DefenseAction", hint: "HRPG.DefenseActionHint", prompt: true, staminaCost: 1 }),
-    actionButton(actor, { key: "dodge", label: "HRPG.Dodge", hint: "HRPG.DodgeHint", prompt: true, staminaCost: 1 + armorPenalty, attributes: dodgeAttributeOptions(actor) }),
-    actionButton(actor, { key: "parry", label: "HRPG.Parry", hint: "HRPG.ParryHint", prompt: true, staminaCost: 1 + armorPenalty, attributes: parryAttributeOptions(actor) }),
-    actionButton(actor, { key: "absorption", label: "HRPG.DamageAbsorption", hint: "HRPG.DamageAbsorptionHint", prompt: true, staminaCost: 0 })
+    actionButton(actor, { key: "protection", label: "HRPG.DefenseAction", hint: "HRPG.DefenseActionHint", description: "HRPG.DefenseActionDescription", prompt: true, staminaCost: 1 }),
+    actionButton(actor, { key: "dodge", label: "HRPG.Dodge", hint: "HRPG.DodgeHint", description: "HRPG.DodgeDescription", prompt: true, staminaCost: 1 + armorPenalty, attributes: dodgeAttributeOptions(actor) }),
+    actionButton(actor, { key: "parry", label: "HRPG.Parry", hint: "HRPG.ParryHint", description: "HRPG.ParryDescription", prompt: true, staminaCost: 1 + armorPenalty, attributes: parryAttributeOptions(actor) }),
+    actionButton(actor, { key: "absorption", label: "HRPG.DamageAbsorption", hint: "HRPG.DamageAbsorptionHint", description: "HRPG.DamageAbsorptionDescription", prompt: true, staminaCost: 0 })
   ];
 }
 
 function combatUtilityActionButtons(actor) {
   return [
-    utilityActionButton(actor, { key: "opportunity-attack", label: "HRPG.OpportunityAttack", hint: "HRPG.OpportunityAttackHint", staminaCost: 1 }),
-    utilityActionButton(actor, { key: "retreat", label: "HRPG.Retreat", hint: "HRPG.RetreatHint", staminaCost: 1, speedCost: 2 }),
-    utilityActionButton(actor, { key: "dash-jump", label: "HRPG.DashJump", hint: "HRPG.DashJumpHint", staminaCost: 1, speedCost: 0, speedEditable: true }),
-    utilityActionButton(actor, { key: "grapple", label: "HRPG.Grapple", hint: "HRPG.GrappleHint", staminaCost: 1, roll: true, attributes: [{ key: "power", label: "HRPG.AttributePower" }] }),
-    utilityActionButton(actor, { key: "escape-grapple", label: "HRPG.EscapeGrapple", hint: "HRPG.EscapeGrappleHint", staminaCost: 1, roll: true, attributes: [{ key: "power", label: "HRPG.AttributePower" }, { key: "grace", label: "HRPG.AttributeGrace" }] }),
-    utilityActionButton(actor, { key: "skill-action", label: "HRPG.SkillAction", hint: "HRPG.SkillActionHint", staminaCost: 1, roll: true, attributes: attributeOptions() }),
-    utilityActionButton(actor, { key: "minor-action", label: "HRPG.MinorAction", hint: "HRPG.MinorActionHint", staminaCost: 0, speedEditable: true }),
-    utilityActionButton(actor, { key: "ready-action", label: "HRPG.ReadyAction", hint: "HRPG.ReadyActionHint", staminaCost: 1, note: true }),
-    utilityActionButton(actor, { key: "delay-turn", label: "HRPG.DelayTurn", hint: "HRPG.DelayTurnHint", staminaCost: 0, note: true }),
-    utilityActionButton(actor, { key: "focus-soul", label: "HRPG.FocusSoul", hint: "HRPG.FocusSoulHint", soul: true }),
-    utilityActionButton(actor, { key: "damage-calculator", label: "HRPG.DamageCalculator", hint: "HRPG.DamageCalculatorHint", damage: true })
+    utilityActionButton(actor, { key: "opportunity-attack", label: "HRPG.OpportunityAttack", hint: "HRPG.OpportunityAttackHint", description: "HRPG.OpportunityAttackDescription", staminaCost: 1 }),
+    utilityActionButton(actor, { key: "retreat", label: "HRPG.Retreat", hint: "HRPG.RetreatHint", description: "HRPG.RetreatDescription", staminaCost: 1, speedCost: 2 }),
+    utilityActionButton(actor, { key: "dash-jump", label: "HRPG.DashJump", hint: "HRPG.DashJumpHint", description: "HRPG.DashJumpDescription", staminaCost: 1, speedCost: 0, speedEditable: true }),
+    utilityActionButton(actor, { key: "grapple", label: "HRPG.Grapple", hint: "HRPG.GrappleHint", description: "HRPG.GrappleDescription", staminaCost: 1, roll: true, attributes: [{ key: "power", label: "HRPG.AttributePower" }] }),
+    utilityActionButton(actor, { key: "escape-grapple", label: "HRPG.EscapeGrapple", hint: "HRPG.EscapeGrappleHint", description: "HRPG.EscapeGrappleDescription", staminaCost: 1, roll: true, attributes: [{ key: "power", label: "HRPG.AttributePower" }, { key: "grace", label: "HRPG.AttributeGrace" }] }),
+    utilityActionButton(actor, { key: "skill-action", label: "HRPG.SkillAction", hint: "HRPG.SkillActionHint", description: "HRPG.SkillActionDescription", staminaCost: 1, roll: true, attributes: attributeOptions() }),
+    utilityActionButton(actor, { key: "minor-action", label: "HRPG.MinorAction", hint: "HRPG.MinorActionHint", description: "HRPG.MinorActionDescription", staminaCost: 0, speedEditable: true }),
+    utilityActionButton(actor, { key: "ready-action", label: "HRPG.ReadyAction", hint: "HRPG.ReadyActionHint", description: "HRPG.ReadyActionDescription", staminaCost: 1, note: true }),
+    utilityActionButton(actor, { key: "delay-turn", label: "HRPG.DelayTurn", hint: "HRPG.DelayTurnHint", description: "HRPG.DelayTurnDescription", staminaCost: 0, note: true }),
+    utilityActionButton(actor, { key: "focus-soul", label: "HRPG.FocusSoul", hint: "HRPG.FocusSoulHint", description: "HRPG.FocusSoulDescription", soul: true }),
+    utilityActionButton(actor, { key: "damage-calculator", label: "HRPG.DamageCalculator", hint: "HRPG.DamageCalculatorHint", description: "HRPG.DamageCalculatorDescription", damage: true })
   ];
 }
 
 function actionButton(actor, action) {
   const button = document.createElement("button");
   button.type = "button";
-  button.title = game.i18n.localize(action.hint);
+  button.title = actionTitle(action);
   const name = document.createElement("span");
   name.textContent = game.i18n.localize(action.label);
   const details = document.createElement("small");
@@ -283,7 +396,7 @@ function actionButton(actor, action) {
 function utilityActionButton(actor, action) {
   const button = document.createElement("button");
   button.type = "button";
-  button.title = game.i18n.localize(action.hint);
+  button.title = actionTitle(action);
   const name = document.createElement("span");
   name.textContent = game.i18n.localize(action.label);
   const details = document.createElement("small");
@@ -311,6 +424,7 @@ async function promptCombatActionOptions(action) {
     content: `
       <form id="${id}" class="hrpg-defense-dialog">
         <p>${foundry.utils.escapeHTML(game.i18n.localize(action.hint))}</p>
+        ${actionDescriptionMarkup(action)}
         ${action.damage ? damageCalculatorFields() : action.soul ? focusSoulFields() : combatActionFields(action)}
       </form>`,
     ok: {
@@ -359,6 +473,7 @@ async function promptDefenseActionOptions(actor, action) {
     content: `
       <form id="${id}" class="hrpg-defense-dialog">
         <p>${foundry.utils.escapeHTML(game.i18n.localize(action.hint))}</p>
+        ${actionDescriptionMarkup(action)}
         ${action.attributes?.length ? `<label>${game.i18n.localize("HRPG.DefenseAttribute")}
           <select name="attribute">${action.attributes.map((option) => `<option value="${option.key}">${foundry.utils.escapeHTML(game.i18n.localize(option.label))}</option>`).join("")}</select>
         </label>` : ""}
@@ -445,6 +560,24 @@ function damageCalculatorFields() {
     <label class="hrpg-inline-check"><input type="checkbox" name="absorbable" checked> ${game.i18n.localize("HRPG.AbsorbableDamage")}</label>`;
 }
 
+function actionTitle(action) {
+  return [game.i18n.localize(action.hint), action.description ? game.i18n.localize(action.description) : ""]
+    .filter(Boolean)
+    .join("\n\n");
+}
+
+function actionDescriptionMarkup(action) {
+  if (!action.description) return "";
+  const text = game.i18n.localize(action.description);
+  if (!text || text === action.description) return "";
+  const paragraphs = text.split(/\n+/).map((line) => line.trim()).filter(Boolean);
+  if (!paragraphs.length) return "";
+  return `<section class="hrpg-action-description">
+    <h3>${game.i18n.localize("HRPG.ActionDescription")}</h3>
+    ${paragraphs.map((line) => `<p>${foundry.utils.escapeHTML(line)}</p>`).join("")}
+  </section>`;
+}
+
 function attributeOptions() {
   return [
     { key: "power", label: "HRPG.AttributePower" },
@@ -480,6 +613,18 @@ function parryAttributeOptions(actor) {
 
 function hasTrait(actor, sourceId) {
   return actor.items?.some?.((item) => item.type === "trait" && item.system?.active !== false && item.system?.sourceId === sourceId);
+}
+
+function flaskAttributeOptions(actor) {
+  const options = [{ key: "grace", label: "HRPG.AttributeGrace" }];
+  if (hasPath(actor, "paths.vial", 1)) options.push({ key: "power", label: "HRPG.AttributePower" });
+  return options;
+}
+
+function hasPath(actor, sourceId, minimumRank = 1) {
+  return actor.items?.some?.((item) => item.type === "path"
+    && item.system?.sourceId === sourceId
+    && Math.floor(Number(item.system?.rank) || 0) >= minimumRank);
 }
 
 function heavyArmorDefensePenalty(actor) {

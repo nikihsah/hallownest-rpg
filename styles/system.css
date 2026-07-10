@@ -170,6 +170,15 @@
 .trait-quality-panel label { display: flex; align-items: center; justify-content: space-between; gap: .75rem; font-weight: 700; }
 .trait-quality-panel label span { display: inline-flex; align-items: center; gap: .35rem; }
 .trait-quality-panel input { width: 4rem; text-align: center; }
+.trait-quality-panel select { min-width: 12rem; }
+.trait-modification-description { margin-top: .65rem; padding: .55rem .65rem; border: 1px solid #8e7d65; background: rgba(255,255,255,.28); }
+.trait-modification-description strong { color: #17191a; font-weight: 800; }
+.trait-modification-description p { margin: .3rem 0 0; color: #17191a; line-height: 1.35; }
+.trait-fluid-panel label { display: flex; align-items: center; justify-content: space-between; gap: .75rem; font-weight: 700; }
+.trait-fluid-panel select { min-width: 15rem; max-width: 100%; }
+.trait-fluid-description { margin-top: .65rem; padding: .55rem .65rem; border: 1px solid #8e7d65; background: rgba(255,255,255,.28); color: #17191a; }
+.trait-fluid-description strong, .trait-fluid-description small { display: block; color: #17191a; }
+.trait-fluid-description p { margin: .3rem 0 0; max-height: 8rem; overflow-y: auto; white-space: pre-line; line-height: 1.35; }
 .trait-description h2, .trait-effect-panel h2 { margin-bottom: .45rem; color: #17191a; font-weight: 700; }
 .trait-description p { margin: 0; white-space: pre-line; color: #17191a; font-size: .98rem; line-height: 1.55; }
 .trait-modifier-pills { display: flex; flex-wrap: wrap; gap: .4rem; }
@@ -193,12 +202,16 @@
 .hrpg-quick-hud [data-hrpg-attack-list] button, .hrpg-quick-hud [data-hrpg-action-list] button { gap: .48rem; padding-top: .55rem; padding-bottom: .55rem; }
 .hrpg-quick-hud button span { min-width: 0; overflow: hidden; color: #141718; font-weight: 800; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
 .hrpg-quick-hud button small { min-width: 0; overflow: hidden; color: #5f3d25; font-size: .72rem; font-weight: 700; line-height: 1.28; text-overflow: ellipsis; white-space: nowrap; }
+.hrpg-quick-section-title { margin: .35rem 0 .05rem; padding: .2rem .35rem; color: #17191a; font-size: .72rem; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
 .hrpg-defense-dialog { display: grid; gap: .65rem; padding: .75rem; border: 1px solid #8e7d65; border-radius: 6px; background: rgba(242,238,226,.96); color: #17191a; }
 .hrpg-defense-dialog p { margin: 0; color: #17191a; line-height: 1.35; }
 .hrpg-defense-dialog label { display: grid; gap: .25rem; color: #17191a; font-weight: 700; }
 .hrpg-defense-dialog .hrpg-inline-check { display: flex; align-items: center; gap: .4rem; }
 .hrpg-defense-dialog textarea { min-height: 4rem; resize: vertical; color: #17191a; background: rgba(255,255,255,.72); }
 .hrpg-defense-dialog input, .hrpg-defense-dialog select { color: #17191a; background: rgba(255,255,255,.72); }
+.hrpg-action-description { display: grid; gap: .35rem; padding: .55rem .65rem; border: 1px solid rgba(142,125,101,.65); border-radius: 6px; background: rgba(255,255,255,.38); }
+.hrpg-action-description h3 { margin: 0; color: #17191a; font-size: .8rem; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
+.hrpg-action-description p { margin: 0; color: #241f1a; line-height: 1.38; }
 .hrpg-attack-dialog { display: grid; gap: .7rem; padding: .75rem; border: 1px solid #8e7d65; border-radius: 6px; background: rgba(242,238,226,.96); color: #17191a; }
 .hrpg-attack-dialog p { margin: 0; color: #17191a; line-height: 1.35; }
 .hrpg-attack-dialog > label { display: grid; gap: .25rem; }
@@ -224,6 +237,21 @@
 .hrpg .card-item { min-height: 3rem; }
 .hrpg .card-item div { display: grid; }
 .hrpg .card-item small, .hrpg .line-item small { color: var(--muted); }
+.hrpg .skill-list-panel { display: grid; gap: .85rem; }
+.hrpg .skill-card { display: grid; gap: .35rem; padding: .35rem 0 .7rem; border-bottom: 3px solid #17191a; }
+.hrpg .skill-card header { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto auto; align-items: center; gap: .55rem; cursor: pointer; }
+.hrpg .skill-card header:hover { background: rgba(49,95,104,.1); }
+.hrpg .skill-card header img { width: 30px; height: 30px; object-fit: cover; border: 1px solid var(--line); }
+.hrpg .skill-card header strong { min-width: 0; overflow: hidden; color: #111415; font-size: 1.05rem; text-overflow: ellipsis; white-space: nowrap; }
+.hrpg .skill-card header label { display: inline-flex; align-items: center; gap: .35rem; color: #17191a; font-weight: 800; }
+.hrpg .skill-card header label b { display: inline-grid; place-items: center; min-width: 2.2rem; min-height: 2.2rem; border: 2px solid #3c3f42; background: rgba(246,248,248,.78); color: #000; font-size: 1.2rem; }
+.hrpg .skill-card-rows { display: grid; gap: .22rem; }
+.hrpg .skill-card-rows button, .hrpg .skill-empty-row { display: grid; grid-template-columns: minmax(0, 1fr) 3.2rem; align-items: center; gap: .45rem; min-height: 2.7rem; padding: .25rem 0 .25rem .45rem; border: 0; border-bottom: 3px solid #17191a; background: rgba(255,255,255,.16); color: #111415; text-align: left; }
+.hrpg .skill-card-rows button:hover { background: rgba(49,95,104,.16); }
+.hrpg .skill-card-rows span { min-width: 0; overflow: hidden; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
+.hrpg .skill-card-rows em { color: #5f3d25; font-size: .72rem; font-style: normal; text-transform: uppercase; }
+.hrpg .skill-card-rows strong { display: inline-grid; place-items: center; min-width: 2.4rem; min-height: 2.4rem; justify-self: end; border: 2px solid #9bb7c8; background: rgba(236,245,249,.92); color: #000; font-size: 1.2rem; }
+.hrpg .skill-empty-row { opacity: .55; }
 .hrpg .trait-row { flex-wrap: wrap; }
 .hrpg .trait-quality { display: inline-flex; align-items: center; gap: .25rem; margin-left: auto; color: #2f3330; font-size: .8rem; font-weight: 700; cursor: default; }
 .hrpg .trait-quality input { width: 3rem; text-align: center; }
@@ -240,14 +268,17 @@
 .hrpg .item-modification-description h2, .hrpg .item-raw-text h2 { margin-bottom: .45rem; color: #17191a; font-weight: 700; }
 .hrpg .item-modification-description p, .hrpg .item-raw-text p { margin: 0; white-space: pre-line; line-height: 1.45; }
 .hrpg .technique-row { flex-wrap: wrap; }
-.hrpg .technique-effect-text, .hrpg .item-attachments, .hrpg .item-description-editor { margin: .75rem; padding: .75rem; border: 1px solid #75644e; background: rgba(235,225,202,.38); }
-.hrpg .technique-effect-text h2, .hrpg .item-attachments h2, .hrpg .item-description-editor h2 { margin-bottom: .45rem; color: #17191a; font-weight: 700; }
+.hrpg .technique-effect-text, .hrpg .item-attachments, .hrpg .item-description-editor, .hrpg .skill-editor { margin: .75rem; padding: .75rem; border: 1px solid #75644e; background: rgba(235,225,202,.38); }
+.hrpg .technique-effect-text h2, .hrpg .item-attachments h2, .hrpg .item-description-editor h2, .hrpg .skill-editor h2 { margin-bottom: .45rem; color: #17191a; font-weight: 700; }
 .hrpg .technique-effect-text textarea { width: 100%; min-height: 9rem; resize: vertical; white-space: pre-line; }
 .hrpg .item-description-editor textarea { width: 100%; min-height: 8rem; resize: vertical; white-space: pre-line; }
 .hrpg .item-attachments { display: grid; gap: .45rem; }
 .hrpg .item-attachments label { display: grid; gap: .2rem; color: #30332f; font-weight: 700; }
 .hrpg .item-attachments label span { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .35rem; }
 .hrpg .item-attachments input { min-width: 0; }
+.hrpg .skill-editor { display: grid; gap: .5rem; }
+.hrpg .skill-editor p { margin: 0 0 .25rem; color: #17191a; line-height: 1.35; }
+.hrpg .skill-editor label { display: grid; gap: .25rem; color: #17191a; font-weight: 700; }
 
 @media (max-width: 720px) {
   .hrpg .overview-grid, .hrpg .split-grid { grid-template-columns: 1fr; }

@@ -53,7 +53,7 @@
     }
   },
   "Item": {
-    "types": ["weapon", "armor", "trait", "path", "skill", "art", "spell", "charm", "gear", "consumable", "condition"],
+    "types": ["weapon", "armor", "trait", "path", "skill", "art", "spell", "charm", "gear", "consumable"],
     "templates": {
       "base": {
         "description": "",
@@ -124,7 +124,17 @@
       "sourceId": "",
       "ranks": []
     },
-    "skill": { "templates": ["base"], "rank": 1, "mastery": "" },
+    "skill": {
+      "templates": ["base"],
+      "rank": 1,
+      "mastery": "",
+      "skills": [
+        { "name": "" },
+        { "name": "" },
+        { "name": "" },
+        { "name": "" }
+      ]
+    },
     "art": {
       "templates": ["base", "rollable"],
       "prepared": false,
@@ -168,7 +178,6 @@
       "rarity": "",
       "satiety": "",
       "reusable": ""
-    },
-    "condition": { "templates": ["base"], "diceModifier": 0 }
+    }
   }
 }

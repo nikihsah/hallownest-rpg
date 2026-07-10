@@ -8,10 +8,14 @@ import { applyPathAttackOptions } from "../mechanics/path-abilities.js";
 import { effectiveItemWeight, itemDefenseBonus, itemPassiveEffects, itemPromptEffects } from "../mechanics/item-effects.js";
 import { applyTraitConditionalOptions, traitConditionalOptions, traitPromptEffects } from "../mechanics/trait-effects.js";
 import { selectedItemModificationEffects } from "../data/item-modifications.js";
+import { fluidVialHungerModifier } from "../data/vial-effects.js";
 import { isTechniqueType } from "../data/technique-catalog.js";
 import { selectedTechniqueCost, techniqueNotesFromIds, techniqueSummary, techniqueSynergyNotes } from "../mechanics/techniques.js";
 import { classifyWeaponLike, weaponHasType } from "../mechanics/weapon-classifier.js";
 import { expectedDamage } from "../mechanics/damage.js";
+import { activeEffectDiceModifier, setHrpgStatusEffect } from "../mechanics/active-effects.js";
+import { skillTotal } from "../mechanics/skills.js";
+import { flaskAttackContext, flaskEffectText, flaskUses, isFlaskItem, spendFlaskUseUpdate } from "../mechanics/flasks.js";
 
 export class HallownestActor extends Actor {
   prepareDerivedData() {
@@ -23,6 +27,7 @@ export class HallownestActor extends Actor {
     const modifiers = Object.fromEntries(modifierKeys.map((key) => [key, 0]));
     for (const trait of this.items.filter((item) => item.type === "trait" && item.system.active !== false)) {
       for (const key of modifierKeys) modifiers[key] += Number(trait.system.modifiers?.[key]) || 0;
+      modifiers.hunger += fluidVialHungerModifier(trait);
     }
     const itemEffects = itemPassiveEffects(this.items);
     for (const key of modifierKeys) modifiers[key] += Number(itemEffects.modifiers?.[key]) || 0;
@@ -77,9 +82,7 @@ export class HallownestActor extends Actor {
 
   rollAttribute(attributeKey) {
     const value = Number(this.system.effective?.attributes?.[attributeKey]?.value) || 0;
-    const modifier = this.items
-      .filter((item) => item.type === "condition")
-      .reduce((total, item) => total + (Number(item.system.diceModifier) || 0), 0);
+    const modifier = activeEffectDiceModifier(this, "attribute");
 
     return rollDicePool({
       actor: this,
@@ -99,6 +102,17 @@ export class HallownestActor extends Actor {
       - speedPenalty
     );
     return rollDicePool({ actor: this, dice: Math.floor(value), label: game.i18n.localize(labels[secondaryKey]) });
+  }
+
+  rollSkill(skillName) {
+    const entry = skillTotal(this.items, skillName);
+    const value = Number(entry?.total) || 0;
+    const modifier = activeEffectDiceModifier(this, "skill");
+    return rollDicePool({
+      actor: this,
+      dice: value + modifier,
+      label: game.i18n.format("HRPG.SkillRoll", { skill: entry?.name ?? skillName })
+    });
   }
 
   async spendCombatStamina(cost = 0) {
@@ -140,7 +154,8 @@ export class HallownestActor extends Actor {
   async addImbalance(amount = 1) {
     const current = Number(this.system.combat?.imbalance) || 0;
     const next = Math.min(3, Math.max(0, current + Math.floor(Number(amount) || 0)));
-    await this.update({ "system.combat.imbalance": next });
+    await this.update({ "system.combat.imbalance": next }, { hrpgSkipImbalanceSync: true });
+    await setHrpgStatusEffect(this, "imbalance", next);
     return next;
   }
 
@@ -188,6 +203,41 @@ export class HallownestActor extends Actor {
       speaker: ChatMessage.getSpeaker({ actor: this }),
       flavor: `<strong>${foundry.utils.escapeHTML(game.i18n.format("HRPG.TechniqueUsed", { name: item.name }))}</strong>`,
       content: `<div class="hrpg-chat-notes">${notes.map((note) => `<p>${foundry.utils.escapeHTML(note)}</p>`).join("")}</div>`
+    });
+  }
+
+  async rollFlask(itemId, { attribute = "grace", investedStamina = 0, pathOptions = [], note = "" } = {}) {
+    const item = this.items.get(itemId);
+    if (!item || !isFlaskItem(item)) return null;
+    const uses = flaskUses(item);
+    if (uses.value <= 0) {
+      ui.notifications.warn(game.i18n.format("HRPG.FlaskNoUses", { name: item.name }));
+      return null;
+    }
+
+    const attackOptions = applyPathAttackOptions({ attribute, successThreshold: 5 }, pathOptions);
+    const stamina = await this.spendAttackStamina({ invested: investedStamina, taxAsDice: attackOptions.taxAsDice });
+    await item.update(spendFlaskUseUpdate(item));
+
+    const attributeKey = attackOptions.attribute || attribute || "grace";
+    const value = Number(this.system.effective?.attributes?.[attributeKey]?.value) || 0;
+    const effect = flaskEffectText(item);
+    return rollDicePool({
+      actor: this,
+      dice: Math.floor(value) + stamina.dice + attackOptions.bonusDice,
+      reroll: value % 1 >= 0.5,
+      successThreshold: attackOptions.successThreshold,
+      label: game.i18n.format("HRPG.FlaskThrowRoll", { name: item.name }),
+      notes: [
+        game.i18n.format("HRPG.AttackStaminaSpent", { base: stamina.base, invested: stamina.invested, tax: stamina.tax, total: stamina.totalCost }),
+        game.i18n.format("HRPG.AttackAttributeUsed", { attribute: game.i18n.localize(CONFIG.HRPG.attributes[attributeKey] ?? attributeKey) }),
+        game.i18n.format("HRPG.FlaskUseSpent", { remaining: Math.max(0, uses.value - 1), max: uses.max }),
+        effect ? game.i18n.format("HRPG.FlaskEffectLine", { effect }) : "",
+        ...itemPromptNotes(this.items, ["attack"], { itemId, attack: flaskAttackContext(item) }),
+        ...traitPromptNotes(this.items, ["attack"], { itemId, attack: flaskAttackContext(item) }),
+        ...attackOptions.notes,
+        note ? String(note) : ""
+      ].filter(Boolean)
     });
   }
 
@@ -357,13 +407,13 @@ export class HallownestActor extends Actor {
     const baseAttack = baseAttackConfig(this, item);
     const attackOptions = applyPathAttackOptions({ attribute: baseAttack.attribute, successThreshold: 5 }, pathOptions);
     const traitAdjustment = applyTraitConditionalOptions(traitConditionalOptions(this, "attack", { itemId }), traitOptions);
-    const modificationEffects = item.type === "weapon" ? selectedItemModificationEffects(item) : null;
+    const modificationEffects = selectedItemModificationEffects(item);
     const techniqueCost = selectedTechniqueCost(this, techniqueOptions, "attack", { itemId });
     const stamina = await this.spendAttackStamina({ invested: investedStamina, taxAsDice: attackOptions.taxAsDice });
     await this.spendTechniqueResources(techniqueCost);
     const attributeKey = attackOptions.attribute;
     const value = Number(this.system.effective?.attributes?.[attributeKey]?.value) || 0;
-    const quality = item.type === "weapon" ? weaponQualityValue(item) : Math.max(0, Math.floor(naturalWeaponQualityValue(item)));
+    const quality = item.type === "weapon" ? weaponQualityValue(item) : naturalWeaponAttackQualityValue(item, modificationEffects);
     const damage = quickAttacksFromItems(this.items).find((attack) => attack.itemId === itemId)?.damage ?? "";
     const label = game.i18n.format("HRPG.TraitAttackRoll", {
       name: item.name,
@@ -436,6 +486,10 @@ function hasPath(actor, sourceId, minimumRank = 1) {
 
 function weaponQualityValue(item) {
   return Math.max(0, Math.floor((Number(item.system?.quality?.value ?? 1) || 0) + (Number(selectedItemModificationEffects(item).qualityBonus) || 0)));
+}
+
+function naturalWeaponAttackQualityValue(item, modificationEffects = null) {
+  return Math.max(0, Math.floor(naturalWeaponQualityValue(item) + (Number(modificationEffects?.qualityBonus) || 0)));
 }
 
 function modificationNotes(effects) {

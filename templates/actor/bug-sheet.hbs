@@ -176,7 +176,31 @@
       </div>
 
       <div class="tab skills" data-group="primary" data-tab="skills">
-        <section class="panel collection-panel"><div class="panel-heading"><h2>{{localize "HRPG.Skills"}}</h2><button type="button" data-action="create-item" data-type="skill">+</button></div>{{#each itemsByType.skill as |item|}}<div class="item-row line-item" data-open-item-id="{{item.id}}" role="button" tabindex="0"><img src="{{item.img}}"><span>{{item.name}}</span><b>{{item.system.rank}}</b></div>{{else}}<p class="empty-state">{{localize "HRPG.NoSkills"}}</p>{{/each}}</section>
+        <section class="panel collection-panel skill-list-panel">
+          <div class="panel-heading"><h2>{{localize "HRPG.Skills"}}</h2><button type="button" data-action="create-item" data-type="skill">+</button></div>
+          {{#each skillItemRows as |skill|}}
+            <article class="skill-card">
+              <header data-open-item-id="{{skill.id}}" role="button" tabindex="0">
+                <img src="{{skill.img}}">
+                <strong>{{skill.name}}</strong>
+                <label>{{localize "HRPG.Rank"}} <b>{{skill.rank}}</b></label>
+                <button class="item-delete" type="button" data-action="delete-item" data-item-id="{{skill.id}}" data-tooltip="{{localize 'HRPG.DeleteItem'}}">&times;</button>
+              </header>
+              <div class="skill-card-rows">
+                {{#each skill.rows as |row|}}
+                  {{#if row.name}}
+                    <button type="button" data-action="roll-skill" data-skill-name="{{row.name}}" data-tooltip="{{row.breakdown}}" data-tooltip-direction="UP">
+                      <span>{{row.name}}{{#if row.mastered}} <em>{{localize "HRPG.MasteryShort"}}</em>{{/if}}</span>
+                      <strong>{{row.total}}</strong>
+                    </button>
+                  {{else}}
+                    <div class="skill-empty-row"><span>{{localize "HRPG.SkillEmptySlot"}}</span><strong>0</strong></div>
+                  {{/if}}
+                {{/each}}
+              </div>
+            </article>
+          {{else}}<p class="empty-state">{{localize "HRPG.NoSkills"}}</p>{{/each}}
+        </section>
       </div>
 
       <div class="tab inventory" data-group="primary" data-tab="inventory">
