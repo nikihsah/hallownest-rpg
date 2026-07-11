@@ -24,6 +24,13 @@
               {{#if trait.socialChoice.length}}
                 <label>{{localize "HRPG.SocialBonus"}}<select data-social-choice><option value="dread">{{localize "HRPG.Dread"}}</option><option value="appeal">{{localize "HRPG.Appeal"}}</option></select></label>
               {{/if}}
+              {{#if trait.hungerChoices.length}}
+                <label>{{localize "HRPG.TraitHungerChoice"}}
+                  <select data-hunger-choice>
+                    {{#each trait.hungerChoices as |choice|}}<option value="{{choice.key}}">{{choice.label}}</option>{{/each}}
+                  </select>
+                </label>
+              {{/if}}
               <button type="button" data-action="add-trait" {{#if trait.owned}}disabled{{/if}} {{#if trait.parentMissing}}disabled{{/if}}>
                 {{#if trait.owned}}{{localize "HRPG.TraitOwned"}}{{else}}{{#if trait.parentMissing}}{{localize "HRPG.TraitParentRequired"}}{{else}}{{localize "HRPG.AddTrait"}}{{/if}}{{/if}}
               </button>

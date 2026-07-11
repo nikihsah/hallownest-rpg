@@ -332,8 +332,9 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     context.itemsByType = Object.groupBy(this.actor.items, (item) => item.type);
     const adjustments = system.adjustments ?? {};
     const ordinaryTraits = (context.itemsByType.trait ?? []).filter((item) => item.system?.kind !== "subtrait");
+    const ordinaryTraitKeys = new Set(ordinaryTraits.map((item) => item.system?.sourceId || item.id));
     context.traitCounter = {
-      current: ordinaryTraits.length,
+      current: ordinaryTraitKeys.size,
       max: Number(system.traits?.max) || 0
     };
     context.traitRows = (context.itemsByType.trait ?? []).map((trait) => ({

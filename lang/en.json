@@ -114,6 +114,7 @@
   "HRPG.DamageAbsorptionDescription": "Absorption is rolled after the attack hits and expected damage is known.\nEach Shell success reduces damage by 1. Some damage types or flask effects can bypass Absorption; in that case, follow the item, trait, or technique text.",
   "HRPG.DefenseRoll": "{action} ({attribute})",
   "HRPG.SocialBonus": "Appeal or Dread Bonus",
+  "HRPG.TraitHungerChoice": "Resource choice",
   "HRPG.Marks": "Marks",
   "HRPG.Load": "Load",
   "HRPG.CarriedWeight": "Carried Weight",

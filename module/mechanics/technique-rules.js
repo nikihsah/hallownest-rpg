@@ -82,6 +82,7 @@ const SPELL_RULES = Object.freeze({
   "magic.nightmares.roy": rule(["attack"], ["swarm"]),
   "magic.bloom.amrita": rule(["utility"], ["heal"]),
   "magic.bloom.dar-tsveteniya": rule(["utility"], ["buff"]),
+  "magic.bloom.druzhochok-butonchik": rule(["defense", "utility"], ["summon", "plant", "guard"]),
   "magic.bloom.spokoystvie": rule(["defense", "utility"], ["calm"]),
   "magic.bloom.zaryad": rule(["attack", "utility"], ["charge"]),
   "magic.bloom.zaputyvanie": rule(["attack", "utility"], ["control"]),

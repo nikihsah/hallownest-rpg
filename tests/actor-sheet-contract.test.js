@@ -279,6 +279,8 @@ test("actor traits tab tracks trait limit and natural weapon quality", async () 
   assert.match(template, /data-trait-quality="\{\{trait\.id\}\}"/);
   assert.match(template, /data-trait-quality-max="\{\{trait\.id\}\}"/);
   assert.match(sheet, /ordinaryTraits = \(context\.itemsByType\.trait \?\? \[\]\)\.filter/);
+  assert.match(sheet, /ordinaryTraitKeys = new Set/);
+  assert.match(sheet, /current: ordinaryTraitKeys\.size/);
   assert.match(sheet, /kind !== "subtrait"/);
   assert.match(sheet, /isNaturalWeaponTrait\(trait\)/);
   assert.match(sheet, /data-trait-quality/);

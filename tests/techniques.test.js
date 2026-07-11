@@ -44,11 +44,21 @@ test("HK-Kit technique catalog contains combat arts and mysteries", async () => 
   const techniques = JSON.parse(await readFile(catalogUrl, "utf8"));
   const counts = Object.groupBy(techniques, (item) => item.type);
 
-  assert.equal(techniques.length, 99);
+  assert.equal(techniques.length, 100);
   assert.equal(counts.art.length, 48);
-  assert.equal(counts.spell.length, 51);
+  assert.equal(counts.spell.length, 52);
   assert.equal(new Set(techniques.map((item) => item.sourceId)).size, techniques.length);
   assert.ok(techniques.every((item) => item.description && item.rawText && item.effectText));
+});
+
+test("bloom catalog includes Bud Buddy mystery", async () => {
+  const techniques = JSON.parse(await readFile(catalogUrl, "utf8"));
+  const budBuddy = techniques.find((item) => item.sourceId === "magic.bloom.druzhochok-butonchik");
+
+  assert.equal(budBuddy.name, "Дружочек-Бутончик");
+  assert.equal(budBuddy.pathId, "paths.bloom");
+  assert.equal(budBuddy.cost.difficulty, 2);
+  assert.deepEqual(techniqueRuleTriggers(budBuddy), ["defense", "utility"]);
 });
 
 test("every catalog technique has an explicit structured combat rule", async () => {

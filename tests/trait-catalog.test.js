@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { groupTraits, repeatLimitForTrait, traitItemData } from "../module/data/trait-catalog.js";
+import { expandedTraitCatalog, groupTraits, repeatLimitForTrait, traitItemData } from "../module/data/trait-catalog.js";
 
 const catalogUrl = new URL("../data/traits.json", import.meta.url);
 
@@ -29,6 +29,12 @@ test("trait costs become automatic hunger and social modifiers", async () => {
   assert.equal(traitItemData(secretions, { social: "appeal" }).system.modifiers.appeal, 0.5);
   assert.equal(traitItemData(secretions, { social: "appeal" }).system.modifiers.dread, 0);
   assert.deepEqual(traitItemData(secretions, { social: "appeal" }).system.quality, { value: 0, max: 0 });
+
+  const eater = traits.find((trait) => trait.sourceId === "traits.pozhiratel");
+  assert.equal(traitItemData(eater).system.modifiers.hunger, 4);
+  assert.equal(traitItemData(eater, { hungerChoice: "soul" }).system.modifiers.hunger, 2);
+  assert.equal(traitItemData(eater, { hungerChoice: "stamina" }).system.modifiers.hunger, 1);
+  assert.equal(traitItemData(eater, { hungerChoice: "stamina" }).system.costLabel, "+1 Голод (Выносливость)");
 });
 
 test("subtraits are locked until their parent is owned", async () => {
@@ -38,6 +44,23 @@ test("subtraits are locked until their parent is owned", async () => {
   assert.equal(hugeJaws.parentMissing, true);
   const ownedGroups = groupTraits(traits, new Set([hugeJaws.parentTrait]));
   assert.equal(ownedGroups.flatMap((group) => group.traits).find((trait) => trait.sourceId === hugeJaws.sourceId).parentMissing, false);
+});
+
+test("bloodsucker can be added as a subtrait to jaws or proboscis", async () => {
+  const traits = expandedTraitCatalog(JSON.parse(await readFile(catalogUrl, "utf8")));
+  const bloodsuckerJaws = traits.find((trait) => trait.sourceId === "traits.krovosos.drobyashchie-chelyusti");
+  const bloodsuckerProboscis = traits.find((trait) => trait.sourceId === "traits.krovosos.sharp-khobotok");
+
+  assert.equal(bloodsuckerJaws.kind, "subtrait");
+  assert.equal(bloodsuckerJaws.parentTrait, "traits.drobyashchie-chelyusti");
+  assert.equal(bloodsuckerProboscis.kind, "subtrait");
+  assert.equal(bloodsuckerProboscis.parentTrait, "traits.sharp-khobotok");
+
+  const parentChoices = new Map([[bloodsuckerJaws.parentTrait, [{ id: "jaws-a", label: "Дробящие Челюсти" }]]]);
+  const entry = groupTraits([bloodsuckerJaws], new Set([bloodsuckerJaws.parentTrait]), new Map(), parentChoices)
+    .flatMap((group) => group.traits)[0];
+  assert.equal(entry.parentMissing, false);
+  assert.deepEqual(entry.parentChoices, parentChoices.get(bloodsuckerJaws.parentTrait));
 });
 
 test("repeatable traits remain available until their limit", async () => {
@@ -67,6 +90,8 @@ test("trait catalog action respects repeat limits and small-only traits", async 
   assert.match(source, /trait\.sourceId === "traits\.krokha"/);
   assert.match(source, /system\.secondary\?\.size !== "small"/);
   assert.match(source, /HRPG\.TraitRequiresSmallSize/);
+  assert.match(source, /data-hunger-choice/);
+  assert.match(source, /hungerChoice/);
 });
 
 test("repeatable parent subtraits stay available per parent instance", async () => {
@@ -121,6 +146,7 @@ test("trait catalog template renders as one V2 application root element", async 
   const template = await readFile(new URL("../templates/applications/trait-catalog.hbs", import.meta.url), "utf8");
   assert.match(template.trimStart(), /^<div class="trait-catalog-root">/);
   assert.match(template, /data-parent-choice/);
+  assert.match(template, /data-hunger-choice/);
 });
 
 test("trait catalog keeps names readable and long costs inside cards", async () => {

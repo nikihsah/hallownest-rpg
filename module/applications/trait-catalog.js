@@ -27,7 +27,8 @@ async function addTraitAction(_event, target) {
     return ui.notifications.warn(game.i18n.localize("HRPG.TraitAlreadyAdded"));
   }
   const social = card.querySelector("[data-social-choice]")?.value ?? "";
-  await this.actor.createEmbeddedDocuments("Item", [traitItemData(trait, { social, parentItemId })]);
+  const hungerChoice = card.querySelector("[data-hunger-choice]")?.value ?? "";
+  await this.actor.createEmbeddedDocuments("Item", [traitItemData(trait, { social, parentItemId, hungerChoice })]);
   ui.notifications.info(game.i18n.format("HRPG.TraitAdded", { name: trait.name }));
   await this.render({ force: true });
 }

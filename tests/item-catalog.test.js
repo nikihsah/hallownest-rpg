@@ -17,6 +17,10 @@ test("item catalog imports HK-Kit equipment and charms by game-facing type", asy
   assert.equal(counts.gear.length, 35);
   assert.equal(counts.consumable.length, 75);
   assert.equal(new Set(items.map((item) => item.sourceId)).size, items.length);
+
+  const lightArmor = items.find((item) => item.sourceId === "equipment.armor.legkaya-bronya");
+  assert.equal(lightArmor.name, "Легкая броня");
+  assert.equal(items.some((item) => /Броня Максимальная Прочность/.test(item.name)), false);
 });
 
 test("catalog item data preserves equipment fields for Foundry Items", async () => {

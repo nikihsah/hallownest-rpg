@@ -37,7 +37,7 @@ test("charm resource passives expose temporary and custom resource bonuses", () 
 
 test("armor effects expose absorption and defense penalties", () => {
   const effects = itemPassiveEffects([
-    item("equipment.armor.bronya-bronya-maksimalnaya-prochnost-ponizhenie-urona-ves-tsena-legkaya-bronya-5", { type: "armor", weight: 1 }),
+    item("equipment.armor.legkaya-bronya", { type: "armor", weight: 1 }),
     item("equipment.armor.tyazhelaya-bronya", { type: "armor", weight: 3 })
   ]);
 

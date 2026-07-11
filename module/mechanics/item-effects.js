@@ -21,7 +21,7 @@ const PASSIVE_EFFECTS = {
     modifiers: { appeal: 0.5 },
     note: "Привлекательность +0.5."
   },
-  "equipment.armor.bronya-bronya-maksimalnaya-prochnost-ponizhenie-urona-ves-tsena-legkaya-bronya-5": {
+  "equipment.armor.legkaya-bronya": {
     absorptionBonus: 1,
     absorptionRerolls: 1,
     note: "Впитывание +1; +1 повторный бросок Впитывания."

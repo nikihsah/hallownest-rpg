@@ -1,8 +1,8 @@
 [
   {
-    "sourceId": "equipment.armor.bronya-bronya-maksimalnaya-prochnost-ponizhenie-urona-ves-tsena-legkaya-bronya-5",
+    "sourceId": "equipment.armor.legkaya-bronya",
     "type": "armor",
-    "name": "Броня Броня Максимальная Прочность Понижение урона Вес Цена Легкая броня 5",
+    "name": "Легкая броня",
     "category": "armor",
     "subtype": "armor",
     "description": "+1 к Впитыванию, +1 повторный бросок на проверках Впитывания.",
