@@ -154,21 +154,21 @@ async function updateSkillItemName(event) {
   event.stopImmediatePropagation();
   const item = this.actor.items.get(event.currentTarget.dataset.skillItemName);
   if (!item || item.type !== "skill") return;
-  await item.update({ name: String(event.currentTarget.value || "").trim() || game.i18n.localize("HRPG.ItemSkill") });
+  await updateEmbeddedItem(this.actor, item.id, { name: String(event.currentTarget.value || "").trim() || game.i18n.localize("HRPG.ItemSkill") });
 }
 
 async function updateSkillRank(event) {
   event.stopImmediatePropagation();
   const item = this.actor.items.get(event.currentTarget.dataset.skillRank);
   if (!item || item.type !== "skill") return;
-  await item.update({ "system.rank": Math.max(1, Math.min(3, Math.floor(Number(event.currentTarget.value) || 1))) });
+  await updateEmbeddedItem(this.actor, item.id, { "system.rank": Math.max(1, Math.min(3, Math.floor(Number(event.currentTarget.value) || 1))) });
 }
 
 async function updateSkillMastery(event) {
   event.stopImmediatePropagation();
   const item = this.actor.items.get(event.currentTarget.dataset.skillMastery);
   if (!item || item.type !== "skill") return;
-  await item.update({ "system.mastery": String(event.currentTarget.value || "") });
+  await updateEmbeddedItem(this.actor, item.id, { "system.mastery": String(event.currentTarget.value || "") });
 }
 
 async function updateSkillSlot(event) {
@@ -187,7 +187,11 @@ function queueSkillSlotUpdate(event) {
 async function saveSkillSlotInput(sheet, input) {
   const item = sheet.actor.items.get(input.dataset.skillSlot);
   if (!item || item.type !== "skill") return;
-  await item.update(skillSlotUpdateData(item, input.dataset.skillSlotIndex, input.value));
+  await updateEmbeddedItem(sheet.actor, item.id, skillSlotUpdateData(item, input.dataset.skillSlotIndex, input.value));
+}
+
+async function updateEmbeddedItem(actor, itemId, data) {
+  await actor.updateEmbeddedDocuments("Item", [{ _id: itemId, ...data }]);
 }
 
 function milestoneChanged(event) {
@@ -272,6 +276,28 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
   static PARTS = {
     form: { template: "systems/hallownest-rpg/templates/actor/bug-sheet.hbs", root: true }
   };
+
+  _processFormData(event, form, formData) {
+    const expanded = foundry.utils.expandObject(formData.object);
+    const itemUpdates = inlineSkillItemUpdates(this.actor, expanded.items);
+    if (itemUpdates.length) {
+      this._pendingInlineItemUpdates = itemUpdates;
+      delete expanded.items;
+      const actorData = foundry.utils.flattenObject(expanded);
+      for (const key of Object.keys(formData.object)) delete formData.object[key];
+      Object.assign(formData.object, actorData);
+    }
+    return super._processFormData(event, form, formData);
+  }
+
+  async _processSubmitData(event, form, formData) {
+    const result = await super._processSubmitData(event, form, formData);
+    if (this._pendingInlineItemUpdates?.length) {
+      await this.actor.updateEmbeddedDocuments("Item", this._pendingInlineItemUpdates);
+      delete this._pendingInlineItemUpdates;
+    }
+    return result;
+  }
 
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
@@ -622,6 +648,31 @@ function techniqueRow(item) {
     ].filter(Boolean).join(", "),
     meta: [item.system?.pathName, item.system?.techniqueType, item.system?.requirementLabel].filter(Boolean).join(" · ")
   };
+}
+
+function inlineSkillItemUpdates(actor, itemsData = {}) {
+  return Object.entries(itemsData ?? {})
+    .map(([id, data]) => {
+      const item = actor.items.get(id);
+      if (!item || item.type !== "skill") return null;
+      const system = data.system ?? {};
+      const update = { _id: id };
+      if ("name" in data) update.name = String(data.name || "").trim() || item.name;
+      if ("rank" in system) update["system.rank"] = Math.max(1, Math.min(3, Math.floor(Number(system.rank) || 1)));
+      if ("mastery" in system) update["system.mastery"] = String(system.mastery || "");
+      if (system.skills) update["system.skills"] = skillRowsFromFormData(item, system.skills);
+      return update;
+    })
+    .filter(Boolean);
+}
+
+function skillRowsFromFormData(item, skillsData) {
+  const rows = skillRowsForItem(item).map((row) => ({ name: String(row.name ?? "") }));
+  for (const [index, row] of Object.entries(skillsData ?? {})) {
+    const slot = Math.max(0, Math.min(3, Math.floor(Number(index) || 0)));
+    rows[slot] = { name: String(row?.name ?? "").trim() };
+  }
+  return rows;
 }
 
 function activeHrpgStatuses(actor) {

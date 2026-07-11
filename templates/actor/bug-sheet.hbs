@@ -202,15 +202,15 @@
               <header data-open-item-id="{{skill.id}}" role="button" tabindex="0">
                 <img src="{{skill.img}}">
                 <label class="skill-title-field">{{localize "HRPG.ItemSkill"}}
-                  <input type="text" data-skill-item-name="{{skill.id}}" value="{{skill.name}}" placeholder="{{localize 'HRPG.ItemSkill'}}">
+                  <input type="text" name="items.{{skill.id}}.name" data-skill-item-name="{{skill.id}}" value="{{skill.name}}" placeholder="{{localize 'HRPG.ItemSkill'}}">
                 </label>
                 <label>{{localize "HRPG.Rank"}}
-                  <select data-skill-rank="{{skill.id}}">
+                  <select name="items.{{skill.id}}.system.rank" data-skill-rank="{{skill.id}}">
                     {{#each skill.rankOptions as |option|}}<option value="{{option.value}}" {{#if option.selected}}selected{{/if}}>{{option.label}}</option>{{/each}}
                   </select>
                 </label>
                 <label>{{localize "HRPG.Mastery"}}
-                  <select data-skill-mastery="{{skill.id}}">
+                  <select name="items.{{skill.id}}.system.mastery" data-skill-mastery="{{skill.id}}">
                     {{#each skill.masteryOptions as |option|}}<option value="{{option.value}}" {{#if option.selected}}selected{{/if}}>{{option.label}}</option>{{/each}}
                   </select>
                 </label>
@@ -219,7 +219,7 @@
               <div class="skill-card-rows">
                 {{#each skill.rows as |row|}}
                   <div class="skill-edit-row">
-                    <input type="text" data-skill-slot="{{../skill.id}}" data-skill-slot-index="{{row.key}}" value="{{row.name}}" placeholder="{{localize 'HRPG.SkillNameHint'}}">
+                    <input type="text" name="items.{{../id}}.system.skills.{{row.key}}.name" data-skill-slot="{{../id}}" data-skill-slot-index="{{row.key}}" value="{{row.name}}" placeholder="{{localize 'HRPG.SkillNameHint'}}">
                     <button type="button" data-action="roll-skill" data-skill-name="{{row.name}}" data-tooltip="{{row.breakdown}}" data-tooltip-direction="UP" {{#unless row.name}}disabled{{/unless}}>
                       {{localize "HRPG.Roll"}}
                     </button>
