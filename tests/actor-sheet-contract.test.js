@@ -538,9 +538,12 @@ test("long item and catalog descriptions scroll inside their panels", async () =
   assert.match(styles, /\.application:has\(\.hrpg-attack-dialog\)[^}]*resize: both/s);
   assert.match(styles, /\.dialog:has\(\.hrpg-attack-dialog\)/);
   assert.match(styles, /\.window-app:has\(\.hrpg-attack-dialog\)/);
-  assert.match(styles, /\.application:has\(\.hrpg-attack-dialog\) \.window-content[^}]*overflow: hidden/s);
+  assert.match(styles, /\.application:has\(\.hrpg-attack-dialog\) \.window-content[^}]*max-height: calc\(100vh - 4rem\)/s);
+  assert.match(styles, /\.application:has\(\.hrpg-attack-dialog\) \.window-content[^}]*overflow-y: scroll !important/s);
+  assert.match(styles, /\.application:has\(\.hrpg-attack-dialog\) \.window-content[^}]*overscroll-behavior: contain/s);
   assert.match(styles, /\.application:has\(\.hrpg-attack-dialog\) \.dialog-content[^}]*display: flex/s);
   assert.match(styles, /\.application:has\(\.hrpg-attack-dialog\) \.dialog-content[^}]*flex: 1 1 auto/s);
+  assert.match(styles, /\.application:has\(\.hrpg-attack-dialog\) \.dialog-content[^}]*overflow-y: visible/s);
   assert.match(styles, /\.application:has\(\.hrpg-attack-dialog\) \.dialog-buttons[^}]*flex: 0 0 auto/s);
   assert.match(styles, /\.application:has\(\.hrpg-attack-dialog\) \.dialog-buttons[^}]*position: sticky/s);
   assert.match(styles, /\.hrpg-attack-dialog \{[^}]*height: min\(32rem, calc\(100vh - 12rem\)\)/s);
