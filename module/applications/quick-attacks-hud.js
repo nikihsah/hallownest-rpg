@@ -7,6 +7,7 @@ import { skillBreakdown, skillTotals } from "../mechanics/skills.js";
 import { equippedFlasks, flaskAttackContext } from "../mechanics/flasks.js";
 
 const HUD_ID = "hrpg-quick-attacks-hud";
+const SCROLL_DIALOG_FORM_STYLE = "height:100%; max-height:calc(86vh - 7rem); overflow-y:auto; overscroll-behavior:contain;";
 
 export function registerQuickAttacksHud() {
   Hooks.on("controlToken", refreshQuickAttacksHud);
@@ -49,6 +50,18 @@ function selectedBugActor() {
   if (controlled.length !== 1) return null;
   const actor = controlled[0]?.actor;
   return ["bug", "gmBug"].includes(actor?.type) ? actor : null;
+}
+
+function scrollDialogWindow(title) {
+  return { title, resizable: true };
+}
+
+function scrollDialogPosition() {
+  const viewportHeight = Number(globalThis.window?.innerHeight) || 900;
+  return {
+    width: 640,
+    height: Math.min(Math.floor(viewportHeight * 0.86), 780)
+  };
 }
 
 function createHud() {
@@ -187,9 +200,10 @@ async function promptFlaskThrowOptions(actor, flask) {
       <small>${foundry.utils.escapeHTML(option.note)}</small>
     </label>`).join("");
   return DialogV2.prompt({
-    window: { title: game.i18n.format("HRPG.FlaskThrowDialogTitle", { name: flask.name }) },
+    window: scrollDialogWindow(game.i18n.format("HRPG.FlaskThrowDialogTitle", { name: flask.name })),
+    position: scrollDialogPosition(),
     content: `
-      <form id="${id}" class="hrpg-attack-dialog" style="max-height:60vh; overflow-y:auto; overscroll-behavior:contain;">
+      <form id="${id}" class="hrpg-attack-dialog" style="${SCROLL_DIALOG_FORM_STYLE}">
         <p>${foundry.utils.escapeHTML(flask.effect || game.i18n.localize("HRPG.NoDescription"))}</p>
         <label>${game.i18n.localize("HRPG.ActionAttribute")}
           <select name="attribute">${attributes.map((option) => `<option value="${option.key}">${foundry.utils.escapeHTML(game.i18n.localize(option.label))}</option>`).join("")}</select>
@@ -229,9 +243,10 @@ async function promptTechniqueUseOptions(technique) {
   }
   const id = `hrpg-technique-${technique.id}-${foundry.utils.randomID()}`;
   return DialogV2.prompt({
-    window: { title: technique.name },
+    window: scrollDialogWindow(technique.name),
+    position: scrollDialogPosition(),
     content: `
-      <form id="${id}" class="hrpg-attack-dialog" style="max-height:60vh; overflow-y:auto; overscroll-behavior:contain;">
+      <form id="${id}" class="hrpg-attack-dialog" style="${SCROLL_DIALOG_FORM_STYLE}">
         <p>${foundry.utils.escapeHTML(rawCost)}</p>
         <label>${game.i18n.localize("HRPG.VariableStamina")}
           <input type="number" name="stamina" value="0" min="0" step="1">
@@ -267,9 +282,10 @@ async function promptAttackOptions(actor, attack) {
       <small>${foundry.utils.escapeHTML(option.note)}</small>
     </label>`).join("");
   return DialogV2.prompt({
-    window: { title: game.i18n.format("HRPG.AttackDialogTitle", { name: attack.name }) },
+    window: scrollDialogWindow(game.i18n.format("HRPG.AttackDialogTitle", { name: attack.name })),
+    position: scrollDialogPosition(),
     content: `
-      <form id="${id}" class="hrpg-attack-dialog" style="max-height:60vh; overflow-y:auto; overscroll-behavior:contain;">
+      <form id="${id}" class="hrpg-attack-dialog" style="${SCROLL_DIALOG_FORM_STYLE}">
         <label>${game.i18n.localize("HRPG.InvestedStamina")}
           <input type="number" name="investedStamina" value="0" min="0" step="1">
         </label>
@@ -420,9 +436,10 @@ async function promptCombatActionOptions(action) {
     soulCost: action.soul ? Number(window.prompt(game.i18n.localize("HRPG.ResourceSoul"), "1")) || 1 : 0
   };
   return DialogV2.prompt({
-    window: { title: game.i18n.localize(action.label) },
+    window: scrollDialogWindow(game.i18n.localize(action.label)),
+    position: scrollDialogPosition(),
     content: `
-      <form id="${id}" class="hrpg-defense-dialog" style="max-height:60vh; overflow-y:auto; overscroll-behavior:contain;">
+      <form id="${id}" class="hrpg-defense-dialog" style="${SCROLL_DIALOG_FORM_STYLE}">
         <p>${foundry.utils.escapeHTML(game.i18n.localize(action.hint))}</p>
         ${actionDescriptionMarkup(action)}
         ${action.damage ? damageCalculatorFields() : action.soul ? focusSoulFields() : combatActionFields(action)}
@@ -469,9 +486,10 @@ async function promptDefenseActionOptions(actor, action) {
     return { bonusDice: Number(window.prompt(game.i18n.localize("HRPG.BonusDice"), "0")) || 0, staminaCost: action.staminaCost ?? 0 };
   }
   return DialogV2.prompt({
-    window: { title: game.i18n.localize(action.label) },
+    window: scrollDialogWindow(game.i18n.localize(action.label)),
+    position: scrollDialogPosition(),
     content: `
-      <form id="${id}" class="hrpg-defense-dialog" style="max-height:60vh; overflow-y:auto; overscroll-behavior:contain;">
+      <form id="${id}" class="hrpg-defense-dialog" style="${SCROLL_DIALOG_FORM_STYLE}">
         <p>${foundry.utils.escapeHTML(game.i18n.localize(action.hint))}</p>
         ${actionDescriptionMarkup(action)}
         ${action.attributes?.length ? `<label>${game.i18n.localize("HRPG.DefenseAttribute")}
