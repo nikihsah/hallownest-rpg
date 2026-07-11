@@ -16,6 +16,7 @@
           "stamina": { "value": 3, "max": 3, "temp": 0 },
           "soul": { "value": 3, "max": 3, "temp": 0 },
           "satiety": { "value": 0, "max": 10 },
+          "geo": 0,
           "supplies": { "value": 0, "max": 0 },
           "essence": { "value": 0, "max": 0 },
           "custom1": { "label": "", "value": 0, "max": 0 },

@@ -459,6 +459,12 @@ export function itemDefenseBonus(actor, actionKey) {
   return { bonusDice: 1, notes: ["Щит-кнопка: +1 кость к парированию, потому что Грация не ниже Мощи."] };
 }
 
+export function itemAbsorptionBonus(actorOrItems) {
+  const effects = actorOrItems?.system?.effective?.itemEffects
+    ?? itemPassiveEffects(actorOrItems?.items ?? actorOrItems);
+  return Math.max(0, Math.floor(Number(effects?.absorptionBonus) || 0));
+}
+
 export function effectiveItemWeight(item, effects = null) {
   const weight = Number(item?.system?.weight) || 0;
   const modificationWeight = Number(selectedItemModificationEffects(item).weightBonus) || 0;

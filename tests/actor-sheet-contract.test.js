@@ -83,6 +83,9 @@ test("header exposes heart soul and stamina with temporary hit points", async ()
   assert.match(schema, /"heart": \{ "value": 7, "max": 7, "temp": 0 \}/);
   assert.match(schema, /"soul": \{ "value": 3, "max": 3, "temp": 0 \}/);
   assert.match(schema, /"stamina": \{ "value": 3, "max": 3, "temp": 0 \}/);
+  assert.match(schema, /"geo": 0/);
+  assert.match(header, /name="system\.resources\.geo"/);
+  assert.match(header, /HRPG\.Geo/);
   assert.match(schema, /"combat": \{ "speedSpent": 0, "attackTax": 0, "imbalance": 0 \}/);
   assert.doesNotMatch(header, /name="system\.combat\.imbalance"/);
 });
@@ -406,6 +409,7 @@ test("actor document exposes defensive action rolls", async () => {
   assert.match(actor, /rollAttributeDefense\(attributeKey, \{ label, bonusDice = 0, notes = \[\] \} = \{\}\)/);
   assert.match(actor, /Math\.floor\(value\) \+ Math\.floor\(Number\(bonusDice\) \|\| 0\)/);
   assert.match(actor, /rollAbsorption\(attributeKey = "shell", options = \{\}\)/);
+  assert.match(actor, /itemAbsorptionBonus\(this\)/);
   assert.match(actor, /itemPassiveEffects\(this\.items\)/);
   assert.match(actor, /itemDefenseBonus\(this, actionKey\)/);
   assert.match(actor, /applyTraitConditionalOptions\(traitConditionalOptions\(this, actionKey\), traitOptions\)/);

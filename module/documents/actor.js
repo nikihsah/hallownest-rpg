@@ -5,7 +5,7 @@ import { maneuverFromGrace } from "../mechanics/stat-adjustments.js";
 import { quickAttacksFromItems } from "../mechanics/trait-attacks.js";
 import { naturalWeaponQualityValue } from "../mechanics/trait-quality.js";
 import { applyPathAttackOptions } from "../mechanics/path-abilities.js";
-import { effectiveItemWeight, itemDefenseBonus, itemPassiveEffects, itemPromptEffects } from "../mechanics/item-effects.js";
+import { effectiveItemWeight, itemAbsorptionBonus, itemDefenseBonus, itemPassiveEffects, itemPromptEffects } from "../mechanics/item-effects.js";
 import { applyTraitConditionalOptions, traitConditionalOptions, traitPromptEffects } from "../mechanics/trait-effects.js";
 import { selectedItemModificationEffects } from "../data/item-modifications.js";
 import { fluidVialHungerModifier } from "../data/vial-effects.js";
@@ -332,6 +332,7 @@ export class HallownestActor extends Actor {
       });
     }
     const itemBonus = itemDefenseBonus(this, actionKey);
+    const absorptionBonus = actionKey === "absorption" ? itemAbsorptionBonus(this) : 0;
     const traitAdjustment = applyTraitConditionalOptions(traitConditionalOptions(this, actionKey), traitOptions);
     if (actionKey === "dodge" && dodgeMove) await this.addImbalance(1);
     return this.rollAttributeDefense(attributeKey, {
@@ -339,7 +340,7 @@ export class HallownestActor extends Actor {
       bonusDice: (Number(bonusDice) || 0)
         + (Number(itemBonus.bonusDice) || 0)
         + (Number(traitAdjustment.bonusDice) || 0)
-        + (actionKey === "absorption" ? Number(this.system.effective?.itemEffects?.absorptionBonus) || 0 : 0),
+        + absorptionBonus,
       notes: [
         game.i18n.format("HRPG.DefenseStaminaSpent", { cost: Math.max(0, Math.floor(Number(staminaCost) || 0)) }),
         ...itemBonus.notes,
@@ -396,7 +397,7 @@ export class HallownestActor extends Actor {
   rollAbsorption(attributeKey = "shell", options = {}) {
     return this.rollAttributeDefense(attributeKey, {
       label: game.i18n.localize("HRPG.Absorption"),
-      bonusDice: (Number(options.bonusDice) || 0) + (Number(this.system.effective?.itemEffects?.absorptionBonus) || 0),
+      bonusDice: (Number(options.bonusDice) || 0) + itemAbsorptionBonus(this),
       notes: itemEffectNotes(this.system.effective?.itemEffects, ["absorptionBonus", "absorptionRerolls"])
     });
   }

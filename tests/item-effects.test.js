@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { effectiveItemWeight, hasEquippedItem, itemDefenseBonus, itemPassiveEffects, itemPromptEffects } from "../module/mechanics/item-effects.js";
+import { effectiveItemWeight, hasEquippedItem, itemAbsorptionBonus, itemDefenseBonus, itemPassiveEffects, itemPromptEffects } from "../module/mechanics/item-effects.js";
 
 function item(sourceId, { type = "charm", equipped = true, weight = 0, id = sourceId } = {}) {
   return { id, name: sourceId, type, system: { sourceId, equipped, weight } };
@@ -45,6 +45,8 @@ test("armor effects expose absorption and defense penalties", () => {
   assert.equal(effects.absorptionRerolls, 1);
   assert.equal(effects.dashJumpDistancePenalty, 1);
   assert.equal(effects.defenseStaminaPenalty, 1);
+  assert.equal(itemAbsorptionBonus([item("equipment.armor.legkaya-bronya", { type: "armor", weight: 1 })]), 1);
+  assert.equal(itemAbsorptionBonus({ system: { effective: { itemEffects: effects } } }), 2);
 });
 
 test("weapon initiative bonuses use the best equipped weapon bonus", () => {
