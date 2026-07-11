@@ -7,7 +7,7 @@ import { skillBreakdown, skillTotals } from "../mechanics/skills.js";
 import { equippedFlasks, flaskAttackContext } from "../mechanics/flasks.js";
 
 const HUD_ID = "hrpg-quick-attacks-hud";
-const SCROLL_DIALOG_FORM_STYLE = "height:100%; max-height:calc(86vh - 7rem); overflow-y:auto; overscroll-behavior:contain;";
+const SCROLL_DIALOG_FORM_STYLE = "height:min(32rem, calc(100vh - 12rem)); max-height:min(32rem, calc(100vh - 12rem)); overflow-y:scroll; overscroll-behavior:contain;";
 
 export function registerQuickAttacksHud() {
   Hooks.on("controlToken", refreshQuickAttacksHud);
@@ -60,7 +60,7 @@ function scrollDialogPosition() {
   const viewportHeight = Number(globalThis.window?.innerHeight) || 900;
   return {
     width: 640,
-    height: Math.min(Math.floor(viewportHeight * 0.86), 780)
+    height: Math.min(Math.floor(viewportHeight * 0.76), 700)
   };
 }
 

@@ -7,6 +7,6 @@ test("Foundry manifest uses a direct GitHub codeload zip", async () => {
 
   assert.equal(manifest.manifest, "https://raw.githubusercontent.com/nikihsah/hallownest-rpg/main/system.json");
   assert.equal(manifest.download, "https://codeload.github.com/nikihsah/hallownest-rpg/zip/refs/heads/main");
-  assert.equal(manifest.version, "1.0.7");
+  assert.equal(manifest.version, "1.0.8");
   assert.doesNotMatch(manifest.download, /github\.com\/.+\/archive\/refs\/heads\/main\.zip/);
 });
