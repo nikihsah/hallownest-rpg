@@ -195,6 +195,8 @@ test("quick trait attacks are exposed through the selected-token HUD", async () 
   assert.match(hud, /HRPG\.DamageCalculator/);
   assert.match(hud, /promptCombatActionOptions\(action\)/);
   assert.match(hud, /actor\.useCombatAction\(action\.key, options\)/);
+  assert.match(hud, /class="hrpg-attack-dialog" style="max-height:60vh; overflow-y:auto; overscroll-behavior:contain;"/);
+  assert.match(hud, /class="hrpg-defense-dialog" style="max-height:60vh; overflow-y:auto; overscroll-behavior:contain;"/);
   assert.match(hud, /description: "HRPG\.FocusSoulDescription"/);
   assert.match(hud, /actionDescriptionMarkup\(action\)/);
   assert.match(hud, /HRPG\.ActionDescription/);
@@ -487,13 +489,12 @@ test("skill items expose four skill names and aggregate roll buttons", async () 
   assert.match(sheet, /updateSkillRank/);
   assert.match(sheet, /updateSkillMastery/);
   assert.match(sheet, /updateSkillSlot/);
-  assert.match(sheet, /queueSkillSlotUpdate/);
   assert.match(sheet, /updateEmbeddedItem\(sheet\.actor, item\.id, skillSlotUpdateData\(item, input\.dataset\.skillSlotIndex, input\.value\)\)/);
   assert.match(sheet, /_processFormData\(event, form, formData\)/);
   assert.match(sheet, /inlineSkillItemUpdates\(this\.actor, expanded\.items\)/);
   assert.match(sheet, /_processSubmitData\(event, form, formData\)/);
   assert.match(sheet, /updateEmbeddedDocuments\("Item", this\._pendingInlineItemUpdates\)/);
-  assert.match(sheet, /input\.addEventListener\("input", queueSkillSlotUpdate\.bind\(this\)\)/);
+  assert.doesNotMatch(sheet, /addEventListener\("input", queueSkillSlotUpdate/);
   assert.match(sheet, /input\.addEventListener\("focusout", updateSkillSlot\.bind\(this\)\)/);
   assert.match(sheet, /event\.stopImmediatePropagation\(\)/);
   assert.match(sheet, /"roll-skill": rollSkillAction/);

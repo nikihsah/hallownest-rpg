@@ -177,13 +177,6 @@ async function updateSkillSlot(event) {
   await saveSkillSlotInput(this, event.currentTarget);
 }
 
-function queueSkillSlotUpdate(event) {
-  event.stopImmediatePropagation();
-  const input = event.currentTarget;
-  clearTimeout(input._hrpgSkillSlotTimer);
-  input._hrpgSkillSlotTimer = setTimeout(() => saveSkillSlotInput(this, input), 250);
-}
-
 async function saveSkillSlotInput(sheet, input) {
   const item = sheet.actor.items.get(input.dataset.skillSlot);
   if (!item || item.type !== "skill") return;
@@ -595,7 +588,6 @@ export class HallownestActorSheet extends HandlebarsApplicationMixin(ActorSheetV
       input.addEventListener("change", updateSkillMastery.bind(this));
     }
     for (const input of this.element.querySelectorAll("[data-skill-slot]")) {
-      input.addEventListener("input", queueSkillSlotUpdate.bind(this));
       input.addEventListener("change", updateSkillSlot.bind(this));
       input.addEventListener("focusout", updateSkillSlot.bind(this));
     }
