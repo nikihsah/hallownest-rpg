@@ -7,7 +7,8 @@ import { skillBreakdown, skillTotals } from "../mechanics/skills.js";
 import { equippedFlasks, flaskAttackContext } from "../mechanics/flasks.js";
 
 const HUD_ID = "hrpg-quick-attacks-hud";
-const SCROLL_DIALOG_FORM_STYLE = "height:min(32rem, calc(100vh - 12rem)); max-height:min(32rem, calc(100vh - 12rem)); overflow-y:scroll; overscroll-behavior:contain;";
+const SCROLL_DIALOG_FORM_STYLE = "margin:0; overflow:visible;";
+const SCROLL_DIALOG_BODY_STYLE = "display:block; height:min(32rem, calc(100vh - 12rem)); max-height:min(32rem, calc(100vh - 12rem)); overflow-y:scroll; overscroll-behavior:contain; padding-right:.35rem;";
 
 export function registerQuickAttacksHud() {
   Hooks.on("controlToken", refreshQuickAttacksHud);
@@ -204,6 +205,7 @@ async function promptFlaskThrowOptions(actor, flask) {
     position: scrollDialogPosition(),
     content: `
       <form id="${id}" class="hrpg-attack-dialog" style="${SCROLL_DIALOG_FORM_STYLE}">
+        <div class="hrpg-dialog-scroll" style="${SCROLL_DIALOG_BODY_STYLE}">
         <p>${foundry.utils.escapeHTML(flask.effect || game.i18n.localize("HRPG.NoDescription"))}</p>
         <label>${game.i18n.localize("HRPG.ActionAttribute")}
           <select name="attribute">${attributes.map((option) => `<option value="${option.key}">${foundry.utils.escapeHTML(game.i18n.localize(option.label))}</option>`).join("")}</select>
@@ -216,6 +218,7 @@ async function promptFlaskThrowOptions(actor, flask) {
         <label>${game.i18n.localize("HRPG.Note")}
           <textarea name="note" rows="3"></textarea>
         </label>
+        </div>
       </form>`,
     ok: {
       label: game.i18n.localize("HRPG.ThrowFlask"),
@@ -247,10 +250,12 @@ async function promptTechniqueUseOptions(technique) {
     position: scrollDialogPosition(),
     content: `
       <form id="${id}" class="hrpg-attack-dialog" style="${SCROLL_DIALOG_FORM_STYLE}">
+        <div class="hrpg-dialog-scroll" style="${SCROLL_DIALOG_BODY_STYLE}">
         <p>${foundry.utils.escapeHTML(rawCost)}</p>
         <label>${game.i18n.localize("HRPG.VariableStamina")}
           <input type="number" name="stamina" value="0" min="0" step="1">
         </label>
+        </div>
       </form>`,
     ok: {
       label: game.i18n.localize("HRPG.Use"),
@@ -286,6 +291,7 @@ async function promptAttackOptions(actor, attack) {
     position: scrollDialogPosition(),
     content: `
       <form id="${id}" class="hrpg-attack-dialog" style="${SCROLL_DIALOG_FORM_STYLE}">
+        <div class="hrpg-dialog-scroll" style="${SCROLL_DIALOG_BODY_STYLE}">
         <label>${game.i18n.localize("HRPG.InvestedStamina")}
           <input type="number" name="investedStamina" value="0" min="0" step="1">
         </label>
@@ -295,6 +301,7 @@ async function promptAttackOptions(actor, attack) {
         ${techniqueOptions.length ? `<section><h3>${game.i18n.localize("HRPG.Techniques")}</h3>${techniqueOptionInputs(techniqueOptions)}</section>` : ""}
         ${traitEffects.length ? `<section><h3>${game.i18n.localize("HRPG.TraitEffects")}</h3>${effectNotes(traitEffects)}</section>` : ""}
         ${traitOptions.length ? `<section><h3>${game.i18n.localize("HRPG.ConditionalTraitOptions")}</h3>${traitOptionInputs(traitOptions)}</section>` : ""}
+        </div>
       </form>`,
     ok: {
       label: game.i18n.localize("HRPG.Roll"),
@@ -440,9 +447,11 @@ async function promptCombatActionOptions(action) {
     position: scrollDialogPosition(),
     content: `
       <form id="${id}" class="hrpg-defense-dialog" style="${SCROLL_DIALOG_FORM_STYLE}">
+        <div class="hrpg-dialog-scroll" style="${SCROLL_DIALOG_BODY_STYLE}">
         <p>${foundry.utils.escapeHTML(game.i18n.localize(action.hint))}</p>
         ${actionDescriptionMarkup(action)}
         ${action.damage ? damageCalculatorFields() : action.soul ? focusSoulFields() : combatActionFields(action)}
+        </div>
       </form>`,
     ok: {
       label: action.damage ? game.i18n.localize("HRPG.Calculate") : game.i18n.localize("HRPG.Use"),
@@ -490,6 +499,7 @@ async function promptDefenseActionOptions(actor, action) {
     position: scrollDialogPosition(),
     content: `
       <form id="${id}" class="hrpg-defense-dialog" style="${SCROLL_DIALOG_FORM_STYLE}">
+        <div class="hrpg-dialog-scroll" style="${SCROLL_DIALOG_BODY_STYLE}">
         <p>${foundry.utils.escapeHTML(game.i18n.localize(action.hint))}</p>
         ${actionDescriptionMarkup(action)}
         ${action.attributes?.length ? `<label>${game.i18n.localize("HRPG.DefenseAttribute")}
@@ -506,6 +516,7 @@ async function promptDefenseActionOptions(actor, action) {
         ${techniqueOptions.length ? `<section><h3>${game.i18n.localize("HRPG.Techniques")}</h3>${techniqueOptionInputs(techniqueOptions)}</section>` : ""}
         ${traitEffects.length ? `<section><h3>${game.i18n.localize("HRPG.TraitEffects")}</h3>${effectNotes(traitEffects)}</section>` : ""}
         ${traitOptions.length ? `<section><h3>${game.i18n.localize("HRPG.ConditionalTraitOptions")}</h3>${traitOptionInputs(traitOptions)}</section>` : ""}
+        </div>
       </form>`,
     ok: {
       label: game.i18n.localize("HRPG.Roll"),

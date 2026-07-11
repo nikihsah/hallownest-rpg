@@ -212,7 +212,8 @@
 .application:has(.hrpg-attack-dialog) .window-content, .application:has(.hrpg-defense-dialog) .window-content, .dialog:has(.hrpg-attack-dialog) .window-content, .dialog:has(.hrpg-defense-dialog) .window-content, .window-app:has(.hrpg-attack-dialog) .window-content, .window-app:has(.hrpg-defense-dialog) .window-content { display: flex; flex-direction: column; height: 100%; max-height: calc(100vh - 4rem); min-height: 0; overflow-y: scroll !important; overscroll-behavior: contain; }
 .application:has(.hrpg-attack-dialog) .dialog-content, .application:has(.hrpg-defense-dialog) .dialog-content, .dialog:has(.hrpg-attack-dialog) .dialog-content, .dialog:has(.hrpg-defense-dialog) .dialog-content, .window-app:has(.hrpg-attack-dialog) .dialog-content, .window-app:has(.hrpg-defense-dialog) .dialog-content { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; overflow-y: visible; }
 .application:has(.hrpg-attack-dialog) .dialog-buttons, .application:has(.hrpg-defense-dialog) .dialog-buttons, .dialog:has(.hrpg-attack-dialog) .dialog-buttons, .dialog:has(.hrpg-defense-dialog) .dialog-buttons, .window-app:has(.hrpg-attack-dialog) .dialog-buttons, .window-app:has(.hrpg-defense-dialog) .dialog-buttons { flex: 0 0 auto; position: sticky; bottom: 0; z-index: 2; }
-.hrpg-defense-dialog { display: grid; gap: .65rem; height: min(32rem, calc(100vh - 12rem)); max-height: min(32rem, calc(100vh - 12rem)); min-height: 12rem; overflow-y: scroll !important; overscroll-behavior: contain; padding: .75rem; border: 1px solid #8e7d65; border-radius: 6px; background: rgba(242,238,226,.96); color: #17191a; }
+.hrpg-defense-dialog { display: block; overflow: visible !important; padding: .75rem; border: 1px solid #8e7d65; border-radius: 6px; background: rgba(242,238,226,.96); color: #17191a; }
+.hrpg-dialog-scroll { display: grid; gap: .65rem; height: min(32rem, calc(100vh - 12rem)); max-height: min(32rem, calc(100vh - 12rem)); min-height: 12rem; overflow-y: scroll !important; overscroll-behavior: contain; padding-right: .35rem; }
 .hrpg-defense-dialog p { margin: 0; color: #17191a; line-height: 1.35; }
 .hrpg-defense-dialog label { display: grid; gap: .25rem; color: #17191a; font-weight: 700; }
 .hrpg-defense-dialog .hrpg-inline-check { display: flex; align-items: center; gap: .4rem; }
@@ -221,7 +222,7 @@
 .hrpg-action-description { display: grid; gap: .35rem; padding: .55rem .65rem; border: 1px solid rgba(142,125,101,.65); border-radius: 6px; background: rgba(255,255,255,.38); }
 .hrpg-action-description h3 { margin: 0; color: #17191a; font-size: .8rem; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
 .hrpg-action-description p { margin: 0; color: #241f1a; line-height: 1.38; }
-.hrpg-attack-dialog { display: grid; gap: .7rem; height: min(32rem, calc(100vh - 12rem)); max-height: min(32rem, calc(100vh - 12rem)); min-height: 12rem; overflow-y: scroll !important; overscroll-behavior: contain; padding: .75rem; border: 1px solid #8e7d65; border-radius: 6px; background: rgba(242,238,226,.96); color: #17191a; }
+.hrpg-attack-dialog { display: block; overflow: visible !important; padding: .75rem; border: 1px solid #8e7d65; border-radius: 6px; background: rgba(242,238,226,.96); color: #17191a; }
 .hrpg-attack-dialog p { margin: 0; color: #17191a; line-height: 1.35; }
 .hrpg-attack-dialog > label { display: grid; gap: .25rem; }
 .hrpg-attack-dialog input, .hrpg-attack-dialog select { color: #17191a; background: rgba(255,255,255,.72); }
